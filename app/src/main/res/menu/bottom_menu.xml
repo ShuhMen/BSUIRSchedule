@@ -3,20 +3,20 @@
 
     <item
         android:id="@+id/favoritesFragment"
-        android:icon="@drawable/ic_favorites"
+        android:icon="@drawable/bottom_selector_saved"
         android:title="Избранное" />
     <item
-        android:id="@+id/scheduleFragment"
-        android:icon="@drawable/ic_schedule"
+        android:id="@+id/listOfGroupsFragment"
+        android:icon="@drawable/bottom_selector_schedule"
         android:title="Расписание" />
 
     <item
         android:id="@+id/teachersFragment"
-        android:icon="@drawable/ic_teachers"
+        android:icon="@drawable/bottom_selector_lector"
         android:title="Преподователи" />
 
     <item
         android:id="@+id/aboutFragment"
-        android:icon="@drawable/ic_about"
+        android:icon="@drawable/bottom_selector_settings"
         android:title="О приложении" />
 </menu>

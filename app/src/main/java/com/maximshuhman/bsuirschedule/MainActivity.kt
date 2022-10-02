@@ -19,40 +19,15 @@ import java.net.URL
 
 class MainActivity : AppCompatActivity() {
 
-    //Naviga
-
-
+    lateinit var bottomNavigationView: BottomNavigationView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigating_view)
+        bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigating_view)
         val navController = findNavController(R.id.nav_fragment)
 
-
-        // as soon as the application opens the first fragment should
-        // be shown to the user in this case it is algorithm fragment
-
-
-        val req = Requests()
-
-        //req.run()
-
-        val example = GetExample()
-        val response = example.run("https://raw.github.com/square/okhttp/master/README.md")
-        println(response)
-     /*   runBlocking {
-
-            req.getGroupSchedule("https://iis.bsuir.by/api/v1/schedule?studentGroup=220603")
-
-        }*/
         bottomNavigationView.setupWithNavController(navController)
-
-   // loadRandomFact()
     }
-
-
-
-
 }

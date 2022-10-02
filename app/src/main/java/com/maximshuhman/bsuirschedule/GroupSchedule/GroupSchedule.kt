@@ -9,6 +9,6 @@ data class GroupSchedule (
 	val endExamsDate : String,
 	val employeeDto : String,
 	val studentGroupDto : StudentGroupDto,
-	val schedules : Schedules,
+//	val schedules : Schedules,
 	val exams : List<String>
 )
