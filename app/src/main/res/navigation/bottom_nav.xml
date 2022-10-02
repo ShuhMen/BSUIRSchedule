@@ -16,6 +16,12 @@
         <action
             android:id="@+id/action_scheduleFragment_to_listOfGroupsFragment"
             app:destination="@id/listOfGroupsFragment" />
+        <argument
+            android:name="course"
+            app:argType="integer" />
+        <argument
+            android:name="specialityAbbrev"
+            app:argType="string" />
 
     </fragment>
     <fragment

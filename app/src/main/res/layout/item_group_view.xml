@@ -14,7 +14,8 @@
         android:layout_weight="1"
 
         app:cardBackgroundColor="#E3E3E3"
-        app:cardCornerRadius="5dp">
+        app:cardCornerRadius="5dp"
+        app:cardElevation="0dp">
 
         <TextView
             android:id="@+id/group_number_text"

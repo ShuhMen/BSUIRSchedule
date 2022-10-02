@@ -12,6 +12,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toolbar
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -31,6 +32,8 @@ class ScheduleFragment : Fragment() {
 
     lateinit var ScheduleRecycler: RecyclerView
     lateinit var ProgressBar: ProgressBar
+    lateinit var scheduleSituated: TextView
+    lateinit var ToolBar: androidx.appcompat.widget.Toolbar
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -40,9 +43,14 @@ class ScheduleFragment : Fragment() {
         // Inflate the layout for this fragment
         ScheduleRecycler = view.findViewById(R.id.schedule_recycler_view)
         ProgressBar = view.findViewById(R.id.progressBar)
+        scheduleSituated = view.findViewById(R.id.schedule_situating_text)
+        ToolBar = view.findViewById(R.id.toolbar)
+
+        ToolBar.title = "${arguments?.getString("groupNumber").toString()}, ${arguments?.getString("specialityAbbrev").toString()} ${arguments?.getInt("course")} курс"
+
         ScheduleRecycler.layoutManager = LinearLayoutManager(requireContext())
 
-        (requireActivity() as MainActivity).bottomNavigationView.menu.findItem(2)
+        (requireActivity() as MainActivity).bottomNavigationView.menu.findItem(R.id.listOfGroupsFragment).setChecked(true)
 
         updateUI(view, arguments?.getString("groupNumber").toString())
         //helloText.text = Data.response
@@ -63,11 +71,17 @@ class ScheduleFragment : Fragment() {
 
             getSchedule(g)
             Handler(Looper.getMainLooper()).post {
-
-                ScheduleRecycler.adapter = ScheduleRecyclerAdapter(Data.ScheduleList)
-                ScheduleRecycler.recycledViewPool.clear()
-                ScheduleRecycler.adapter!!.notifyDataSetChanged()
-
+                if(Data.ScheduleList.size == 0) {
+                    scheduleSituated.visibility = View.VISIBLE
+                    ScheduleRecycler.visibility = View.GONE
+                }
+                else {
+                    scheduleSituated.visibility = View.GONE
+                    ScheduleRecycler.visibility = View.VISIBLE
+                    ScheduleRecycler.adapter = ScheduleRecyclerAdapter(Data.ScheduleList)
+                    ScheduleRecycler.recycledViewPool.clear()
+                    ScheduleRecycler.adapter!!.notifyDataSetChanged()
+                }
                 ProgressBar.visibility = View.INVISIBLE
             }
         }
@@ -130,7 +144,10 @@ class ScheduleRecyclerAdapter(private val pairs: MutableList<Lesson>) :
             StartTimeText.text = pair.startLessonTime
             EndTimeText.text = pair.endLessonTime
             try {
-                AuditoryText.text = pair.auditories[0]
+                if(pair.auditories.isEmpty())
+                    AuditoryText.text = ""
+                else
+                    AuditoryText.text = pair.auditories[0]
             } catch (e: Exception) {
             }
             if (pair.numSubgroup != 0) {

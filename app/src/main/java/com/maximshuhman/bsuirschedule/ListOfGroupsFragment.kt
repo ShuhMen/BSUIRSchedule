@@ -7,6 +7,7 @@ import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.navigation.Navigation.findNavController
@@ -31,17 +32,18 @@ class ListOfGroupsFragment : Fragment() {
 
     }
 
-    lateinit var GroupsResyclerView: RecyclerView
+    private lateinit var GroupsResyclerView: RecyclerView
+
+    lateinit var ProgressBar: ProgressBar
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-
-
         var view = inflater.inflate(R.layout.fragment_list_of_groups, container, false)
 
         GroupsResyclerView = view.findViewById(R.id.list_of_groups)
+        ProgressBar = view.findViewById(R.id.progress_bar_groups)
         GroupsResyclerView.layoutManager = LinearLayoutManager(requireContext())
         GroupsResyclerView.adapter = GroupsRecyclerAdapter(Data.GroupsList)
 
@@ -53,8 +55,8 @@ class ListOfGroupsFragment : Fragment() {
 
     fun updateUI()
     {
-        //ProgressBar.visibility = View.VISIBLE
-        // ProgressBar.isIndeterminate = true
+        ProgressBar.visibility = View.VISIBLE
+         ProgressBar.isIndeterminate = true
 
         GroupsResyclerView.adapter = null
 
@@ -63,11 +65,12 @@ class ListOfGroupsFragment : Fragment() {
             getGroupsList()
             Handler(Looper.getMainLooper()).post {
 
+
                 GroupsResyclerView.adapter = GroupsRecyclerAdapter(Data.GroupsList)
                 GroupsResyclerView.recycledViewPool.clear()
                 GroupsResyclerView.adapter!!.notifyDataSetChanged()
 
-                // ProgressBar.visibility = View.INVISIBLE
+                 ProgressBar.visibility = View.INVISIBLE
             }
         }
     }
@@ -106,7 +109,7 @@ class ListOfGroupsFragment : Fragment() {
                     (holder as GroupViewHolder).bind(groups[position])}
         }
 
-        override fun getItemCount(): Int = groups.size
+        override fun getItemCount(): Int = groups.size-1
 
 
         inner class GroupViewHolder(itemView: View): RecyclerView.ViewHolder(itemView), View.OnClickListener{
@@ -120,7 +123,7 @@ class ListOfGroupsFragment : Fragment() {
             @SuppressLint("SetTextI18n")
             fun bind(group: Group) {
                 if(group.name != "")
-                    GroupNumber.text = group.name
+                    GroupNumber.text = "${group.name}, ${group.facultyAbbrev}, ${group.specialityAbbrev}"
                 else
                     GroupNumber.text = "Ошибка"
             }
@@ -129,6 +132,8 @@ class ListOfGroupsFragment : Fragment() {
                 val navController = p0?.findNavController()
 
                 bundle.putString("groupNumber", groups[position].name.toString())
+                bundle.putString("specialityAbbrev", groups[position].specialityAbbrev.toString())
+                bundle.putInt("course", groups[position].course!!.toInt())
 
                 //navController?.navigate(R.id.action_listOfGroupsFragment_to_scheduleFragment)
 

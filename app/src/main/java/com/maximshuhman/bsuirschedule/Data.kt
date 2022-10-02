@@ -113,7 +113,7 @@ object Data {
         return pair
     }
 
-    fun makeList(json: JSONObject) {
+    fun makeList(json: JSONObject) : Int {
         try {
             val monday: JSONArray = json.getJSONArray("Понедельник")
 
@@ -178,12 +178,15 @@ object Data {
 
         }
 
-        val tim: Lesson = listOfPairs[0].copy()
+        if(listOfPairs.size != 0) {
+            val tim: Lesson = listOfPairs[0].copy()
 
-        tim.day_of_week = 8
+            tim.day_of_week = 8
 
-        listOfPairs.add(tim)
-
+            listOfPairs.add(tim)
+            return 0
+        }else
+            return 1
     }
 
     fun makeSchedule(grNum: String) {
@@ -195,7 +198,8 @@ object Data {
         val req = Requests()
         val response: JSONResponse = req.getGroupSchedule("https://iis.bsuir.by/api/v1/", grNum)
 
-        makeList(response.obj)
+        if(makeList(response.obj) == 1)
+            return
 
         var week: Int = req.getCurrent().res
         val calendar: Calendar = Calendar.getInstance()
@@ -299,9 +303,10 @@ object Data {
             Group(1,
                 try{getStringDef(groupsList, 0, "name")!!.substring(0, 3)}catch(e:Exception){"Ошибка"},
                 getStringDef(groupsList, 0, "facultyId"),
-                getStringDef(groupsList, 0, "facultyId"),
+                getStringDef(groupsList, 0, "facultyAbbrev"),
                 getIntDef(groupsList, 0, "specialityDepartmentEducationFormId"),
                 getStringDef(groupsList, 0, "specialityName"),
+                getStringDef(groupsList, 0, "specialityAbbrev"),
                 getIntDef(groupsList, 0, "course"),
                 getIntDef(groupsList, 0, "id"),
                 getStringDef(groupsList, 0, "calendarId"),
@@ -310,16 +315,17 @@ object Data {
             )
         )
 
-        var i = 1
+        var i = 0
 
         while (i < groupsList.length()-1) {
             GroupsList.add(
                 Group(0,
                     getStringDef(groupsList, i, "name"),
                     getStringDef(groupsList, i, "facultyId"),
-                    getStringDef(groupsList, i, "facultyId"),
+                    getStringDef(groupsList, i, "facultyAbbrev"),
                     getIntDef(groupsList, i, "specialityDepartmentEducationFormId"),
                     getStringDef(groupsList, i, "specialityName"),
+                    getStringDef(groupsList, i, "specialityAbbrev"),
                     getIntDef(groupsList, i, "course"),
                     getIntDef(groupsList, i, "id"),
                     getStringDef(groupsList, i, "calendarId"),
@@ -335,9 +341,10 @@ object Data {
                         try{getStringDef(groupsList, i+1, "name")!!.substring(0, 3)}
                         catch(e:Exception){"Ошибка"},
                         getStringDef(groupsList, i+1, "facultyId"),
-                        getStringDef(groupsList, i+1, "facultyId"),
+                        getStringDef(groupsList, i+1, "facultyAbbrev"),
                         getIntDef(groupsList, i+1, "specialityDepartmentEducationFormId"),
                         getStringDef(groupsList, i+1, "specialityName"),
+                        getStringDef(groupsList, i+1, "specialityAbbrev"),
                         getIntDef(groupsList, i+1, "course"),
                         getIntDef(groupsList, i+1, "id"),
                         getStringDef(groupsList, i+1, "calendarId"),
