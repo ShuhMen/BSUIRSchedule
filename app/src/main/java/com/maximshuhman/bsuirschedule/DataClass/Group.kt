@@ -1,8 +1,8 @@
 package com.maximshuhman.bsuirschedule.DataClass
 
 data class Group(
-    val type: Int,
-    val name : String?,
+    var type: Int,
+    var name : String?,
     val facultyId : String?,
     val facultyAbbrev : String?,
     val specialityDepartmentEducationFormId : Int?,

@@ -4,37 +4,40 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
+import android.widget.Filter
+import android.widget.Filterable
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SearchView
+import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
-import androidx.navigation.Navigation.findNavController
 import androidx.navigation.findNavController
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.maximshuhman.bsuirschedule.DataClass.Group
-import io.ktor.http.cio.*
 import java.util.concurrent.Executors
+
 
 class ListOfGroupsFragment : Fragment() {
 
-    val bundle = Bundle()
+
+
     private fun getGroupsList() {
 
-        Data.makeGroupsList()
-    }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+        Data.makeGroupsList(requireContext())
+
 
     }
 
     private lateinit var GroupsResyclerView: RecyclerView
 
     lateinit var ProgressBar: ProgressBar
+    var SearchView : SearchView? = null
+    lateinit var toolbar: Toolbar
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -44,16 +47,47 @@ class ListOfGroupsFragment : Fragment() {
 
         GroupsResyclerView = view.findViewById(R.id.list_of_groups)
         ProgressBar = view.findViewById(R.id.progress_bar_groups)
+        //SearchView = view.findViewById(R.id.search_view)
+
         GroupsResyclerView.layoutManager = LinearLayoutManager(requireContext())
-        GroupsResyclerView.adapter = GroupsRecyclerAdapter(Data.GroupsList)
+        GroupsResyclerView.adapter = GroupsRecyclerAdapter()
+
+
+        setHasOptionsMenu(true)
+        toolbar = view.findViewById(R.id.toolbar_groups)
+        (activity as AppCompatActivity?)!!.setSupportActionBar(toolbar)
 
         updateUI()
 
         return view
     }
 
+    @Deprecated("Deprecated in Java")
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.search_menu, menu)
 
-    fun updateUI()
+        val searchItem: MenuItem? = menu.findItem(R.id.action_search)
+          //val searchManager = getSystemService(Context.SEARCH_SERVICE) as SearchManager
+        val searchView = searchItem?.actionView as SearchView
+
+        searchView.maxWidth = Integer.MAX_VALUE;
+
+        searchView.setOnQueryTextListener(object :SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                if(Data.GroupsList.size != 0)
+                    GroupsRecyclerAdapter().filter.filter(newText)
+
+                return false
+            }
+        })
+
+    }
+
+    private fun updateUI()
     {
         ProgressBar.visibility = View.VISIBLE
          ProgressBar.isIndeterminate = true
@@ -64,9 +98,7 @@ class ListOfGroupsFragment : Fragment() {
 
             getGroupsList()
             Handler(Looper.getMainLooper()).post {
-
-
-                GroupsResyclerView.adapter = GroupsRecyclerAdapter(Data.GroupsList)
+                GroupsResyclerView.adapter = GroupsRecyclerAdapter()
                 GroupsResyclerView.recycledViewPool.clear()
                 GroupsResyclerView.adapter!!.notifyDataSetChanged()
 
@@ -75,15 +107,19 @@ class ListOfGroupsFragment : Fragment() {
         }
     }
 
-    inner class GroupsRecyclerAdapter(private val groups: MutableList<Group>) :
-        RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+    private var dataFilter: MutableList<Group> = Data.GroupsList
+
+    inner class GroupsRecyclerAdapter() :
+        RecyclerView.Adapter<RecyclerView.ViewHolder>(), Filterable {
+
+
 
         private val TYPE_HEADER : Int = 1
         private val TYPE_LIST : Int = 0
 
         override fun getItemViewType(position: Int): Int {
 
-            if(groups[position].type == TYPE_HEADER)
+            if(dataFilter[position].type == TYPE_HEADER)
             {
                 return TYPE_HEADER
             }
@@ -103,13 +139,13 @@ class ListOfGroupsFragment : Fragment() {
         }
 
         override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-            when (groups[position].type) {
-                TYPE_HEADER -> (holder as SpecialityViewHolder).bind(groups[position])
+            when (dataFilter[position].type) {
+                TYPE_HEADER -> (holder as SpecialityViewHolder).bind(dataFilter[position])
                 else ->
-                    (holder as GroupViewHolder).bind(groups[position])}
+                    (holder as GroupViewHolder).bind(dataFilter[position])}
         }
 
-        override fun getItemCount(): Int = groups.size-1
+        override fun getItemCount(): Int = dataFilter.size-1
 
 
         inner class GroupViewHolder(itemView: View): RecyclerView.ViewHolder(itemView), View.OnClickListener{
@@ -131,14 +167,17 @@ class ListOfGroupsFragment : Fragment() {
             override fun onClick(p0: View?) {
                 val navController = p0?.findNavController()
 
-                bundle.putString("groupNumber", groups[position].name.toString())
-                bundle.putString("specialityAbbrev", groups[position].specialityAbbrev.toString())
-                bundle.putInt("course", groups[position].course!!.toInt())
+                val bundle = Bundle()
 
-                //navController?.navigate(R.id.action_listOfGroupsFragment_to_scheduleFragment)
+                bundle.putString("groupNumber", dataFilter[position].name.toString())
+                bundle.putString("specialityAbbrev", dataFilter[position].specialityAbbrev.toString())
+                bundle.putInt("course", dataFilter[position].course!!.toInt())
+                bundle.putInt("id", dataFilter[position].id!!.toInt())
+
+                //navController?.navigate(R.id.action_listOfdataFilterFragment_to_scheduleFragment)
 
                 //val action = ScheduleFragment().action
-                findNavController().navigate(R.id.scheduleFragment, bundle)
+                 navController!!.navigate(R.id.scheduleFragment, bundle)
             }
 
 
@@ -153,5 +192,47 @@ class ListOfGroupsFragment : Fragment() {
                     SpecialityText.text = "Ошибка"
             }
         }
-}
+
+        override fun getFilter(): Filter {
+            return object : Filter() {
+                override fun performFiltering(constraint: CharSequence?): FilterResults {
+                    val charSearch = constraint.toString()
+
+
+
+                    dataFilter =
+                        if (charSearch.isEmpty()) {
+                            Data.GroupsList
+                        } else {
+                            var resultList = mutableListOf<Group>()
+                            for (row in Data.GroupsList) {
+                                if (row.name!!.contains(charSearch.toString(), true) || row.name.toString() == charSearch.toString()) {
+                                    resultList.add(row)
+                                }
+                            }
+                            resultList
+                        }
+
+                    val filterResults = FilterResults()
+                    filterResults.values = dataFilter
+                    return filterResults
+                }
+
+                @SuppressLint("NotifyDataSetChanged")
+                @Suppress("UNCHECKED_CAST")
+                override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
+                    dataFilter = results?.values as MutableList<Group>
+                   // updateUI()
+                    GroupsResyclerView.adapter!!.notifyDataSetChanged()
+                }
+
+            }
+
+
+        }
+    }
+
+
+
+
 }

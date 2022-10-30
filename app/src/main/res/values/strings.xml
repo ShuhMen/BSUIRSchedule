@@ -4,5 +4,6 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="subject_name">%1$s (%2$s)</string>
     <string name="schedule_doesnt_exist">Расписание отсутствует</string>
+    <string name="search">Search</string>
 
 </resources>

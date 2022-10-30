@@ -5,16 +5,14 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.provider.ContactsContract.CommonDataKinds.Note
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
-import android.widget.Toolbar
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import java.util.concurrent.Executors
@@ -22,14 +20,16 @@ import java.util.concurrent.Executors
 
 class ScheduleFragment : Fragment() {
 
-    private var adapter: ScheduleRecyclerAdapter? = null
-    val bundle = Bundle()
+    fun getSchedule(g: String?, groupID: Int) {
+        val err = Data.makeSchedule(g!!, requireContext(), groupID)
+        if(err != 0)
+        {
+            val navController = requireView().findNavController()
 
-    fun getSchedule(g: String?) {
-        Data.makeSchedule(g!!)
+            navController!!.navigate(R.id.scheduleFragment)
+        }
 
     }
-
     lateinit var ScheduleRecycler: RecyclerView
     lateinit var ProgressBar: ProgressBar
     lateinit var scheduleSituated: TextView
@@ -40,26 +40,46 @@ class ScheduleFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_schedule, container, false)
-        // Inflate the layout for this fragment
+
         ScheduleRecycler = view.findViewById(R.id.schedule_recycler_view)
         ProgressBar = view.findViewById(R.id.progressBar)
         scheduleSituated = view.findViewById(R.id.schedule_situating_text)
         ToolBar = view.findViewById(R.id.toolbar)
 
-        ToolBar.title = "${arguments?.getString("groupNumber").toString()}, ${arguments?.getString("specialityAbbrev").toString()} ${arguments?.getInt("course")} курс"
+        ToolBar.title = "${arguments?.getString("specialityAbbrev").toString()} " +
+                "${arguments?.getInt("course")} курс"
+
+        ToolBar.subtitle = arguments?.getString("groupNumber").toString()
 
         ScheduleRecycler.layoutManager = LinearLayoutManager(requireContext())
 
-        (requireActivity() as MainActivity).bottomNavigationView.menu.findItem(R.id.listOfGroupsFragment).setChecked(true)
+        (requireActivity() as MainActivity).bottomNavigationView.
+            menu.findItem(R.id.listOfGroupsFragment).isChecked = true
 
-        updateUI(view, arguments?.getString("groupNumber").toString())
+        updateUI( arguments?.getString("groupNumber").toString(), arguments?.getInt("id")!!.toInt())
         //helloText.text = Data.response
 
+        setHasOptionsMenu(true)
+
+        (activity as AppCompatActivity?)!!.setSupportActionBar(ToolBar)
 
         return view
     }
 
-    fun updateUI(view: View, g: String?) {
+    @Deprecated("Deprecated in Java")
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.search_menu, menu)
+
+       // val searchItem: MenuItem? = menu?.findItem(R.id.action_search)
+        //val searchManager = getSystemService(Context.SEARCH_SERVICE) as SearchManager
+
+            // SearchView!!.setMaxWidth(Integer.MAX_VALUE);
+
+
+
+    }
+
+    fun updateUI(groupNum: String?, groupID: Int) {
 
         ProgressBar.visibility = View.VISIBLE
         ProgressBar.isIndeterminate = true
@@ -69,7 +89,7 @@ class ScheduleFragment : Fragment() {
         Executors.newSingleThreadExecutor().execute {
 
 
-            getSchedule(g)
+            getSchedule(groupNum, groupID)
             Handler(Looper.getMainLooper()).post {
                 if(Data.ScheduleList.size == 0) {
                     scheduleSituated.visibility = View.VISIBLE
@@ -90,8 +110,10 @@ class ScheduleFragment : Fragment() {
 
 }
 
-class ScheduleRecyclerAdapter(private val pairs: MutableList<Lesson>) :
+class ScheduleRecyclerAdapter(var pairs: MutableList<Lesson>) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
+
 
     private val TYPE_HEADER: Int = 0
     private val TYPE_LIST: Int = 1
@@ -147,7 +169,7 @@ class ScheduleRecyclerAdapter(private val pairs: MutableList<Lesson>) :
                 if(pair.auditories.isEmpty())
                     AuditoryText.text = ""
                 else
-                    AuditoryText.text = pair.auditories[0]
+                    AuditoryText.text = pair.auditories
             } catch (e: Exception) {
             }
             if (pair.numSubgroup != 0) {
@@ -174,11 +196,11 @@ class ScheduleRecyclerAdapter(private val pairs: MutableList<Lesson>) :
             }
 
             try {
-                EmployeesText.text =
-                    "${pair.employees!![0].lastName} " +
+                EmployeesText.text = ""
+                   /* "${pair.employees!![0].lastName} " +
                             "${pair.employees!![0].firstName!!.substring(0, 1)}. " +
                             "${pair.employees!![0].middleName!!.substring(0, 1)
-                    }."
+                    }."*/
             } catch (e: Exception) {
                 EmployeesText.text = ""
             }
