@@ -28,6 +28,8 @@ class MainActivity : AppCompatActivity() {
         bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigating_view)
         val navController = findNavController(R.id.nav_fragment)
 
+        Data.makeEmployeesList(this.applicationContext)
+
         bottomNavigationView.setupWithNavController(navController)
     }
 }

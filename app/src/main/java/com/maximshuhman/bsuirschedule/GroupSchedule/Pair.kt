@@ -11,5 +11,5 @@ data class Lesson (
 	var subject          : String?,
 	var subjectFullName  : String?,
 	var weekNumber       : String,
-//	var employees        : List<Employees>?,
+	var employees        : Employees,
 )

@@ -11,7 +11,7 @@ object DBContract  {
          //const val type: Int,
         const val name = "groupName"
          //const val facultyId : String?,
-        // const val facultyAbbrev : String?,
+         const val facultyAbbrev  = "facultyAbbrev"
        //  const val specialityDepartmentEducationFormId : Int?,
         const val specialityName = "specialityName"
         const val specialityAbbrev = "specialityAbbrev"
@@ -28,7 +28,7 @@ object DBContract  {
     }
 
     object Schedule: BaseColumns{
-        const val TABLE_NAME = "SCHEDULE"
+        const val TABLE_NAME = "schedule"
         const val scheduleID = BaseColumns._ID
         const val groupID =      "groupID"
         const val day_of_week = "day_of_week"
@@ -43,6 +43,22 @@ object DBContract  {
         const val subjectFullName  = "subjectFullName"
         const val weekNumber       = "weekNumber"
         const val employeeID    = "employeeID"
+    }
+
+    object Employees{
+        const val TABLE_NAME = "EMPLOYEES"
+        const val employeeID   = "employeeID"
+        const val firstName    = "firstName"
+        const val middleName   = "middleName"
+        const val lastName     = "lastName"
+        const val photoLink    = "photoLink"
+        const val degree       = "degree"
+        const val degreeAbbrev = "degreeAbbrev"
+        const val rank         = "rank"
+        const val department   = "department"
+        const val fio = "fio"
+
+
     }
 
 

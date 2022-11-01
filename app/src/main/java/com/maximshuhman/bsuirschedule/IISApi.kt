@@ -21,6 +21,10 @@ interface IISApi {
         @GET("student-groups")
         suspend fun getGroupsList(): Response<ResponseBody>
 
+
+        @GET("employees/all")
+        suspend fun getEmployeesList(): Response<ResponseBody>
+
      //   fun groupList(@Path("id") groupId: Int, @Query("sort") sort: String?): Call<List<User?>?>?
        // @POST("/api")
       //  suspend fun postApi(@Body requestBody: RequestBody): Response<ResponseBody>

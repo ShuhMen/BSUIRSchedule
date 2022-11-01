@@ -11,8 +11,8 @@ android {
         applicationId "com.maximshuhman.bsuirschedule"
         minSdk 26
         targetSdk 32
-        versionCode 1
-        versionName "1.0.0.0"
+        versionCode 5
+        versionName "1.0.1.2"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -38,14 +38,14 @@ android {
 
 
 dependencies {
-
+    implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
     implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0'
     implementation 'androidx.core:core-ktx:1.9.0'
     implementation 'androidx.appcompat:appcompat:1.5.1'
-    implementation 'com.google.android.material:material:1.6.1'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.2'
-    implementation 'androidx.navigation:navigation-fragment-ktx:2.5.2'
-    implementation 'androidx.navigation:navigation-ui-ktx:2.5.2'
+    implementation 'com.google.android.material:material:1.7.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.navigation:navigation-fragment-ktx:2.5.3'
+    implementation 'androidx.navigation:navigation-ui-ktx:2.5.3'
     implementation('io.ktor:ktor-client-core:2.1.2')
     implementation('io.ktor:ktor-client-cio:2.1.2')
     implementation(platform("com.squareup.okhttp3:okhttp-bom:4.10.0"))

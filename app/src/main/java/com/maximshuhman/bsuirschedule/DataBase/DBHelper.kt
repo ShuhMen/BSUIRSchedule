@@ -14,6 +14,7 @@ class DbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null
         "${DBContract.Groups.course} TEXT,"+
         "${DBContract.Groups.specialityAbbrev} TEXT,"+
         "${DBContract.Groups.specialityName} TEXT,"+
+        "${DBContract.Groups.facultyAbbrev} TEXT,"+
         "${DBContract.Groups.name} TEXT ) "
 
     private val SQL_CREATE_COMMONSCHEDULE =
@@ -41,7 +42,22 @@ class DbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null
                 "${DBContract.Schedule.weekNumber       } INTEGER,"+
                 "${DBContract.Schedule.employeeID       } INTEGER,"+
                 "${DBContract.Schedule.groupID          } INTEGER,"+
-                "FOREIGN KEY (${DBContract.Schedule.groupID}) REFERENCES ${DBContract.Groups.TABLE_NAME}(${DBContract.CommonSchedule.commonScheduleID}))"
+                "FOREIGN KEY (${DBContract.Schedule.groupID}) REFERENCES ${DBContract.Groups.TABLE_NAME}(${DBContract.CommonSchedule.commonScheduleID}),"+
+                "FOREIGN KEY (${DBContract.Schedule.employeeID}) REFERENCES ${DBContract.Employees.TABLE_NAME}(${DBContract.Employees.employeeID}))"
+
+    private val SQL_CREATE_EMPlOYEES =
+        "CREATE TABLE ${DBContract.Employees.TABLE_NAME} ("+
+                "${DBContract.Employees.employeeID    } INTEGER PRIMARY KEY,"+
+                "${DBContract.Employees.firstName     } TEXT,"+
+                "${DBContract.Employees.middleName    } TEXT,"+
+                "${DBContract.Employees.lastName      } TEXT,"+
+                "${DBContract.Employees.photoLink     } TEXT,"+
+                "${DBContract.Employees.degree        } TEXT,"+
+                "${DBContract.Employees.degreeAbbrev  } TEXT,"+
+                "${DBContract.Employees.rank          } TEXT,"+
+                "${DBContract.Employees.department    } TEXT,"+
+                "${DBContract.Employees.fio           } TEXT )"
+
 
 
     private val SQL_DELETE_ENTRIES = "DROP TABLE IF EXISTS ${DBContract.Groups.TABLE_NAME}"
@@ -53,6 +69,7 @@ class DbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null
             val a1 = it.execSQL(SQL_CREATE_GROUPS)
             val a2 = it.execSQL(SQL_CREATE_COMMONSCHEDULE)
             val a3 = it.execSQL(SQL_CREATE_SCHEDULE)
+            val a4 = it.execSQL(SQL_CREATE_EMPlOYEES)
         }
     }
 

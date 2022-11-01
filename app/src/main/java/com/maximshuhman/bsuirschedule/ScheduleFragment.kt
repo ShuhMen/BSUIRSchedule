@@ -9,31 +9,38 @@ import android.view.*
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import java.util.concurrent.Executors
 
 
 class ScheduleFragment : Fragment() {
 
-    fun getSchedule(g: String?, groupID: Int) {
-        val err = Data.makeSchedule(g!!, requireContext(), groupID)
-        if(err != 0)
-        {
+    fun getSchedule(mode: Int) {
+        val err = Data.makeSchedule(Data.curGroupName, requireContext(), Data.curGroupID, mode)
+        if (err != 0) {
             val navController = requireView().findNavController()
 
-            navController!!.navigate(R.id.scheduleFragment)
+            navController.navigate(R.id.listOfGroupsFragment)
         }
 
     }
+
     lateinit var ScheduleRecycler: RecyclerView
     lateinit var ProgressBar: ProgressBar
     lateinit var scheduleSituated: TextView
-    lateinit var ToolBar: androidx.appcompat.widget.Toolbar
+    private lateinit var ToolBar: androidx.appcompat.widget.Toolbar
+    lateinit var swipeRefreshLayout: SwipeRefreshLayout
+
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -45,23 +52,48 @@ class ScheduleFragment : Fragment() {
         ProgressBar = view.findViewById(R.id.progressBar)
         scheduleSituated = view.findViewById(R.id.schedule_situating_text)
         ToolBar = view.findViewById(R.id.toolbar)
+        swipeRefreshLayout = view.findViewById(R.id.swipe_refresh)
 
-        ToolBar.title = "${arguments?.getString("specialityAbbrev").toString()} " +
-                "${arguments?.getInt("course")} курс"
+        swipeRefreshLayout.setColorSchemeResources(R.color.BSUIR_blue)
+
+        if( arguments?.getInt("id") != null)
+            Data.curGroupID =   arguments?.getInt("id")
+            else
+            Data.curGroupID =  null
+
+        Data.curGroupName = arguments?.getString("groupNumber").toString()
+        Data.curGroupSpeciality = arguments?.getString("specialityAbbrev").toString()
+
+        if( arguments?.getInt("id") != null)
+            Data.curGroupCourse = arguments?.getInt("course")
+        else
+            Data.curGroupCourse = 0
+
+
+
+        ToolBar.title = "${ Data.curGroupSpeciality} " +
+                "${Data.curGroupCourse} курс"
 
         ToolBar.subtitle = arguments?.getString("groupNumber").toString()
+        //ToolBar.setSubtitleTextColor(R.color.white)
+        //ToolBar.setTitleTextColor(R.color.white)
 
         ScheduleRecycler.layoutManager = LinearLayoutManager(requireContext())
 
-        (requireActivity() as MainActivity).bottomNavigationView.
-            menu.findItem(R.id.listOfGroupsFragment).isChecked = true
+        (requireActivity() as MainActivity).bottomNavigationView.menu.findItem(R.id.listOfGroupsFragment).isChecked =
+            true
 
-        updateUI( arguments?.getString("groupNumber").toString(), arguments?.getInt("id")!!.toInt())
+        updateUI(0)
+
         //helloText.text = Data.response
 
-        setHasOptionsMenu(true)
+        // setHasOptionsMenu(true)
 
-        (activity as AppCompatActivity?)!!.setSupportActionBar(ToolBar)
+        //  (activity as AppCompatActivity?)!!.setSupportActionBar(ToolBar)
+
+        swipeRefreshLayout.setOnRefreshListener {
+            updateUI(1)
+        }
 
         return view
     }
@@ -70,32 +102,31 @@ class ScheduleFragment : Fragment() {
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.search_menu, menu)
 
-       // val searchItem: MenuItem? = menu?.findItem(R.id.action_search)
+        // val searchItem: MenuItem? = menu?.findItem(R.id.action_search)
         //val searchManager = getSystemService(Context.SEARCH_SERVICE) as SearchManager
 
-            // SearchView!!.setMaxWidth(Integer.MAX_VALUE);
-
+        // SearchView!!.setMaxWidth(Integer.MAX_VALUE);
 
 
     }
 
-    fun updateUI(groupNum: String?, groupID: Int) {
+    fun updateUI(mode: Int) {
 
-        ProgressBar.visibility = View.VISIBLE
-        ProgressBar.isIndeterminate = true
-
-        ScheduleRecycler.adapter = null
+        if (mode == 0) {
+            ProgressBar.visibility = View.VISIBLE
+            ProgressBar.isIndeterminate = true
+        }
+        // ScheduleRecycler.adapter = null
 
         Executors.newSingleThreadExecutor().execute {
 
 
-            getSchedule(groupNum, groupID)
+            getSchedule(mode)
             Handler(Looper.getMainLooper()).post {
-                if(Data.ScheduleList.size == 0) {
+                if (Data.ScheduleList.size == 0) {
                     scheduleSituated.visibility = View.VISIBLE
                     ScheduleRecycler.visibility = View.GONE
-                }
-                else {
+                } else {
                     scheduleSituated.visibility = View.GONE
                     ScheduleRecycler.visibility = View.VISIBLE
                     ScheduleRecycler.adapter = ScheduleRecyclerAdapter(Data.ScheduleList)
@@ -103,6 +134,8 @@ class ScheduleFragment : Fragment() {
                     ScheduleRecycler.adapter!!.notifyDataSetChanged()
                 }
                 ProgressBar.visibility = View.INVISIBLE
+                swipeRefreshLayout.isRefreshing = false
+
             }
         }
     }
@@ -112,7 +145,6 @@ class ScheduleFragment : Fragment() {
 
 class ScheduleRecyclerAdapter(var pairs: MutableList<Lesson>) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-
 
 
     private val TYPE_HEADER: Int = 0
@@ -166,7 +198,7 @@ class ScheduleRecyclerAdapter(var pairs: MutableList<Lesson>) :
             StartTimeText.text = pair.startLessonTime
             EndTimeText.text = pair.endLessonTime
             try {
-                if(pair.auditories.isEmpty())
+                if (pair.auditories.isEmpty())
                     AuditoryText.text = ""
                 else
                     AuditoryText.text = pair.auditories
@@ -196,19 +228,19 @@ class ScheduleRecyclerAdapter(var pairs: MutableList<Lesson>) :
             }
 
             try {
-                EmployeesText.text = ""
-                   /* "${pair.employees!![0].lastName} " +
-                            "${pair.employees!![0].firstName!!.substring(0, 1)}. " +
-                            "${pair.employees!![0].middleName!!.substring(0, 1)
-                    }."*/
+                EmployeesText.text =
+                 "${pair.employees.lastName} " +
+                         "${pair.employees.firstName!!.substring(0, 1)}. " +
+                         "${pair.employees.middleName!!.substring(0, 1)
+                 }."
             } catch (e: Exception) {
                 EmployeesText.text = ""
             }
 
             try {
-                if(pair.note == "" || pair.note == null)
+                if (pair.note == "" || pair.note == null)
                     NoteText.visibility = View.GONE
-                    else {
+                else {
                     NoteText.visibility = View.VISIBLE
                     NoteText.text = pair.note
                 }

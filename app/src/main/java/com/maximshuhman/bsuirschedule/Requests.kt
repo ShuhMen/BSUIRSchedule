@@ -1,5 +1,6 @@
 package com.maximshuhman.bsuirschedule
 
+import Employees
 import android.util.Log
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
@@ -26,7 +27,7 @@ data class JSONResponse (var errorCode: Int, var errorMessage: String, var obj: 
 data class IntResponse (var errorCode: Int, var errorMessage: String, var res: Int)
 data class JSONArrayResponse (var errorCode: Int, var errorMessage: String, var arr: JSONArray)
 
-class Requests {
+object Requests {
 
         fun getGroupSchedule(baseUrl: String, grNum: String) : JSONResponse{
             var response: Response<ResponseBody>
@@ -288,4 +289,70 @@ class Requests {
             }
         }
     }
+
+    fun getEmployeesList(baseUrl: String):JSONArrayResponse{
+        var response: Response<ResponseBody>
+
+        val retrofit = Clientbuilder.getGroupScheduleClient(baseUrl)
+
+        try {
+            val service = retrofit!!.create(IISApi::class.java)
+
+            try {
+                runBlocking {
+                    response = service.getEmployeesList()
+                }
+            } catch (e: Exception) {
+                return JSONArrayResponse(-1, "REQUEST ERROR", JSONArray(emptyArray<Employees>()))
+            }
+        } catch (e: NullPointerException) {
+            return JSONArrayResponse(-2, "WRONG ADDRESS TYPE", JSONArray(emptyArray<Employees>()))
+        }
+
+        if (response.isSuccessful) {
+
+            val gson = GsonBuilder().setPrettyPrinting().create()
+            val jsonString = gson.toJson(
+                JsonParser.parseString(
+                    response.body()
+                        ?.string()
+                )
+            )
+
+            // val jsonString = response.body().toString()
+
+            return try {
+                // jsonString
+                JSONArrayResponse(0, "", JSONArray(jsonString))
+
+            } catch (e: JSONException) {
+                JSONArrayResponse(-1, "REQUEST ERROR", JSONArray(emptyArray<Employees>()))
+            }
+        } else {
+
+            return when (response.message()) {
+                "Bad Request" -> {
+                    try {
+                        val gson = GsonBuilder().setPrettyPrinting().create()
+                        val jsonString = gson.toJson(
+                            JsonParser.parseString(
+                                response.errorBody()
+                                    ?.string()
+                            )
+                        )
+                        val json = JSONObject(jsonString)
+
+                        return JSONArrayResponse(-1, "REQUEST ERROR",JSONArray(emptyArray<Employees>()))
+
+                    } catch (e: Exception) {
+                        return JSONArrayResponse(-9, "UNEXPECTED ERROR",JSONArray(emptyArray<Employees>()))
+                    }
+                }
+                "Unauthorized" -> JSONArrayResponse(-3,"WRONG_ANSWER", JSONArray(emptyArray<Employees>()))
+                else -> JSONArrayResponse(-1, "REQUEST ERROR", JSONArray(emptyArray<Employees>()))
+            }
+        }
+
+    }
+
 }

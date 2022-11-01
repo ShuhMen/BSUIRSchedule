@@ -8,7 +8,7 @@ data class Employees (
 	val firstName    : String?,
 	val middleName   : String?,
 	val lastName     : String?,
-	val photoLink    : String?,
+/*	val photoLink    : String?,
 	val degree       : String?,
 	val degreeAbbrev : String?,
 	val rank         : String?,
@@ -16,5 +16,5 @@ data class Employees (
 	val department   : String?,
 	val urlId        : String?,
 	val calendarId   : String?,
-	val jobPositions : String?
+	val jobPositions : String?*/
 )

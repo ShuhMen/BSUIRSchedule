@@ -1,6 +1,7 @@
 package com.maximshuhman.bsuirschedule
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -16,6 +17,7 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.maximshuhman.bsuirschedule.DataClass.Group
 import java.util.concurrent.Executors
 
@@ -24,20 +26,12 @@ class ListOfGroupsFragment : Fragment() {
 
 
 
-    private fun getGroupsList() {
-
-
-        Data.makeGroupsList(requireContext())
-
-
-    }
-
     private lateinit var GroupsResyclerView: RecyclerView
 
     lateinit var ProgressBar: ProgressBar
     var SearchView : SearchView? = null
     lateinit var toolbar: Toolbar
-
+    lateinit var swipeRefreshLayout: SwipeRefreshLayout
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -47,7 +41,11 @@ class ListOfGroupsFragment : Fragment() {
 
         GroupsResyclerView = view.findViewById(R.id.list_of_groups)
         ProgressBar = view.findViewById(R.id.progress_bar_groups)
+        swipeRefreshLayout = view.findViewById(R.id.swipe_refresh_groups)
         //SearchView = view.findViewById(R.id.search_view)
+
+        swipeRefreshLayout.setColorSchemeResources(R.color.BSUIR_blue);
+      //  swipeRefreshLayout.setProgressBackgroundColorSchemeColor(R.color.night_icon_stroke)
 
         GroupsResyclerView.layoutManager = LinearLayoutManager(requireContext())
         GroupsResyclerView.adapter = GroupsRecyclerAdapter()
@@ -57,7 +55,13 @@ class ListOfGroupsFragment : Fragment() {
         toolbar = view.findViewById(R.id.toolbar_groups)
         (activity as AppCompatActivity?)!!.setSupportActionBar(toolbar)
 
-        updateUI()
+        updateUI(0)
+
+        swipeRefreshLayout.setOnRefreshListener {
+
+            updateUI(1)
+
+        }
 
         return view
     }
@@ -87,22 +91,24 @@ class ListOfGroupsFragment : Fragment() {
 
     }
 
-    private fun updateUI()
+    private fun updateUI(mode: Int)
     {
-        ProgressBar.visibility = View.VISIBLE
-         ProgressBar.isIndeterminate = true
-
-        GroupsResyclerView.adapter = null
+        if(mode ==0) {
+            ProgressBar.visibility = View.VISIBLE
+            ProgressBar.isIndeterminate = true
+        }
+      //  GroupsResyclerView.adapter = null
 
         Executors.newSingleThreadExecutor().execute {
 
-            getGroupsList()
+            Data.makeGroupsList(requireContext(), mode)
             Handler(Looper.getMainLooper()).post {
                 GroupsResyclerView.adapter = GroupsRecyclerAdapter()
                 GroupsResyclerView.recycledViewPool.clear()
                 GroupsResyclerView.adapter!!.notifyDataSetChanged()
 
                  ProgressBar.visibility = View.INVISIBLE
+                swipeRefreshLayout.isRefreshing = false
             }
         }
     }
@@ -145,7 +151,7 @@ class ListOfGroupsFragment : Fragment() {
                     (holder as GroupViewHolder).bind(dataFilter[position])}
         }
 
-        override fun getItemCount(): Int = dataFilter.size-1
+        override fun getItemCount(): Int = dataFilter.size
 
 
         inner class GroupViewHolder(itemView: View): RecyclerView.ViewHolder(itemView), View.OnClickListener{
@@ -206,7 +212,7 @@ class ListOfGroupsFragment : Fragment() {
                         } else {
                             var resultList = mutableListOf<Group>()
                             for (row in Data.GroupsList) {
-                                if (row.name!!.contains(charSearch.toString(), true) || row.name.toString() == charSearch.toString()) {
+                                if (row.name.toString().contains(charSearch.toString(), true) || row.name.toString() == charSearch.toString() || row.type == 3) {
                                     resultList.add(row)
                                 }
                             }
@@ -231,6 +237,9 @@ class ListOfGroupsFragment : Fragment() {
 
         }
     }
+
+
+
 
 
 
