@@ -23,7 +23,7 @@ import com.maximshuhman.bsuirschedule.DataBase.DbHelper
 import java.util.concurrent.Executors
 
 
-class ScheduleFragment : Fragment() {
+class FavoriteGroup: Fragment() {
 
     lateinit var ScheduleRecycler: RecyclerView
     lateinit var ProgressBar: ProgressBar
@@ -41,19 +41,19 @@ class ScheduleFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_schedule, container, false)
+        val view = inflater.inflate(R.layout.fragment_favorite_group, container, false)
 
-        ScheduleRecycler = view.findViewById(R.id.schedule_recycler_view)
+        ScheduleRecycler = view.findViewById(R.id.favorite_group_recycler_view)
         ProgressBar = view.findViewById(R.id.progressBar)
         scheduleSituated = view.findViewById(R.id.schedule_situating_text)
-        ToolBar = view.findViewById(R.id.toolbar)
-        swipeRefreshLayout = view.findViewById(R.id.swipe_refresh)
+        ToolBar = view.findViewById(R.id.toolbar_fav_group)
+        swipeRefreshLayout = view.findViewById(R.id.swipe_refresh_fav_group)
 
         swipeRefreshLayout.setColorSchemeResources(R.color.BSUIR_blue)
 
         if( arguments?.getInt("id") != null)
             Data.curGroupID =   arguments?.getInt("id")
-            else
+        else
             Data.curGroupID =  null
 
         Data.curGroupName = arguments?.getString("groupNumber").toString()
@@ -75,7 +75,7 @@ class ScheduleFragment : Fragment() {
 
         ScheduleRecycler.layoutManager = LinearLayoutManager(requireContext())
 
-        (requireActivity() as MainActivity).bottomNavigationView.menu.findItem(R.id.listOfGroupsFragment).isChecked =
+        (requireActivity() as MainActivity).bottomNavigationView.menu.findItem(R.id.favoritesFragment).isChecked =
             true
 
         updateUI(0)
@@ -84,7 +84,7 @@ class ScheduleFragment : Fragment() {
 
         setHasOptionsMenu(true)
 
-         (activity as AppCompatActivity?)!!.setSupportActionBar(ToolBar)
+        (activity as AppCompatActivity?)!!.setSupportActionBar(ToolBar)
 
         swipeRefreshLayout.setOnRefreshListener {
             updateUI(1)
@@ -97,14 +97,14 @@ class ScheduleFragment : Fragment() {
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.group_schedule_menu, menu)
 
-         val favIndicator: MenuItem = menu.findItem(R.id.favorites)
+        val favIndicator: MenuItem = menu.findItem(R.id.favorites)
 
         val dbHelper = DbHelper(requireContext())
         val db = dbHelper.writableDatabase
 
         val exist: Cursor =
             db.rawQuery("SELECT COUNT(*) as cnt FROM ${DBContract.Favorites.TABLE_NAME} " +
-                "WHERE ${DBContract.Favorites.TABLE_NAME}.${DBContract.Favorites.groupID} = ${Data.curGroupID}", null)
+                    "WHERE ${DBContract.Favorites.TABLE_NAME}.${DBContract.Favorites.groupID} = ${Data.curGroupID}", null)
         exist.moveToFirst()
 
         if (exist.getInt(0) != 0 ) {
@@ -128,10 +128,10 @@ class ScheduleFragment : Fragment() {
                     item.setIcon(R.drawable.ic_baseline_favorite_border_24)
                     Data.add_removeFavGroup(requireContext(), 1, Data.curGroupID!!)
 
-                    }else {
+                }else {
                     item.setIcon(R.drawable.ic_baseline_favorite_24)
                     Data.add_removeFavGroup(requireContext(), 0, Data.curGroupID!!)
-                    }
+                }
                 item.isChecked = !item.isChecked
 
 
@@ -152,7 +152,7 @@ class ScheduleFragment : Fragment() {
             ProgressBar.visibility = View.VISIBLE
             ProgressBar.isIndeterminate = true
         }
-         ScheduleRecycler.adapter = null
+        ScheduleRecycler.adapter = null
 
         var err = 0
 
@@ -165,18 +165,18 @@ class ScheduleFragment : Fragment() {
                 if (err != 0)
                     Toast.makeText(requireContext(),"Ошибка получения данных", Toast.LENGTH_SHORT).show()
 
-                    if (Data.ScheduleList.size == 0) {
-                        scheduleSituated.visibility = View.VISIBLE
-                        ScheduleRecycler.visibility = View.GONE
-                    } else {
-                        scheduleSituated.visibility = View.GONE
-                        ScheduleRecycler.visibility = View.VISIBLE
-                        ScheduleRecycler.adapter = ScheduleRecyclerAdapter(Data.ScheduleList)
-                        ScheduleRecycler.recycledViewPool.clear()
-                        ScheduleRecycler.adapter!!.notifyDataSetChanged()
-                    }
-                    ProgressBar.visibility = View.INVISIBLE
-                    swipeRefreshLayout.isRefreshing = false
+                if (Data.ScheduleList.size == 0) {
+                    scheduleSituated.visibility = View.VISIBLE
+                    ScheduleRecycler.visibility = View.GONE
+                } else {
+                    scheduleSituated.visibility = View.GONE
+                    ScheduleRecycler.visibility = View.VISIBLE
+                    ScheduleRecycler.adapter = FavoriteRecyclerAdapter(Data.ScheduleList)
+                    ScheduleRecycler.recycledViewPool.clear()
+                    ScheduleRecycler.adapter!!.notifyDataSetChanged()
+                }
+                ProgressBar.visibility = View.INVISIBLE
+                swipeRefreshLayout.isRefreshing = false
 
             }
         }
@@ -185,7 +185,7 @@ class ScheduleFragment : Fragment() {
 
 }
 
-class ScheduleRecyclerAdapter(var pairs: MutableList<Lesson>) :
+class FavoriteRecyclerAdapter(var pairs: MutableList<Lesson>) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
 
@@ -271,10 +271,10 @@ class ScheduleRecyclerAdapter(var pairs: MutableList<Lesson>) :
 
             try {
                 EmployeesText.text =
-                 "${pair.employees.lastName} " +
-                         "${pair.employees.firstName!!.substring(0, 1)}. " +
-                         "${pair.employees.middleName!!.substring(0, 1)
-                 }."
+                    "${pair.employees.lastName} " +
+                            "${pair.employees.firstName!!.substring(0, 1)}. " +
+                            "${pair.employees.middleName!!.substring(0, 1)
+                            }."
             } catch (e: Exception) {
                 EmployeesText.text = ""
             }

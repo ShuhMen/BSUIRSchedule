@@ -2,6 +2,7 @@ package com.maximshuhman.bsuirschedule.DataBase
 
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
+import android.database.sqlite.SQLiteException
 import android.database.sqlite.SQLiteOpenHelper
 import android.util.Log
 
@@ -59,6 +60,10 @@ class DbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null
                 "${DBContract.Employees.fio           } TEXT )"
 
 
+    private val SQL_CREATE_FAVORITES =
+        "CREATE TABLE ${DBContract.Favorites.TABLE_NAME} ("+
+                "${DBContract.Favorites.groupID} INTEGER PRIMARY KEY,"+
+                "FOREIGN KEY (${DBContract.Favorites.groupID}) REFERENCES ${DBContract.Groups.TABLE_NAME}(${DBContract.Groups.groupID}))"
 
     private val SQL_DELETE_ENTRIES = "DROP TABLE IF EXISTS ${DBContract.Groups.TABLE_NAME}"
 
@@ -66,10 +71,12 @@ class DbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null
     override fun onCreate(p0: SQLiteDatabase?) {
         Log.v("DBDD", "p0 override fun onCreate(db: SQLiteDatabase?) {")
         p0?.let {
-            val a1 = it.execSQL(SQL_CREATE_GROUPS)
-            val a2 = it.execSQL(SQL_CREATE_COMMONSCHEDULE)
-            val a3 = it.execSQL(SQL_CREATE_SCHEDULE)
-            val a4 = it.execSQL(SQL_CREATE_EMPlOYEES)
+
+            try{val a1 = it.execSQL(SQL_CREATE_GROUPS)}catch (e:Exception){}
+            try{val a2 = it.execSQL(SQL_CREATE_COMMONSCHEDULE)}catch (e:Exception){}
+            try{val a3 = it.execSQL(SQL_CREATE_SCHEDULE)}catch (e:Exception){}
+            try{val a4 = it.execSQL(SQL_CREATE_EMPlOYEES)}catch (e:Exception){}
+            try{val a5 = it.execSQL(SQL_CREATE_FAVORITES)}catch (e:Exception){}
         }
     }
 
@@ -86,10 +93,19 @@ class DbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         Log.v("DBDD", "override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {")
+
+      //  val a4 = db.execSQL(SQL_CREATE_EMPlOYEES)
+       // val a5 = db.execSQL(SQL_CREATE_FAVORITES)
         // This database is only a cache for online data, so its upgrade policy is
         // to simply to discard the data and start over
-        //db.execSQL(SQL_DELETE_ENTRIES)
-        //onCreate(db)
+        db.execSQL("DROP TABLE IF EXISTS ${DBContract.Schedule.TABLE_NAME} " )
+        db.execSQL("DROP TABLE IF EXISTS ${DBContract.CommonSchedule.TABLE_NAME}")
+        db.execSQL("DROP TABLE IF EXISTS ${DBContract.Groups.TABLE_NAME}")
+        db.execSQL("DROP TABLE IF EXISTS ${DBContract.Employees.TABLE_NAME}")
+        db.execSQL("DROP TABLE IF EXISTS ${DBContract.Favorites.TABLE_NAME}")
+
+        onCreate(db)
+
     }
 
     override fun onDowngrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
@@ -98,7 +114,7 @@ class DbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null
 
     companion object {
         // If you change the database schema, you must increment the database version.
-        const val DATABASE_VERSION = 1
+        const val DATABASE_VERSION = 2
         const val DATABASE_NAME = "Schedule"
     }
 }

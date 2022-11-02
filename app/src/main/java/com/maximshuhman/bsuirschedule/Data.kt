@@ -21,11 +21,14 @@ object Data {
     private val listOfPairs = mutableListOf<Lesson>()
     val ScheduleList = mutableListOf<Lesson>()
     var GroupsList = mutableListOf<Group>()
-    var listOfGroups = mutableListOf<Group>()
+    private var listOfGroups = mutableListOf<Group>()
+    var FavoritesList = mutableListOf<Group>()
+    private var listOfFavorites = mutableListOf<Group>()
     var curGroupID: Int? = 0
     var curGroupName: String = ""
     var curGroupSpeciality: String = ""
     var curGroupCourse: Int? = 0
+
 
     private fun getStringDef(jsonArray: JSONArray, index: Int, valueName: String): String? = try {
         jsonArray.getJSONObject(index).getString(valueName)
@@ -57,21 +60,27 @@ object Data {
         db: SQLiteDatabase,
         grID: Int,
         dayOfWeek: Int
-    ) = try {
-        val monday: JSONArray = json.getJSONArray(arrayName)
+    ): Int {
+        try {
+            val js: JSONArray = json.getJSONArray(arrayName)
 
-        for (i in 0..monday.length()) {
-            val newRowId = db.insert(
-                DBContract.Schedule.TABLE_NAME,
-                null,
-                addTolist(dayOfWeek, monday.getJSONObject(i), grID)
-            )
-            //listOfPairs.add(addTolist(1, monday.getJSONObject(i), grID))
+            for (i in 0..js.length()) {
+                val newRowId = db.insert(
+                    DBContract.Schedule.TABLE_NAME,
+                    null,
+                    addTolist(dayOfWeek, js.getJSONObject(i), grID)
+                )
+                if (newRowId.toInt() == -1)
+                    return 1
+
+                //listOfPairs.add(addTolist(1, monday.getJSONObject(i), grID))
+            }
+        } catch (e: Exception) {
+            Log.v("SCHP", e.toString())
+
         }
-    } catch (e: Exception) {
-        Log.v("SCHP", e.toString())
+        return  0
     }
-
     private fun addTolist(dayOfWeek: Int, startPair: JSONObject, groupNum: Int): ContentValues {
 
         /* val studentGroups = startPair.getJSONArray("studentGroups")
@@ -127,12 +136,12 @@ object Data {
 
  */
 
-        var week_numbers: String = ""
+        var week_numbers = ""
         Array(startPair.getJSONArray("weekNumber").length()) {
             week_numbers += startPair.getJSONArray("weekNumber").getInt(it).toString()
         }
 
-        var auditories: String = ""
+        var auditories= ""
         Array(startPair.getJSONArray("auditories").length()) {
             auditories += startPair.getJSONArray("auditories").getString(it).toString() + " "
         }
@@ -184,7 +193,7 @@ object Data {
                     "INNER JOIN ${DBContract.CommonSchedule.TABLE_NAME} ON (${DBContract.Schedule.TABLE_NAME}.${DBContract.Schedule.groupID} = ${DBContract.CommonSchedule.TABLE_NAME}.${DBContract.CommonSchedule.commonScheduleID}) " +
                     "INNER JOIN ${DBContract.Groups.TABLE_NAME} ON (${DBContract.Groups.TABLE_NAME}.${DBContract.Groups.groupID} = ${DBContract.CommonSchedule.TABLE_NAME}.${DBContract.CommonSchedule.commonScheduleID}) " +
                     "INNER JOIN ${DBContract.Employees.TABLE_NAME} ON (${DBContract.Schedule.TABLE_NAME}.${DBContract.Schedule.employeeID} = ${DBContract.Employees.TABLE_NAME}.${DBContract.Employees.employeeID})" +
-                    "WHERE ${DBContract.Groups.TABLE_NAME}.${DBContract.Groups.groupID} = ${grID} " +
+                    "WHERE ${DBContract.Groups.TABLE_NAME}.${DBContract.Groups.groupID} = $grID " +
                     "ORDER BY ${DBContract.Schedule.TABLE_NAME}.${DBContract.Schedule.day_of_week} ",
 
             null
@@ -206,7 +215,7 @@ object Data {
                         getString(getColumnIndexOrThrow(DBContract.Schedule.subjectFullName)),
                         getString(getColumnIndexOrThrow(DBContract.Schedule.weekNumber)),
                         Employees(
-                            try{getInt(getColumnIndexOrThrow(DBContract.Employees.employeeID))}catch (e:Exception){0} as Int,
+                            try{getInt(getColumnIndexOrThrow(DBContract.Employees.employeeID))}catch (e:Exception){0},
                             try{getString(getColumnIndexOrThrow(DBContract.Employees.firstName))}catch (e:Exception){""} as String,
                             try{getString(getColumnIndexOrThrow(DBContract.Employees.middleName))}catch (e:Exception){""} as String,
                             try{getString(getColumnIndexOrThrow(DBContract.Employees.lastName))}catch (e:Exception){""} as String,
@@ -219,18 +228,18 @@ object Data {
         }
         c.close()
 
-        if (listOfPairs.size != 0) {
+        return if (listOfPairs.size != 0) {
             val tim: Lesson = listOfPairs[0].copy()
 
             tim.day_of_week = 8
 
             listOfPairs.add(tim)
-            return 0
+            0
         } else
-            return 1
+            1
     }
 
-    private fun fillSheduleTable(json_common: JSONObject, context: Context) {
+    private fun fillSheduleTable(json_common: JSONObject, context: Context): Int {
         val dbHelper = DbHelper(context)
         val db = dbHelper.writableDatabase
         val grID: Int
@@ -238,7 +247,7 @@ object Data {
         try {
             grID = json_common.getJSONObject("studentGroupDto").getInt("id")
         } catch (e: JSONException) {
-            return
+            return 1
         }
         val json = json_common.getJSONObject("schedules")
 
@@ -250,15 +259,20 @@ object Data {
             put(DBContract.CommonSchedule.endExamsDate, getStringDef(json_common, "endExamsDate"))
         }
 
-        var newRowId = db?.insert(DBContract.CommonSchedule.TABLE_NAME, null, values)
+        var newRowId = db.insert(DBContract.CommonSchedule.TABLE_NAME, null, values)
 
-        addLessonToDB(json, "Понедельник", db, grID, 1)
-        addLessonToDB(json, "Вторник", db, grID, 2)
-        addLessonToDB(json, "Среда", db, grID, 3)
-        addLessonToDB(json, "Четверг", db, grID, 4)
-        addLessonToDB(json, "Пятница", db, grID, 5)
-        addLessonToDB(json, "Суббота", db, grID, 6)
-        addLessonToDB(json, "Воскресенье", db, grID, 7)
+        if(newRowId.toInt() == -1)
+            return 1
+
+        if(addLessonToDB(json, "Понедельник", db, grID, 1) +
+        addLessonToDB(json, "Вторник", db, grID, 2)+
+        addLessonToDB(json, "Среда", db, grID, 3)+
+        addLessonToDB(json, "Четверг", db, grID, 4)+
+        addLessonToDB(json, "Пятница", db, grID, 5)+
+        addLessonToDB(json, "Суббота", db, grID, 6)+
+        addLessonToDB(json, "Воскресенье", db, grID, 7) != 0)
+            return 1
+        return 0
     }
 
     fun makeSchedule(grNum: String, context: Context, groupID: Int?, mode: Int?): Int {
@@ -279,18 +293,28 @@ object Data {
 
         if (c.getInt(0) == 0 || mode == 1) {
 
-            db.execSQL("DELETE FROM ${DBContract.Schedule.TABLE_NAME} WHERE ${DBContract.Schedule.TABLE_NAME}.${DBContract.Schedule.groupID} = $groupID")
-            db.execSQL("DELETE FROM ${DBContract.CommonSchedule.TABLE_NAME} WHERE ${DBContract.CommonSchedule.TABLE_NAME}.${DBContract.CommonSchedule.commonScheduleID} = $groupID")
+
 
             val response: JSONResponse = Requests.getGroupSchedule("https://iis.bsuir.by/api/v1/", grNum)
 
+            if(response.errorCode != 0)
+                return response.errorCode
 
-            fillSheduleTable(response.obj, context)
+            val err = fillSheduleTable(response.obj, context)
+
+            if(err != 0) {
+
+                db.execSQL("DELETE FROM ${DBContract.Schedule.TABLE_NAME} WHERE ${DBContract.Schedule.TABLE_NAME}.${DBContract.Schedule.groupID} = $groupID")
+                db.execSQL("DELETE FROM ${DBContract.CommonSchedule.TABLE_NAME} WHERE ${DBContract.CommonSchedule.TABLE_NAME}.${DBContract.CommonSchedule.commonScheduleID} = $groupID")
+                return 1
+            }
             if (fillListOfPairs(db, groupID) == 1)
-                return 0
+                return 1
         } else
             if (fillListOfPairs(db, groupID) == 1)
-                return 0
+                return 1
+
+        c.close()
 
         var week: Int =Requests.getCurrent().res
         val calendar: Calendar = Calendar.getInstance()
@@ -328,7 +352,7 @@ object Data {
 
                 i = 0
             } else {
-                if (listOfPairs[i].weekNumber.toString()
+                if (listOfPairs[i].weekNumber
                         .contains(week.toString()) && listOfPairs[i].day_of_week != 8
                 )
                     ScheduleList.add(listOfPairs[i])
@@ -358,10 +382,10 @@ object Data {
 
         while (i < ScheduleList.size) {
             if ((ScheduleList[i - 1].day_of_week != ScheduleList[i].day_of_week)) {
-                val l: Lesson = ScheduleList[0].copy()
+                val les: Lesson = ScheduleList[0].copy()
 
-                l.day_of_week = 9
-                l.note = "${
+                les.day_of_week = 9
+                les.note = "${
                     when (ScheduleList[i].day_of_week) {
                         1 -> "Понедельник"
                         2 -> "Вторник"
@@ -373,7 +397,7 @@ object Data {
                         else -> "Ошибка"
                     }
                 } "
-                ScheduleList.add(i, l)
+                ScheduleList.add(i, les)
 
                 i++
             }
@@ -383,12 +407,22 @@ object Data {
     }
 
 
-    private fun fillGroupsTable(db: SQLiteDatabase) {
+    private fun fillGroupsTable(db: SQLiteDatabase, mode: Int) :Int {
 
         val response: JSONArrayResponse = Requests.getGroupsList("https://iis.bsuir.by/api/v1/")
 
 
         val groupsList: JSONArray = response.arr
+
+        if(response.errorCode != 0)
+            return response.errorCode
+
+        if(mode == 1)
+        {
+            db.execSQL("DELETE FROM ${DBContract.Schedule.TABLE_NAME}")
+            db.execSQL("DELETE FROM ${DBContract.CommonSchedule.TABLE_NAME}")
+            db.execSQL("DELETE FROM ${DBContract.Groups.TABLE_NAME}")
+        }
 
         var i = 0
         while (i < groupsList.length() - 1) {
@@ -413,10 +447,17 @@ object Data {
             }
 
             val newRowId = db.insert(DBContract.Groups.TABLE_NAME, null, values)
+
+            if(newRowId.toInt() == -1 && mode == 0){
+                db.execSQL("DELETE FROM ${DBContract.Groups.TABLE_NAME}")
+                return 2
+            }
+
             i++
         }
 
 
+        return 0
     }
 
     private fun fillGroupsList(db: SQLiteDatabase) {
@@ -453,7 +494,7 @@ object Data {
         listOfGroups.add(gr)
     }
 
-    fun makeGroupsList(context: Context, mode: Int) {
+    fun makeGroupsList(context: Context, mode: Int): Int {
         val dbHelper = DbHelper(context)
         val db = dbHelper.writableDatabase
 
@@ -463,19 +504,17 @@ object Data {
 
         if (exist.getInt(0) == 0 || mode == 1) {
 
-            db.execSQL("DELETE FROM ${DBContract.Schedule.TABLE_NAME}")
-            db.execSQL("DELETE FROM ${DBContract.CommonSchedule.TABLE_NAME}")
-            db.execSQL("DELETE FROM ${DBContract.Groups.TABLE_NAME}")
+            val err = fillGroupsTable(db, mode)
 
-            fillGroupsTable(db)
-
+            if(err != 0)
+                return err
         }
 
         listOfGroups.clear()
         GroupsList.clear()
         fillGroupsList(db)
 
-        var gr = listOfGroups[0].copy()
+        val gr = listOfGroups[0].copy()
 
         try {
 
@@ -497,7 +536,7 @@ object Data {
                 listOfGroups[i].copy()
             )
 
-            if (listOfGroups[i].name!!.substring(0, 3) != listOfGroups[i + 1].name!!.substring(0, 3)) {
+            if (listOfGroups[i].name!!.substring(0, 3) != listOfGroups[i + 1].name!!.substring(0, 3) && listOfGroups[i + 1].type != 3) {
                 val group = listOfGroups[i + 1].copy()
                 group.name = group.name!!.substring(0, 3)
                 group.type = 1
@@ -507,18 +546,22 @@ object Data {
             i++
         }
        // listOfGroups
+        return 0
     }
 
-    fun fillEmployeesTable(db: SQLiteDatabase){
+    private fun fillEmployeesTable(db: SQLiteDatabase): Int{
         val response: JSONArrayResponse = Requests.getEmployeesList("https://iis.bsuir.by/api/v1/")
 
 
         val employeesList: JSONArray = response.arr
 
+        if(response.errorCode != 0)
+            return response.errorCode
+
         var i = 0
         while (i < employeesList.length() - 1) {
 
-            var dep: String = ""
+            var dep = ""
             val ar = employeesList.getJSONObject(i).getJSONArray("academicDepartment")
             Array(ar.length()) {
                 dep += ar.getString(it).toString() + " "
@@ -539,6 +582,11 @@ object Data {
             }
 
             val newRowId = db.insert(DBContract.Employees.TABLE_NAME, null, values)
+            if(newRowId.toInt() == -1)
+            {
+                db.execSQL("DELETE FROM ${DBContract.Employees.TABLE_NAME}")
+                return 1
+            }
             i++
         }
 
@@ -556,10 +604,14 @@ object Data {
 
         }
         val newRowId = db.insert(DBContract.Employees.TABLE_NAME, null, values)
+        return if(newRowId.toInt() == -1) {
+            db.execSQL("DELETE FROM ${DBContract.Employees.TABLE_NAME}")
+            1
+        }else 0
 
     }
 
-    fun makeEmployeesList(context: Context){
+    fun makeEmployeesList(context: Context): Int {
 
         val dbHelper = DbHelper(context)
         val db = dbHelper.writableDatabase
@@ -568,15 +620,127 @@ object Data {
             db.rawQuery("SELECT COUNT(*) as cnt FROM ${DBContract.Employees.TABLE_NAME}", null)
         exist.moveToFirst()
 
+
+
         if (exist.getInt(0) == 0) {
 
             db.execSQL("DELETE FROM ${DBContract.Employees.TABLE_NAME}")
 
-            fillEmployeesTable(db)
+            val err = fillEmployeesTable(db)
+            if(err != 0)
+                return 1
+        }
+
+        exist.close()
+
+        return 0
+    }
+
+    fun add_removeFavGroup(context: Context, mode : Int, grID: Int){
+
+        val dbHelper =DbHelper(context)
+
+        val db  = dbHelper.writableDatabase
+
+        if(mode == 1)
+            db.execSQL("DELETE FROM ${DBContract.Favorites.TABLE_NAME} WHERE ${DBContract.Favorites.TABLE_NAME}.${DBContract.Favorites.groupID} = $grID")
+        else {
+
+            val values = ContentValues().apply {
+                put(DBContract.Favorites.groupID, grID)
+            }
+
+            val newRowId = db.insert(DBContract.Favorites.TABLE_NAME, null, values)
+
+        }
+    }
+
+
+    private fun fillFavoritesList(db: SQLiteDatabase) {
+        val c: Cursor = db.rawQuery(
+            "SELECT * FROM ${DBContract.Favorites.TABLE_NAME} "+
+                    "INNER JOIN ${DBContract.Groups.TABLE_NAME} ON (${DBContract.Groups.TABLE_NAME}.${DBContract.Groups.groupID} = ${DBContract.Favorites.TABLE_NAME}.${DBContract.Favorites.groupID}) "+
+                    " ORDER BY " + DBContract.Groups.name,
+            null
+        )
+
+        with(c) {
+            while (moveToNext()) {
+                listOfFavorites.add(
+                    Group(
+                        0,
+                        getString(getColumnIndexOrThrow(DBContract.Groups.name)),
+                        "",
+                        getString(getColumnIndexOrThrow(DBContract.Groups.facultyAbbrev)),
+                        0,
+                        getString(getColumnIndexOrThrow(DBContract.Groups.specialityName)),
+                        getString(getColumnIndexOrThrow(DBContract.Groups.specialityAbbrev)),
+                        getLong(getColumnIndexOrThrow(DBContract.Groups.course)).toInt(),
+                        getLong(getColumnIndexOrThrow(DBContract.Favorites.groupID)).toInt(),
+                        "",
+                        0
+                    )
+                )
+            }
+        }
+        c.close()
+
+        var gr = listOfFavorites[0].copy()
+
+        gr.type = 3
+
+        listOfFavorites.add(gr)
+    }
+
+    fun makeFavoritesList(context: Context, mode: Int): Int {
+        val dbHelper = DbHelper(context)
+        val db = dbHelper.writableDatabase
+
+        val exist: Cursor =
+            db.rawQuery("SELECT COUNT(*) as cnt FROM ${DBContract.Favorites.TABLE_NAME}", null)
+        exist.moveToFirst()
+
+        if (exist.getInt(0) == 0 ) {
+                return 1
+        }
+
+        listOfFavorites.clear()
+        FavoritesList.clear()
+        fillFavoritesList(db)
+
+        val gr = listOfFavorites[0].copy()
+
+        try {
+
+            gr.name = gr.name!!.substring(0, 3)
+            gr.type = 1
+            FavoritesList.add(gr)
+
+        } catch (e: Exception) {
+            "Ошибка"
         }
 
 
+        var i = 0
 
+        while (i < listOfFavorites.size - 1) {
+
+
+            FavoritesList.add(
+                listOfFavorites[i].copy()
+            )
+
+            if (listOfFavorites[i].name!!.substring(0, 3) != listOfFavorites[i + 1].name!!.substring(0, 3) && listOfFavorites[i + 1].type != 3) {
+                val group = listOfFavorites[i + 1].copy()
+                group.name = group.name!!.substring(0, 3)
+                group.type = 1
+                FavoritesList.add(group)
+            }
+
+            i++
+        }
+        // listOfFavorites
+        return 0
     }
 
 

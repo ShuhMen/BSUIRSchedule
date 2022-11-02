@@ -1,7 +1,6 @@
 package com.maximshuhman.bsuirschedule
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -10,6 +9,7 @@ import android.widget.Filter
 import android.widget.Filterable
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
@@ -20,32 +20,30 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.maximshuhman.bsuirschedule.DataClass.Group
 import java.util.concurrent.Executors
-
-
 class ListOfGroupsFragment : Fragment() {
 
 
 
     private lateinit var GroupsResyclerView: RecyclerView
 
-    lateinit var ProgressBar: ProgressBar
-    var SearchView : SearchView? = null
-    lateinit var toolbar: Toolbar
-    lateinit var swipeRefreshLayout: SwipeRefreshLayout
+    private lateinit var progressBar: ProgressBar
+    lateinit var searchView: SearchView
+    private lateinit var toolbar: Toolbar
+    private lateinit var swipeRefreshLayout: SwipeRefreshLayout
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        var view = inflater.inflate(R.layout.fragment_list_of_groups, container, false)
+        val view = inflater.inflate(R.layout.fragment_list_of_groups, container, false)
 
         GroupsResyclerView = view.findViewById(R.id.list_of_groups)
-        ProgressBar = view.findViewById(R.id.progress_bar_groups)
+        progressBar = view.findViewById(R.id.progress_bar_groups)
         swipeRefreshLayout = view.findViewById(R.id.swipe_refresh_groups)
         //SearchView = view.findViewById(R.id.search_view)
 
-        swipeRefreshLayout.setColorSchemeResources(R.color.BSUIR_blue);
-      //  swipeRefreshLayout.setProgressBackgroundColorSchemeColor(R.color.night_icon_stroke)
+        swipeRefreshLayout.setColorSchemeResources(R.color.BSUIR_blue)
+        //  swipeRefreshLayout.setProgressBackgroundColorSchemeColor(R.color.night_icon_stroke)
 
         GroupsResyclerView.layoutManager = LinearLayoutManager(requireContext())
         GroupsResyclerView.adapter = GroupsRecyclerAdapter()
@@ -74,7 +72,7 @@ class ListOfGroupsFragment : Fragment() {
           //val searchManager = getSystemService(Context.SEARCH_SERVICE) as SearchManager
         val searchView = searchItem?.actionView as SearchView
 
-        searchView.maxWidth = Integer.MAX_VALUE;
+        searchView.maxWidth = Integer.MAX_VALUE
 
         searchView.setOnQueryTextListener(object :SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
@@ -94,28 +92,39 @@ class ListOfGroupsFragment : Fragment() {
     private fun updateUI(mode: Int)
     {
         if(mode ==0) {
-            ProgressBar.visibility = View.VISIBLE
-            ProgressBar.isIndeterminate = true
+            progressBar.visibility = View.VISIBLE
+            progressBar.isIndeterminate = true
         }
-      //  GroupsResyclerView.adapter = null
+       GroupsResyclerView.adapter = null
+
+        var emError = 0
+        var grError = 0
+
 
         Executors.newSingleThreadExecutor().execute {
 
-            Data.makeGroupsList(requireContext(), mode)
-            Handler(Looper.getMainLooper()).post {
-                GroupsResyclerView.adapter = GroupsRecyclerAdapter()
-                GroupsResyclerView.recycledViewPool.clear()
-                GroupsResyclerView.adapter!!.notifyDataSetChanged()
+            emError = Data.makeEmployeesList(requireContext())
 
-                 ProgressBar.visibility = View.INVISIBLE
-                swipeRefreshLayout.isRefreshing = false
+            grError = Data.makeGroupsList(requireContext(), mode)
+            Handler(Looper.getMainLooper()).post {
+                if(emError != 0 || grError != 0 ) {
+                    Toast.makeText(requireContext(), "Ошибка получения данных", Toast.LENGTH_SHORT)
+                        .show()
+                }else {
+                    GroupsResyclerView.adapter = GroupsRecyclerAdapter()
+                    GroupsResyclerView.recycledViewPool.clear()
+                    GroupsResyclerView.adapter!!.notifyDataSetChanged()
+                }
+                    progressBar.visibility = View.INVISIBLE
+                    swipeRefreshLayout.isRefreshing = false
+
             }
         }
     }
 
     private var dataFilter: MutableList<Group> = Data.GroupsList
 
-    inner class GroupsRecyclerAdapter() :
+    inner class GroupsRecyclerAdapter :
         RecyclerView.Adapter<RecyclerView.ViewHolder>(), Filterable {
 
 
@@ -160,7 +169,7 @@ class ListOfGroupsFragment : Fragment() {
                 itemView.setOnClickListener(this)
             }
 
-            val GroupNumber: TextView = itemView.findViewById(R.id.group_number_text)
+            private val GroupNumber: TextView = itemView.findViewById(R.id.group_number_text)
 
             @SuppressLint("SetTextI18n")
             fun bind(group: Group) {
@@ -190,7 +199,7 @@ class ListOfGroupsFragment : Fragment() {
         }
 
         inner class SpecialityViewHolder(itemView: View): RecyclerView.ViewHolder(itemView){
-            val SpecialityText: TextView = itemView.findViewById(R.id.speciality_name_text)
+            private val SpecialityText: TextView = itemView.findViewById(R.id.speciality_name_text)
             fun bind(group: Group){
                 if(group.name != "")
                     SpecialityText.text = group.name
@@ -210,9 +219,9 @@ class ListOfGroupsFragment : Fragment() {
                         if (charSearch.isEmpty()) {
                             Data.GroupsList
                         } else {
-                            var resultList = mutableListOf<Group>()
+                            val resultList = mutableListOf<Group>()
                             for (row in Data.GroupsList) {
-                                if (row.name.toString().contains(charSearch.toString(), true) || row.name.toString() == charSearch.toString() || row.type == 3) {
+                                if (row.name.toString().contains(charSearch, true) || row.name.toString() == charSearch) {
                                     resultList.add(row)
                                 }
                             }
@@ -245,3 +254,5 @@ class ListOfGroupsFragment : Fragment() {
 
 
 }
+
+

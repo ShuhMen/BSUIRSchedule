@@ -57,8 +57,11 @@ object DBContract  {
         const val rank         = "rank"
         const val department   = "department"
         const val fio = "fio"
+    }
 
-
+    object Favorites{
+        const val TABLE_NAME = "favorites"
+        const val groupID = "groupID"
     }
 
 
