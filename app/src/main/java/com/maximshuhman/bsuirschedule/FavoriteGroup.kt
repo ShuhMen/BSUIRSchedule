@@ -45,7 +45,7 @@ class FavoriteGroup: Fragment() {
 
         ScheduleRecycler = view.findViewById(R.id.favorite_group_recycler_view)
         ProgressBar = view.findViewById(R.id.progressBar)
-        scheduleSituated = view.findViewById(R.id.schedule_situating_text)
+        scheduleSituated = view.findViewById(R.id.schedule_situating_text_fav)
         ToolBar = view.findViewById(R.id.toolbar_fav_group)
         swipeRefreshLayout = view.findViewById(R.id.swipe_refresh_fav_group)
 
