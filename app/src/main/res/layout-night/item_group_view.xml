@@ -3,11 +3,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    app:layoutDescription="@xml/item_group_view_scene"
-    android:paddingStart="10dp"
-    android:paddingEnd="10dp"
+    android:paddingStart="15dp"
+    android:paddingEnd="15dp"
     android:paddingBottom="2dp"
-    app:cardCornerRadius="5dp">
+    app:cardCornerRadius="5dp"
+    app:layoutDescription="@xml/item_group_view_scene">
 
     <androidx.cardview.widget.CardView
         android:layout_width="0dp"

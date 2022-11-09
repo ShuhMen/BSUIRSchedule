@@ -38,12 +38,7 @@
         android:id="@+id/favoritesFragment"
         android:name="com.maximshuhman.bsuirschedule.FavoritesFragment"
         android:label="fragment_favorites"
-        tools:layout="@layout/fragment_favorites" >
-        <action
-            android:id="@+id/action_favoritesFragment_to_favoriteGroup"
-            app:destination="@id/favoriteGroup" />
-
-    </fragment>
+        tools:layout="@layout/fragment_favorites" />
     <fragment
         android:id="@+id/listOfGroupsFragment"
         android:name="com.maximshuhman.bsuirschedule.ListOfGroupsFragment"
@@ -54,24 +49,5 @@
             app:destination="@id/scheduleFragment">
 
         </action>
-    </fragment>
-    <fragment
-        android:id="@+id/favoriteGroup"
-        android:name="com.maximshuhman.bsuirschedule.FavoriteGroup"
-        android:label="fragment_favorite_group"
-        tools:layout="@layout/fragment_favorite_group" >
-        <action
-            android:id="@+id/action_favoriteGroup_to_favoritesFragment"
-            app:destination="@id/favoritesFragment" />
-
-        <argument
-            android:name="groupNumber"
-            android:defaultValue="hgg" />
-        <argument
-            android:name="course"
-            app:argType="integer" />
-        <argument
-            android:name="specialityAbbrev"
-            app:argType="string" />
     </fragment>
 </navigation>

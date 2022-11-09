@@ -11,10 +11,12 @@ import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.addCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -51,6 +53,7 @@ class ScheduleFragment : Fragment() {
 
         swipeRefreshLayout.setColorSchemeResources(R.color.BSUIR_blue)
 
+
         if( arguments?.getInt("id") != null)
             Data.curGroupID =   arguments?.getInt("id")
             else
@@ -75,9 +78,13 @@ class ScheduleFragment : Fragment() {
 
         ScheduleRecycler.layoutManager = LinearLayoutManager(requireContext())
 
-        (requireActivity() as MainActivity).bottomNavigationView.menu.findItem(R.id.listOfGroupsFragment).isChecked =
-            true
 
+        try {
+            (requireActivity() as MainActivity).bottomNavigationView.menu.findItem(R.id.listOfGroupsFragment).isChecked =
+                true
+        }catch (_:UninitializedPropertyAccessException){
+            //do nothing
+        }
         updateUI(0)
 
         //helloText.text = Data.response
@@ -85,6 +92,12 @@ class ScheduleFragment : Fragment() {
         setHasOptionsMenu(true)
 
          (activity as AppCompatActivity?)!!.setSupportActionBar(ToolBar)
+
+        ToolBar.setNavigationIcon(R.drawable.ic_baseline_arrow_back_24)
+        ToolBar.setNavigationOnClickListener {
+
+            findNavController().popBackStack()
+        }
 
         swipeRefreshLayout.setOnRefreshListener {
             updateUI(1)
@@ -159,11 +172,11 @@ class ScheduleFragment : Fragment() {
         Executors.newSingleThreadExecutor().execute {
 
 
-            err = Data.makeSchedule(Data.curGroupName, requireContext(), Data.curGroupID, mode)
+            err = Data.makeSchedule(Data.curGroupName, activity?.applicationContext, Data.curGroupID, mode)
             Handler(Looper.getMainLooper()).post {
 
                 if (err != 0)
-                    Toast.makeText(requireContext(),"Ошибка получения данных", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(activity?.applicationContext,"Ошибка получения данных", Toast.LENGTH_SHORT).show()
 
                     if (Data.ScheduleList.size == 0) {
                         scheduleSituated.visibility = View.VISIBLE

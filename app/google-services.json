@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1053215556281",
+    "project_id": "bsuir-schedule-de84c",
+    "storage_bucket": "bsuir-schedule-de84c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1053215556281:android:408ee1f59e1be961f45168",
+        "android_client_info": {
+          "package_name": "com.maximshuhman.bsuirschedule"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1053215556281-ngfknevlg572ibs29m9t88t5rgfe5nhq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDJ085rBKC15bqG2x5psHpgu5Y4wGSsGpo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1053215556281-ngfknevlg572ibs29m9t88t5rgfe5nhq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

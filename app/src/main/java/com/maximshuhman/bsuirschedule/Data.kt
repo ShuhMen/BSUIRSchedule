@@ -70,8 +70,7 @@ object Data {
                     null,
                     addTolist(dayOfWeek, js.getJSONObject(i), grID)
                 )
-                if (newRowId.toInt() == -1)
-                    return 1
+
 
                 //listOfPairs.add(addTolist(1, monday.getJSONObject(i), grID))
             }
@@ -275,9 +274,9 @@ object Data {
         return 0
     }
 
-    fun makeSchedule(grNum: String, context: Context, groupID: Int?, mode: Int?): Int {
+    fun makeSchedule(grNum: String, context: Context?, groupID: Int?, mode: Int?): Int {
 
-        if (grNum == "" || groupID == null)
+        if (grNum == "" || groupID == null || context == null)
             return 1
 
         val dbHelper = DbHelper(context)
@@ -291,16 +290,19 @@ object Data {
         )
         c.moveToFirst()
 
+        var response: JSONResponse = JSONResponse(0, "", JSONObject())
+
         if (c.getInt(0) == 0 || mode == 1) {
 
 
 
-            val response: JSONResponse = Requests.getGroupSchedule("https://iis.bsuir.by/api/v1/", grNum)
+            response = Requests.getGroupSchedule("https://iis.bsuir.by/api/v1/", grNum)
 
-            if(response.errorCode != 0)
-                return response.errorCode
 
-            val err = fillSheduleTable(response.obj, context)
+
+            val err = 0
+            fillSheduleTable(response.obj, context)
+
 
             if(err != 0) {
 
@@ -319,6 +321,9 @@ object Data {
         var week: Int =Requests.getCurrent().res
         val calendar: Calendar = Calendar.getInstance()
         val day: Int = calendar.get(Calendar.DAY_OF_WEEK)
+        var curmonthday : Int = calendar.get(Calendar.DAY_OF_MONTH)
+        var curmonth : Int = calendar.get(Calendar.MONTH)
+        var daysInMonth = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
 
         var curday: Int
         var weeks = 0
@@ -334,6 +339,15 @@ object Data {
 
 
                 curday = curday % 7 + 1
+
+                curmonthday++
+                if(curmonthday > daysInMonth)
+                {
+                    curmonth = curmonth % 12 + 1
+                    daysInMonth = calendar.getActualMaximum(curmonth)
+
+                    curmonthday %= daysInMonth
+                }
 
                 ind = listOfPairs.indexOf(listOfPairs.firstOrNull { it.day_of_week == curday })
             }
@@ -355,6 +369,8 @@ object Data {
                 if (listOfPairs[i].weekNumber
                         .contains(week.toString()) && listOfPairs[i].day_of_week != 8
                 )
+
+
                     ScheduleList.add(listOfPairs[i])
 
                 i++
@@ -377,12 +393,45 @@ object Data {
                 7 -> "Воскресенье"
                 else -> "Ошибка"
             }
-        } "
+        }, " + curmonthday + " "+
+                when (curmonth) {
+                    0 -> "Января"
+                    1 ->"Февраля"
+                    2 -> "Марта"
+                    3 -> "Апреля"
+                    4 -> "Мая"
+                    5 -> "Июня"
+                    6 -> "Июля"
+                    7 -> "Августа"
+                    8 -> "Сентября"
+                    9 ->  "Октября"
+                    10 -> "Ноября"
+                    11 -> "Декабря"
+                    else -> "Ошибка"
+                }
+
         ScheduleList.add(0, l)
 
         while (i < ScheduleList.size) {
             if ((ScheduleList[i - 1].day_of_week != ScheduleList[i].day_of_week)) {
                 val les: Lesson = ScheduleList[0].copy()
+
+
+                if(ScheduleList[i].day_of_week - ScheduleList[i-1].day_of_week < 0)
+                    curmonthday += ScheduleList[i].day_of_week - ScheduleList[i-1].day_of_week + 7
+                else
+                    curmonthday += ScheduleList[i].day_of_week - ScheduleList[i-1].day_of_week
+
+                if(curmonthday > daysInMonth)
+                {
+                    curmonth = (++curmonth) % 12
+                    calendar.set(Calendar.MONTH, curmonth)
+
+
+                    curmonthday = curmonthday % daysInMonth
+
+                    daysInMonth = calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
+                }
 
                 les.day_of_week = 9
                 les.note = "${
@@ -396,13 +445,34 @@ object Data {
                         7 -> "Воскресенье"
                         else -> "Ошибка"
                     }
-                } "
+                }, " + curmonthday + " " +
+                        when (curmonth) {
+                            0 -> "Января"
+                            1 ->"Февраля"
+                            2 -> "Марта"
+                            3 -> "Апреля"
+                            4 -> "Мая"
+                            5 -> "Июня"
+                            6 -> "Июля"
+                            7 -> "Августа"
+                            8 -> "Сентября"
+                            9 ->  "Октября"
+                            10 -> "Ноября"
+                            11 -> "Декабря"
+                            else -> "Ошибка"
+                        }
                 ScheduleList.add(i, les)
+
+
 
                 i++
             }
             i++
         }
+
+        if(response.errorCode != 0)
+            return response.errorCode
+        else
         return 0
     }
 
@@ -494,7 +564,10 @@ object Data {
         listOfGroups.add(gr)
     }
 
-    fun makeGroupsList(context: Context, mode: Int): Int {
+    fun makeGroupsList(context: Context?, mode: Int): Int {
+        if (context == null)
+            return 1
+
         val dbHelper = DbHelper(context)
         val db = dbHelper.writableDatabase
 

@@ -1,5 +1,7 @@
 plugins {
     id 'com.android.application'
+    id 'com.google.gms.google-services'
+    id 'com.google.firebase.crashlytics'
     id 'org.jetbrains.kotlin.android'
     id 'org.jetbrains.kotlin.plugin.serialization' version '1.7.10'
 }
@@ -11,8 +13,8 @@ android {
         applicationId "com.maximshuhman.bsuirschedule"
         minSdk 25
         targetSdk 33
-        versionCode 11
-        versionName "1.0.1.9"
+        versionCode 12
+        versionName "1.0.1.10"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -48,6 +50,11 @@ android {
 
 
 dependencies {
+    implementation platform('com.google.firebase:firebase-bom:31.0.2')
+    implementation 'com.google.firebase:firebase-analytics-ktx'
+    implementation 'com.google.firebase:firebase-crashlytics-ktx'
+    implementation 'com.google.firebase:firebase-analytics-ktx'
+
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
     implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0'
     implementation 'androidx.core:core-ktx:1.9.0'

@@ -158,7 +158,7 @@ class FavoritesFragment : Fragment() {
                 //navController?.navigate(R.id.action_listOfdataFilterFragment_to_scheduleFragment)
 
                 //val action = ScheduleFragment().action
-                navController!!.navigate(R.id.favoriteGroup, bundle)
+                navController!!.navigate(R.id.scheduleFragment, bundle)
             }
 
 

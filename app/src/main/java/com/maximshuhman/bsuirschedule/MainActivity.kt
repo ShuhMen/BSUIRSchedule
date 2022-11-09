@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.TextView
+import android.widget.Toast
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 
@@ -24,11 +25,14 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        try {
+        bottomNavigationView = findViewById(R.id.bottom_navigating_view)
+        }catch (e:Exception){
+            Toast.makeText(this.applicationContext, "Ошибка открытия приложения", Toast.LENGTH_SHORT).show()
+            this.recreate()
+        }
 
-        bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigating_view)
         val navController = findNavController(R.id.nav_fragment)
-
-
 
         bottomNavigationView.setupWithNavController(navController)
     }

@@ -15,6 +15,7 @@ import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -36,6 +37,8 @@ class ListOfGroupsFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_list_of_groups, container, false)
+
+        findNavController().clearBackStack(R.id.scheduleFragment)
 
         GroupsResyclerView = view.findViewById(R.id.list_of_groups)
         progressBar = view.findViewById(R.id.progress_bar_groups)
@@ -193,6 +196,8 @@ class ListOfGroupsFragment : Fragment() {
 
                 //val action = ScheduleFragment().action
                  navController!!.navigate(R.id.scheduleFragment, bundle)
+
+
             }
 
 

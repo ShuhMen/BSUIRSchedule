@@ -43,7 +43,7 @@
                     android:layout_height="wrap_content"
                     android:paddingBottom="3dp"
                     android:text="TextView"
-                    android:textSize="16sp" />
+                    android:textSize="17sp" />
 
                 <TextView
                     android:id="@+id/end_time_text"
@@ -51,7 +51,7 @@
                     android:layout_height="wrap_content"
                     android:paddingTop="1dp"
                     android:text="TextView"
-                    android:textSize="16sp" />
+                    android:textSize="17sp" />
             </LinearLayout>
 
             <View
