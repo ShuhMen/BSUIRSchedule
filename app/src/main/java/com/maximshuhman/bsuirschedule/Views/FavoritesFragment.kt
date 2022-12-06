@@ -1,4 +1,4 @@
-package com.maximshuhman.bsuirschedule
+package com.maximshuhman.bsuirschedule.Views
 
 import android.annotation.SuppressLint
 import android.os.Bundle
@@ -14,7 +14,9 @@ import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import com.maximshuhman.bsuirschedule.DataClass.Group
+import com.maximshuhman.bsuirschedule.Data.Data
+import com.maximshuhman.bsuirschedule.DataClasses.Group
+import com.maximshuhman.bsuirschedule.R
 import java.util.concurrent.Executors
 
 

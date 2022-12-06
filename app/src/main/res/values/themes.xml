@@ -41,4 +41,15 @@
         <item name="android:colorControlHighlight">#99FFFFFF</item>
         <item name="android:colorButtonNormal">#99FFFFFF</item>
     </style>
+
+
+
+    <style name="BaseBottomSheetDialog" parent="Theme.MaterialComponents.Dialog.FixedSize">
+        <item name="android:background">@drawable/rounded_back</item>
+
+    </style>
+
+    <style name="BottomSheet" parent="Widget.Design.BottomSheet.Modal">
+
+    </style>
 </resources>

@@ -10,7 +10,7 @@
     <color name="lectures">#009F4D</color>
     <color name="laboratories">#D50000</color>
     <color name="practical_lesson">#FFD600</color>
-    <color name="background">@color/white</color>
-    <color name="background_dialog">#FAFAFA</color>
+    <color name="background">#151515</color>
+    <color name="background_dialog">#1E1E1E</color>
 
 </resources>

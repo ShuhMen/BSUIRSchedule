@@ -42,7 +42,9 @@ object DBContract  {
         const val subject          = "subject"
         const val subjectFullName  = "subjectFullName"
         const val weekNumber       = "weekNumber"
-        const val employeeID    = "employeeID"
+        const val employeeID       = "employeeID"
+        const val startLessonDate  = "startLessonDate"
+        const val endLessonDate    = "endLessonDate"
     }
 
     object Employees{
@@ -57,6 +59,7 @@ object DBContract  {
         const val rank         = "rank"
         const val department   = "department"
         const val fio = "fio"
+        const val photo = "photo"
     }
 
     object Favorites{

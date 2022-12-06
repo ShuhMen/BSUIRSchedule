@@ -2,21 +2,12 @@ package com.maximshuhman.bsuirschedule
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
-import android.view.View
-import android.widget.TextView
 import android.widget.Toast
 import androidx.navigation.findNavController
-import androidx.navigation.ui.AppBarConfiguration
 
-import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import kotlinx.coroutines.runBlocking
-import okhttp3.*
-import org.json.JSONObject
-import java.io.IOException
-import java.net.URL
+import com.maximshuhman.bsuirschedule.R
 
 class MainActivity : AppCompatActivity() {
 

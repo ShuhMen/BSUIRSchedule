@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/scheduleFragment"
-        android:name="com.maximshuhman.bsuirschedule.ScheduleFragment"
+        android:name="com.maximshuhman.bsuirschedule.Views.ScheduleFragment"
         android:label="fragment_schedule"
         tools:layout="@layout/fragment_schedule">
         <argument
@@ -22,26 +22,29 @@
         <argument
             android:name="specialityAbbrev"
             app:argType="string" />
+        <action
+            android:id="@+id/action_scheduleFragment_to_lessonInfDialog"
+            app:destination="@id/lessonInfDialog" />
 
     </fragment>
     <fragment
         android:id="@+id/teachersFragment"
-        android:name="com.maximshuhman.bsuirschedule.TeachersFragment"
+        android:name="com.maximshuhman.bsuirschedule.DataClasses.TeachersFragment"
         android:label="fragment_teachers"
         tools:layout="@layout/fragment_teachers" />
     <fragment
         android:id="@+id/aboutFragment"
-        android:name="com.maximshuhman.bsuirschedule.AboutFragment"
+        android:name="com.maximshuhman.bsuirschedule.Views.AboutFragment"
         android:label="fragment_about"
         tools:layout="@layout/fragment_about" />
     <fragment
         android:id="@+id/favoritesFragment"
-        android:name="com.maximshuhman.bsuirschedule.FavoritesFragment"
+        android:name="com.maximshuhman.bsuirschedule.Views.FavoritesFragment"
         android:label="fragment_favorites"
         tools:layout="@layout/fragment_favorites" />
     <fragment
         android:id="@+id/listOfGroupsFragment"
-        android:name="com.maximshuhman.bsuirschedule.ListOfGroupsFragment"
+        android:name="com.maximshuhman.bsuirschedule.Views.ListOfGroupsFragment"
         android:label="fragment_list_of_groups"
         tools:layout="@layout/fragment_list_of_groups" >
         <action
@@ -50,4 +53,8 @@
 
         </action>
     </fragment>
+    <dialog
+        android:id="@+id/lessonInfDialog"
+        android:name="com.maximshuhman.bsuirschedule.LessonInfDialog"
+        android:label="LessonInfDialog" />
 </navigation>

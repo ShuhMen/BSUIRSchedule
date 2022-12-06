@@ -1,6 +1,5 @@
-package com.maximshuhman.bsuirschedule
+package com.maximshuhman.bsuirschedule.Data
 
-import android.app.Activity
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory

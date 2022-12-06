@@ -1,4 +1,4 @@
-package com.maximshuhman.bsuirschedule.DataClass
+package com.maximshuhman.bsuirschedule.DataClasses
 
 data class Group(
     var type: Int,

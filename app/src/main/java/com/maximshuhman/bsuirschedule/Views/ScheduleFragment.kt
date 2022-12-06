@@ -1,4 +1,4 @@
-package com.maximshuhman.bsuirschedule
+package com.maximshuhman.bsuirschedule.Views
 
 import Lesson
 import android.annotation.SuppressLint
@@ -11,17 +11,19 @@ import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.addCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
-import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.maximshuhman.bsuirschedule.Data.Data
 import com.maximshuhman.bsuirschedule.DataBase.DBContract
 import com.maximshuhman.bsuirschedule.DataBase.DbHelper
+import com.maximshuhman.bsuirschedule.LessonInfDialog
+import com.maximshuhman.bsuirschedule.MainActivity
+import com.maximshuhman.bsuirschedule.R
 import java.util.concurrent.Executors
 
 
@@ -172,7 +174,12 @@ class ScheduleFragment : Fragment() {
         Executors.newSingleThreadExecutor().execute {
 
 
-            err = Data.makeSchedule(Data.curGroupName, activity?.applicationContext, Data.curGroupID, mode)
+            err = Data.makeSchedule(
+                Data.curGroupName,
+                activity?.applicationContext,
+                Data.curGroupID,
+                mode
+            )
             Handler(Looper.getMainLooper()).post {
 
                 if (err != 0)
@@ -196,9 +203,8 @@ class ScheduleFragment : Fragment() {
     }
 
 
-}
 
-class ScheduleRecyclerAdapter(var pairs: MutableList<Lesson>) :
+inner class ScheduleRecyclerAdapter(var pairs: MutableList<Lesson>) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
 
@@ -235,7 +241,11 @@ class ScheduleRecyclerAdapter(var pairs: MutableList<Lesson>) :
     override fun getItemCount(): Int = pairs.size
 
 
-    inner class PairViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    inner class PairViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView), View.OnClickListener{
+
+        init {
+            itemView.setOnClickListener(this)
+        }
         val PairNameText: TextView = itemView.findViewById(R.id.pair_name_text)
         val StartTimeText: TextView = itemView.findViewById(R.id.start_time_text)
         val EndTimeText: TextView = itemView.findViewById(R.id.end_time_text)
@@ -304,6 +314,22 @@ class ScheduleRecyclerAdapter(var pairs: MutableList<Lesson>) :
             }
         }
 
+        override fun onClick(p0: View?) {
+            val args = LessonInfDialog.getBundle(pairs[position].employees.photo,
+                StartTimeText.text.toString(),
+                EndTimeText.text.toString(),
+                pairs[position].auditories,
+
+                pairs[position].employees.lastName.toString() +' ' +
+                        pairs[position].employees.firstName.toString() + ' ' +
+                        pairs[position].employees.middleName.toString(),
+
+                pairs[position].subjectFullName.toString() +'('+  pairs[position].lessonTypeAbbrev + ')',
+                pairs[position].note)
+            val navController = findNavController()
+            navController.navigate(R.id.action_scheduleFragment_to_lessonInfDialog, args)
+        }
+
 
     }
 
@@ -313,4 +339,5 @@ class ScheduleRecyclerAdapter(var pairs: MutableList<Lesson>) :
             DayNumberText.text = pair.note
         }
     }
+}
 }

@@ -43,6 +43,8 @@ class DbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null
                 "${DBContract.Schedule.weekNumber       } INTEGER,"+
                 "${DBContract.Schedule.employeeID       } INTEGER,"+
                 "${DBContract.Schedule.groupID          } INTEGER,"+
+                "${DBContract.Schedule.startLessonDate  } TEXT,"+
+                "${DBContract.Schedule.endLessonDate    } TEXT,"+
                 "FOREIGN KEY (${DBContract.Schedule.groupID}) REFERENCES ${DBContract.Groups.TABLE_NAME}(${DBContract.CommonSchedule.commonScheduleID}),"+
                 "FOREIGN KEY (${DBContract.Schedule.employeeID}) REFERENCES ${DBContract.Employees.TABLE_NAME}(${DBContract.Employees.employeeID}))"
 
@@ -57,7 +59,9 @@ class DbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null
                 "${DBContract.Employees.degreeAbbrev  } TEXT,"+
                 "${DBContract.Employees.rank          } TEXT,"+
                 "${DBContract.Employees.department    } TEXT,"+
-                "${DBContract.Employees.fio           } TEXT )"
+                "${DBContract.Employees.fio           } TEXT,"+
+                "${DBContract.Employees.photo         } TEXT )"
+
 
 
     private val SQL_CREATE_FAVORITES =
@@ -80,31 +84,29 @@ class DbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null
         }
     }
 
-    /* override fun onCreate(db: SQLiteDatabase?) {
-
-
-        Log.v("DBDD", "override fun onCreate(db: SQLiteDatabase?) {")
-        db?.let {
-            it.execSQL(SQL_CREATE_GROUPS)
-            it.execSQL(SQL_CREATE_COMMONSCHEDULE)
-            it.execSQL(SQL_CREATE_SCHEDULE)
-        }
-    }*/
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         Log.v("DBDD", "override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {")
 
-      //  val a4 = db.execSQL(SQL_CREATE_EMPlOYEES)
-       // val a5 = db.execSQL(SQL_CREATE_FAVORITES)
-        // This database is only a cache for online data, so its upgrade policy is
-        // to simply to discard the data and start over
-        db.execSQL("DROP TABLE IF EXISTS ${DBContract.Schedule.TABLE_NAME} " )
-        db.execSQL("DROP TABLE IF EXISTS ${DBContract.CommonSchedule.TABLE_NAME}")
-        db.execSQL("DROP TABLE IF EXISTS ${DBContract.Groups.TABLE_NAME}")
-        db.execSQL("DROP TABLE IF EXISTS ${DBContract.Employees.TABLE_NAME}")
-        db.execSQL("DROP TABLE IF EXISTS ${DBContract.Favorites.TABLE_NAME}")
+        if(oldVersion < 3 )
+        db.execSQL("ALTER TABLE ${DBContract.Employees.TABLE_NAME} ADD COLUMN ${DBContract.Employees.photo} BLOB")
+        if(oldVersion < 4) {
+            db.execSQL("PRAGMA foreign_keys = OFF")
+           // db.execSQL("DROP TABLE ${DBContract.Schedule.TABLE_NAME}")
+            db.execSQL("DELETE FROM ${DBContract.Employees.TABLE_NAME}")
+           // db.execSQL("DROP TABLE ${DBContract.CommonSchedule.TABLE_NAME}")
+            db.execSQL("PRAGMA foreign_keys = ON")
+            db.execSQL("ALTER TABLE ${DBContract.Schedule.TABLE_NAME} ADD COLUMN ${DBContract.Schedule.startLessonDate} TEXT")
+            db.execSQL("ALTER TABLE ${DBContract.Schedule.TABLE_NAME} ADD COLUMN ${DBContract.Schedule.endLessonDate} TEXT")
+        }
 
-        onCreate(db)
+        if(oldVersion == 4 ){
+            db.execSQL("PRAGMA foreign_keys = OFF")
+            // db.execSQL("DROP TABLE ${DBContract.Schedule.TABLE_NAME}")
+            db.execSQL("DELETE FROM ${DBContract.Employees.TABLE_NAME}")
+            db.execSQL("PRAGMA foreign_keys = ON")
+        }
+
 
     }
 
@@ -114,7 +116,7 @@ class DbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null
 
     companion object {
         // If you change the database schema, you must increment the database version.
-        const val DATABASE_VERSION = 2
+        const val DATABASE_VERSION = 5
         const val DATABASE_NAME = "Schedule"
     }
 }
