@@ -5,7 +5,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
-object Clientbuilder  {
+object Clientbuilder {
 
     private lateinit var retrofit: Retrofit
     var LoginSituated: Boolean = false
@@ -14,16 +14,16 @@ object Clientbuilder  {
 
         try {
 
-                val client: OkHttpClient = OkHttpClient.Builder()
-                    .readTimeout(90, TimeUnit.SECONDS)
-                    .connectTimeout(90, TimeUnit.SECONDS)
-                    .build()
+            val client: OkHttpClient = OkHttpClient.Builder()
+                .readTimeout(90, TimeUnit.SECONDS)
+                .connectTimeout(90, TimeUnit.SECONDS)
+                .build()
 
-                retrofit = Retrofit.Builder()
-                    .baseUrl(baseUrl)
-                    .addConverterFactory(GsonConverterFactory.create())
-                    .client(client)
-                    .build()
+            retrofit = Retrofit.Builder()
+                .baseUrl(baseUrl)
+                .addConverterFactory(GsonConverterFactory.create())
+                .client(client)
+                .build()
 
 
         } catch (e: Exception) {

@@ -14,7 +14,10 @@ object Common {
     fun setProgressDialog(context: Context, text: String = "Загрузка..."): AlertDialog {
         val llPadding = 30
 
-        val lParam = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+        val lParam = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.WRAP_CONTENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        )
         lParam.gravity = Gravity.CENTER
 
         val lLayout = LinearLayout(context)
@@ -47,7 +50,7 @@ object Common {
         dialog.setCancelable(false)
         dialog.show()
 
-        val window: Window? = dialog.getWindow()
+        val window: Window? = dialog.window
         if (window != null) {
             val layoutParams = WindowManager.LayoutParams()
             layoutParams.copyFrom(dialog.window?.attributes)

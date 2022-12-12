@@ -1,9 +1,7 @@
 <resources>
     <string name="app_name">Расписание БГУИР</string>
     <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="subject_name">%1$s (%2$s)</string>
     <string name="schedule_doesnt_exist">Расписание отсутствует</string>
-    <string name="search">Search</string>
-
+    <string name="search">Поиск</string>
+    <string name="favorites_available">Добавьте избранное</string>
 </resources>

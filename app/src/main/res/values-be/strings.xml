@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Расклад БДУІР</string>
+    <string name="schedule_doesnt_exist">"Расклад атсутничае "</string>
+    <string name="favorites_available">Дадайце любiмае</string>
+    <string name="search">Пошук</string>
+</resources>

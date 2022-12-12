@@ -14,13 +14,13 @@ class LessonInfDialog : DialogFragment() {
 
     companion object {
 
-        const val PHOTO    = "PHOTO"
-        const val START    = "START"
-        const val END      = "END"
+        const val PHOTO = "PHOTO"
+        const val START = "START"
+        const val END = "END"
         const val AUDITORY = "AUDITORY"
-        const val FIO      = "FIO"
-        const val NAME     = "NAME"
-        const val COMMENT  = "COMMENT"
+        const val FIO = "FIO"
+        const val NAME = "NAME"
+        const val COMMENT = "COMMENT"
         const val TYPE = "TYPE"
 
 
@@ -31,15 +31,16 @@ class LessonInfDialog : DialogFragment() {
             auditory: String,
             fio: String,
             name: String,
-            comment: String?): Bundle {
+            comment: String?
+        ): Bundle {
             return Bundle().apply {
-                putByteArray(PHOTO   , photo)
-                putString(START   , start)
-                putString(END     , end)
+                putByteArray(PHOTO, photo)
+                putString(START, start)
+                putString(END, end)
                 putString(AUDITORY, auditory)
-                putString(FIO     , fio)
-                putString(NAME    , name)
-                putString(COMMENT , comment)
+                putString(FIO, fio)
+                putString(NAME, name)
+                putString(COMMENT, comment)
             }
         }
 
@@ -53,8 +54,11 @@ class LessonInfDialog : DialogFragment() {
         // Set transparent background and no title
         if (dialog != null && dialog!!.window != null) {
             dialog!!.window!!.setBackgroundDrawableResource(R.drawable.rounded_back)
-            dialog!!.window!!.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-           // dialog!!.window!!.requestFeature(Window.FEATURE_NO_TITLE)
+            dialog!!.window!!.setLayout(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+            // dialog!!.window!!.requestFeature(Window.FEATURE_NO_TITLE)
         }
 
         val fioText: TextView = view.findViewById(R.id.fio)
@@ -66,9 +70,11 @@ class LessonInfDialog : DialogFragment() {
 
         arguments?.let {
 
-            fioText.text = if(arguments?.getString(FIO).toString() != "  ") arguments?.getString(FIO).toString() else "Информация отсутствует"
+            fioText.text =
+                if (arguments?.getString(FIO).toString() != "  ") arguments?.getString(FIO)
+                    .toString() else "Информация отсутствует"
 
-            if(arguments?.getByteArray(PHOTO) != null) {
+            if (arguments?.getByteArray(PHOTO) != null) {
                 val imageBytes = arguments?.getByteArray(PHOTO)
 
                 var decodedImage =
@@ -80,8 +86,8 @@ class LessonInfDialog : DialogFragment() {
                 val cornerSizePx = 12
 
                 val output = Bitmap.createBitmap(
-                    mutableBitmap.width + borderSizePx*2,
-                    mutableBitmap.height + borderSizePx*2, Bitmap.Config.ARGB_8888
+                    mutableBitmap.width + borderSizePx * 2,
+                    mutableBitmap.height + borderSizePx * 2, Bitmap.Config.ARGB_8888
                 )
 
                 val canvas = Canvas(output)
@@ -107,13 +113,14 @@ class LessonInfDialog : DialogFragment() {
                 canvas.drawRoundRect(rectF, cornerSizePx.toFloat(), cornerSizePx.toFloat(), paint)
 
                 image.setImageBitmap(output)
-            }else {
+            } else {
                 image.setImageResource(R.drawable.person_circle)
             }
 
             time.text = arguments?.getString(START) + " - " + arguments?.getString(END)
             auditory.text = arguments?.getString(AUDITORY)
-            note.text = if(arguments?.getString(COMMENT) != null) arguments?.getString(COMMENT).toString() else ""
+            note.text = if (arguments?.getString(COMMENT) != null) arguments?.getString(COMMENT)
+                .toString() else ""
             subjectName.text = arguments?.getString(NAME)
         }
 

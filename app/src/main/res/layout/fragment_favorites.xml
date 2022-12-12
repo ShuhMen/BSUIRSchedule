@@ -46,4 +46,17 @@
         app:layout_constraintTop_toTopOf="parent"
         app:title="Избранное"
         app:titleTextColor="#FFFFFF" />
+
+    <TextView
+        android:id="@+id/favorites_available"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="200dp"
+        android:text="@string/favorites_available"
+        android:textSize="20sp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/swipe_refresh_favorites" />
 </androidx.constraintlayout.widget.ConstraintLayout>
