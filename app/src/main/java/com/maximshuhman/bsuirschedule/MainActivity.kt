@@ -40,8 +40,8 @@ class MainActivity : AppCompatActivity() {
         )
         c.moveToFirst()
 
-        if(c.getInt(0) != 0)
-            bottomNavigationView.setSelectedItemId(R.id.favoritesFragment);
+        if (c.getInt(0) != 0)
+            bottomNavigationView.selectedItemId = R.id.favoritesFragment
 
     }
 }

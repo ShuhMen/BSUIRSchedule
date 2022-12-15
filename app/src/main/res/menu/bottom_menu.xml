@@ -18,5 +18,5 @@
     <item
         android:id="@+id/aboutFragment"
         android:icon="@drawable/bottom_selector_settings"
-        android:title="О приложении" />
+        android:title="Настройки" />
 </menu>

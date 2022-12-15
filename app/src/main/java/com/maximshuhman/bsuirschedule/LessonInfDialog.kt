@@ -49,7 +49,7 @@ class LessonInfDialog : DialogFragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         val view: View = inflater.inflate(R.layout.lesson_inform_dialog, container, true)
         // Set transparent background and no title
         if (dialog != null && dialog!!.window != null) {

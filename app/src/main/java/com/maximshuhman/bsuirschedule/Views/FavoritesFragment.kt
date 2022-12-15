@@ -8,20 +8,16 @@ import android.os.Looper
 import android.view.*
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.maximshuhman.bsuirschedule.Data.Data
 import com.maximshuhman.bsuirschedule.DataBase.DBContract
 import com.maximshuhman.bsuirschedule.DataBase.DbHelper
 import com.maximshuhman.bsuirschedule.DataClasses.Group
-import com.maximshuhman.bsuirschedule.PreferenceHelper.OPENED_GROUP
-import com.maximshuhman.bsuirschedule.PreferenceHelper.customPreference
 import com.maximshuhman.bsuirschedule.PreferenceHelper.defaultPreference
 import com.maximshuhman.bsuirschedule.PreferenceHelper.openedGroup
 import com.maximshuhman.bsuirschedule.R
@@ -32,9 +28,7 @@ class FavoritesFragment : Fragment() {
     private lateinit var GroupsResyclerView: RecyclerView
 
     private lateinit var progressBar: ProgressBar
-    lateinit var searchView: SearchView
     private lateinit var toolbar: Toolbar
-    private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var favoritesAvailable: TextView
 
     override fun onCreateView(
@@ -46,12 +40,7 @@ class FavoritesFragment : Fragment() {
 
         GroupsResyclerView = view.findViewById(R.id.list_of_favorites)
         progressBar = view.findViewById(R.id.progress_bar_groups_fav)
-        swipeRefreshLayout = view.findViewById(R.id.swipe_refresh_favorites)
         favoritesAvailable = view.findViewById(R.id.favorites_available)
-        //SearchView = view.findViewById(R.id.search_view)
-
-        swipeRefreshLayout.setColorSchemeResources(R.color.BSUIR_blue)
-        //  swipeRefreshLayout.setProgressBackgroundColorSchemeColor(R.color.night_icon_stroke)
 
         GroupsResyclerView.layoutManager = LinearLayoutManager(requireContext())
         GroupsResyclerView.adapter = FavoritesRecyclerAdapter()
@@ -63,10 +52,9 @@ class FavoritesFragment : Fragment() {
 
         val prefs = defaultPreference(requireContext())
 
-        val group =  prefs.openedGroup
+        val group = prefs.openedGroup
 
-        if(group != 0)
-        {
+        if (group != 0) {
             val navController = findNavController()
 
             val bundle = Bundle()
@@ -92,54 +80,44 @@ class FavoritesFragment : Fragment() {
                     "specialityAbbrev",
                     getString(getColumnIndexOrThrow(DBContract.Groups.specialityAbbrev))
                 )
-                bundle.putInt("course",  getInt(getColumnIndexOrThrow(DBContract.Groups.course)))
-                bundle.putInt("id",  group)
+                bundle.putInt("course", getInt(getColumnIndexOrThrow(DBContract.Groups.course)))
+                bundle.putInt("id", group)
             }
             //navController?.navigate(R.id.action_listOfdataFilterFragment_to_scheduleFragment)
 
             //val action = ScheduleFragment().action
-            navController!!.navigate(R.id.scheduleFragment, bundle)
+            navController.navigate(R.id.scheduleFragment, bundle)
         }
 
 
-        updateUI(0)
-
-        swipeRefreshLayout.setOnRefreshListener {
-
-            updateUI(1)
-
-        }
+        updateUI()
 
         return view
     }
 
 
-    private fun updateUI(mode: Int) {
-        if (mode == 0) {
-            progressBar.visibility = View.VISIBLE
-            progressBar.isIndeterminate = true
-        }
-        var grError = 0
+    private fun updateUI() {
+
+        var grError: Int
 
         GroupsResyclerView.adapter = null
 
 
         Executors.newSingleThreadExecutor().execute {
 
-            grError = Data.makeFavoritesList(requireContext(), mode)
+            grError = Data.makeFavoritesList(requireContext())
             Handler(Looper.getMainLooper()).post {
                 if (grError == 0) {
 
-                        GroupsResyclerView.adapter = FavoritesRecyclerAdapter()
-                        GroupsResyclerView.recycledViewPool.clear()
-                        GroupsResyclerView.adapter!!.notifyDataSetChanged()
-                        favoritesAvailable.visibility = View.GONE
+                    GroupsResyclerView.adapter = FavoritesRecyclerAdapter()
+                    GroupsResyclerView.recycledViewPool.clear()
+                    GroupsResyclerView.adapter!!.notifyDataSetChanged()
+                    favoritesAvailable.visibility = View.GONE
 
-                }else
-                favoritesAvailable.visibility = View.VISIBLE
+                } else
+                    favoritesAvailable.visibility = View.VISIBLE
 
                 progressBar.visibility = View.INVISIBLE
-                swipeRefreshLayout.isRefreshing = false
 
             }
         }

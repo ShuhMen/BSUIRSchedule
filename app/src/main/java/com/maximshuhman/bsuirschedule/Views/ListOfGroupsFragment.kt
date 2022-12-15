@@ -1,7 +1,6 @@
 package com.maximshuhman.bsuirschedule.Views
 
 import android.annotation.SuppressLint
-import android.database.Cursor
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -17,8 +16,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.maximshuhman.bsuirschedule.Data.Data
-import com.maximshuhman.bsuirschedule.DataBase.DBContract
-import com.maximshuhman.bsuirschedule.DataBase.DbHelper
 import com.maximshuhman.bsuirschedule.DataClasses.Group
 import com.maximshuhman.bsuirschedule.PreferenceHelper
 import com.maximshuhman.bsuirschedule.PreferenceHelper.openedGroup
@@ -61,43 +58,43 @@ class ListOfGroupsFragment : Fragment() {
 
         val prefs = PreferenceHelper.defaultPreference(requireContext())
 
-        val group =  prefs.openedGroup
+        val group = prefs.openedGroup
 
-       /* if(group != 0)
-        {
-            val navController = findNavController()
+        /* if(group != 0)
+         {
+             val navController = findNavController()
 
-            val bundle = Bundle()
+             val bundle = Bundle()
 
-            val dbHelper = DbHelper(requireContext())
+             val dbHelper = DbHelper(requireContext())
 
-            val db = dbHelper.writableDatabase
+             val db = dbHelper.writableDatabase
 
-            val c: Cursor = db.rawQuery(
-                "SELECT * FROM ${DBContract.Groups.TABLE_NAME} " +
-                        "WHERE ${DBContract.Groups.TABLE_NAME}.${DBContract.Groups.groupID} = $group ",
+             val c: Cursor = db.rawQuery(
+                 "SELECT * FROM ${DBContract.Groups.TABLE_NAME} " +
+                         "WHERE ${DBContract.Groups.TABLE_NAME}.${DBContract.Groups.groupID} = $group ",
 
-                null
-            )
+                 null
+             )
 
-            c.moveToFirst()
-            with(c) {
-                bundle.putString(
-                    "groupNumber",
-                    getString(getColumnIndexOrThrow(DBContract.Groups.name))
-                )
-                bundle.putString(
-                    "specialityAbbrev",
-                    getString(getColumnIndexOrThrow(DBContract.Groups.specialityAbbrev))
-                )
-                bundle.putInt("course",  getInt(getColumnIndexOrThrow(DBContract.Groups.course)))
-                bundle.putInt("id",  group)
-            }
-            //navController?.navigate(R.id.action_listOfdataFilterFragment_to_scheduleFragment)
+             c.moveToFirst()
+             with(c) {
+                 bundle.putString(
+                     "groupNumber",
+                     getString(getColumnIndexOrThrow(DBContract.Groups.name))
+                 )
+                 bundle.putString(
+                     "specialityAbbrev",
+                     getString(getColumnIndexOrThrow(DBContract.Groups.specialityAbbrev))
+                 )
+                 bundle.putInt("course",  getInt(getColumnIndexOrThrow(DBContract.Groups.course)))
+                 bundle.putInt("id",  group)
+             }
+             //navController?.navigate(R.id.action_listOfdataFilterFragment_to_scheduleFragment)
 
-            //val action = ScheduleFragment().action
-            navController!!.navigate(R.id.scheduleFragment, bundle)
-        }*/
+             //val action = ScheduleFragment().action
+             navController!!.navigate(R.id.scheduleFragment, bundle)
+         }*/
 
         updateUI(0)
 

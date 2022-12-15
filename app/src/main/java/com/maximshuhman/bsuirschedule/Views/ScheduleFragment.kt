@@ -10,7 +10,6 @@ import android.view.*
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.res.ResourcesCompat
@@ -69,7 +68,7 @@ class ScheduleFragment : Fragment() {
         if (arguments?.getInt("id") != null) {
             Data.curGroupID = arguments?.getInt("id")
             prefs.openedGroup = arguments?.getInt("id")!!
-        }else
+        } else
             Data.curGroupID = null
 
         Data.curGroupName = arguments?.getString("groupNumber").toString()
@@ -120,7 +119,6 @@ class ScheduleFragment : Fragment() {
 
         return view
     }
-
 
 
     @Deprecated("Deprecated in Java")
@@ -198,13 +196,13 @@ class ScheduleFragment : Fragment() {
             )
             Handler(Looper.getMainLooper()).post {
 
-             /*   if (err != 0)
-                    Toast.makeText(
-                        activity?.applicationContext,
-                        "Ошибка получения данных",
-                        Toast.LENGTH_SHORT
-                    ).show()
-*/
+                /*   if (err != 0)
+                       Toast.makeText(
+                           activity?.applicationContext,
+                           "Ошибка получения данных",
+                           Toast.LENGTH_SHORT
+                       ).show()
+   */
                 if (Data.ScheduleList.size == 0) {
                     scheduleSituated.visibility = View.VISIBLE
                     ScheduleRecycler.visibility = View.GONE

@@ -7,8 +7,8 @@ data class CommonSchedule(
     val endDate: String,
     val startExamsDate: String,
     val endExamsDate: String,
- //   val employeeDto: String,
-   // val studentGroupDto: StudentGroupDto,
+    //   val employeeDto: String,
+    // val studentGroupDto: StudentGroupDto,
 //	val schedules : Schedules,
     //val exams: List<String>
 )

@@ -9,9 +9,11 @@ object PreferenceHelper {
 
     val OPENED_GROUP = "OPENED_GROUP"
 
-    fun defaultPreference(context: Context): SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+    fun defaultPreference(context: Context): SharedPreferences =
+        PreferenceManager.getDefaultSharedPreferences(context)
 
-    fun customPreference(context: Context, name: String): SharedPreferences = context.getSharedPreferences(name, Context.MODE_PRIVATE)
+    fun customPreference(context: Context, name: String): SharedPreferences =
+        context.getSharedPreferences(name, Context.MODE_PRIVATE)
 
     inline fun SharedPreferences.editMe(operation: (SharedPreferences.Editor) -> Unit) {
         val editMe = edit()
@@ -27,19 +29,19 @@ object PreferenceHelper {
             }
         }
 
-  /*  var SharedPreferences.password
-        get() = getString(USER_PASSWORD, "")
-        set(value) {
-            editMe {
-                it.putString(USER_PASSWORD, value)
-            }
-        }
+    /*  var SharedPreferences.password
+          get() = getString(USER_PASSWORD, "")
+          set(value) {
+              editMe {
+                  it.putString(USER_PASSWORD, value)
+              }
+          }
 
-    var SharedPreferences.clearValues
-        get() = { }
-        set(value) {
-            editMe {
-                it.clear()
-            }
-        }*/
+      var SharedPreferences.clearValues
+          get() = { }
+          set(value) {
+              editMe {
+                  it.clear()
+              }
+          }*/
 }

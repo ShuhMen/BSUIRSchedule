@@ -17,9 +17,9 @@ import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
+import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.properties.Delegates
 
 
 object Data {
@@ -35,7 +35,6 @@ object Data {
     var curGroupSpeciality: String = ""
     var curGroupCourse: Int? = 0
     lateinit var commonSchedule: CommonSchedule
-    var prev_day by Delegates.notNull<Int>()
 
 
     private fun getStringDef(jsonArray: JSONArray, index: Int, valueName: String): String? = try {
@@ -160,7 +159,7 @@ object Data {
             )
             count.moveToFirst()
 
-            if(count.getInt(0) != 0) {
+            if (count.getInt(0) != 0) {
 
                 count.close()
 
@@ -193,7 +192,7 @@ object Data {
                     bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
                     byte = stream.toByteArray()
                 } catch (e: Exception) {
-
+                    Log.v("Request", "Failed to load photo $empId")
                 }
 
                 if (!byte.contentEquals(ByteArray(0))) {
@@ -208,9 +207,6 @@ object Data {
                     )
 
                 }
-                //       db.rawQuery("UPDATE ${DBContract.Employees.TABLE_NAME} SET ${DBContract.Employees.photo} = $byte WHERE ${DBContract.Employees.employeeID} = $empId", null)
-                //     db.update()
-
             }
 
         }
@@ -225,10 +221,6 @@ object Data {
             auditories += startPair.getJSONArray("auditories").getString(it).toString() + " "
         }
 
-        /*  var employees: String = ""
-          Array(startPair.getJSONArray("employees").length()) {
-              employees += startPair.getJSONArray("employees").getJSONObject(it).getInt("id").toString() + " "
-          }*/
 
         val values = ContentValues().apply {
             put(DBContract.Schedule.groupID, groupNum)
@@ -297,12 +289,12 @@ object Data {
 
         with(c) {
 
-              moveToFirst()
-              commonSchedule = CommonSchedule(
-                  getString(getColumnIndexOrThrow(DBContract.CommonSchedule.startDate)),
-                  getString(getColumnIndexOrThrow(DBContract.CommonSchedule.endDate)),
-                  "", ""
-              )
+            moveToFirst()
+            commonSchedule = CommonSchedule(
+                getString(getColumnIndexOrThrow(DBContract.CommonSchedule.startDate)),
+                getString(getColumnIndexOrThrow(DBContract.CommonSchedule.endDate)),
+                "", ""
+            )
 
             while (moveToNext()) {
                 listOfPairs.add(
@@ -394,7 +386,10 @@ object Data {
             put(DBContract.CommonSchedule.commonScheduleID, grID)
             put(DBContract.CommonSchedule.startDate, getStringDef(json_common, "startDate"))
             put(DBContract.CommonSchedule.endDate, getStringDef(json_common, "endDate"))
-            put(DBContract.CommonSchedule.startExamsDate, getStringDef(json_common, "startExamsDate"))
+            put(
+                DBContract.CommonSchedule.startExamsDate,
+                getStringDef(json_common, "startExamsDate")
+            )
             put(DBContract.CommonSchedule.endExamsDate, getStringDef(json_common, "endExamsDate"))
         }
 
@@ -460,12 +455,12 @@ object Data {
         var day: Int
         var ind: Int
         week = Requests.getCurrent().res
-        var wk = week
+        val wk = week
         calendar = Calendar.getInstance()
         day = calendar.get(Calendar.DAY_OF_WEEK)
-        var formatter = SimpleDateFormat("dd.MM.yyyy")
+        val formatter = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault(Locale.Category.FORMAT))
 
-        val startLessonsDate =  formatter.parse(commonSchedule.startDate)
+        val startLessonsDate = formatter.parse(commonSchedule.startDate)
         val endLessonsDate = formatter.parse(commonSchedule.endDate)
 
         var curday: Int
@@ -510,11 +505,11 @@ object Data {
             }
         }
 
-        var l: Lesson = ScheduleList[0].copy()
+
 
         i = 2
 
-        l = ScheduleList[0].copy()
+        val l = ScheduleList[0].copy()
 
         l.day_of_week = 9
         l.note = "${
@@ -552,17 +547,6 @@ object Data {
 
 
         while (i < ScheduleList.size) {
-            /*   val formatter = SimpleDateFormat("dd.MM.yyyy")
-               if (i == 69)
-                   Log.v("DATA", "84 reached")
-               val start = formatter.parse(ScheduleList[i].startLessonDate.toString())
-               val end = formatter.parse(ScheduleList[i].endLessonDate.toString())
-               val curent = formatter.parse(SimpleDateFormat("dd.MM.yyyy").format(calendar.time))
-
-               if (curent.after(end) || start.after(curent)) {
-                   ScheduleList.removeAt(i)
-                   i -= 1
-               } else{*/
 
             if ((ScheduleList[i - 1].day_of_week != ScheduleList[i].day_of_week)) {
 
@@ -577,13 +561,10 @@ object Data {
                         ScheduleList[i].day_of_week - ScheduleList[i - 1].day_of_week
                     )
 
-                val start = formatter.parse(ScheduleList[i].startLessonDate.toString())
-                val end = formatter.parse(ScheduleList[i].endLessonDate.toString())
 
-                val curent = formatter.parse(SimpleDateFormat("dd.MM.yyyy").format(calendar.time))
-                if(SimpleDateFormat("dd.MM.yyyy").format(calendar.time) == "28.12.2022")
-                    Log.v("Data", "75 reached")
-                if (curent.after(endLessonsDate) || startLessonsDate.after(curent)) {
+                val curent = formatter.parse(formatter.format(calendar.time))
+
+                if (curent?.after(endLessonsDate) == true || startLessonsDate?.after(curent) == true) {
                     ScheduleList.subList(i, ScheduleList.size).clear()
                     break
                 }
@@ -625,16 +606,9 @@ object Data {
             i++
         }
 
-
-
-
-
         week = wk
         calendar = Calendar.getInstance()
         day = calendar.get(Calendar.DAY_OF_WEEK)
-
-
-        weeks = 0
 
         curday = if (day == 1) 7 else day - 1
 
@@ -660,85 +634,72 @@ object Data {
 
         while (i < ScheduleList.size - 1) {
 
-            if(ScheduleList[i].day_of_week != 9) {
 
+            if (ScheduleList[i].day_of_week != 9) {
 
-                val curent = formatter.parse(SimpleDateFormat("dd.MM.yyyy").format(calendar.time))
+                val curent = formatter.parse(formatter.format(calendar.time))
 
-                if(SimpleDateFormat("dd.MM.yyyy").format(calendar.time) == "28.12.2022")
-                    Log.v("Data", "75 reached")
-                if (curent.after(endLessonsDate) || startLessonsDate.after(curent)) {
-                    ScheduleList.subList(i, ScheduleList.size).clear()
-                    break
+                if (curent != null && startLessonsDate != null) {
+                    if (curent.after(endLessonsDate) || startLessonsDate.after(curent)) {
+                        ScheduleList.subList(i, ScheduleList.size).clear()
+                        break
+                    }
                 }
 
+                try {
+                    val start = formatter.parse(ScheduleList[i].startLessonDate.toString())
+                    val end = formatter.parse(ScheduleList[i].endLessonDate.toString())
 
-                if((curent.after(formatter.parse(ScheduleList[i].endLessonDate.toString())) || formatter.parse(ScheduleList[i].startLessonDate.toString()).after(curent)) && ScheduleList[i].day_of_week != 9 ) {
-                    ScheduleList.removeAt(i--)
+                    if (start != null && curent != null) {
+                        if ((curent.after(end) || start.after(curent)) && ScheduleList[i].day_of_week != 9) {
+                            ScheduleList.removeAt(i--)
+                        }
+
+                    }
+
+                } catch (e: ParseException) {
+                    Log.v(
+                        "DateParce",
+                        "can't parse date" + ScheduleList[i].subject + " " + ScheduleList[i].weekNumber + " " + ScheduleList[i].day_of_week
+                    )
                 }
 
-                    //i--
+            } else {
 
-
-
-
-                /*if (curent.after(end) || start.after(curent)) {
-                    ScheduleList.removeAt(i)
-                    i--
-                }*/
-            }else{
-
-                while(i < ScheduleList.size)
-                    if(ScheduleList[i-1].day_of_week == 9 && ScheduleList[i].day_of_week == 9 && i > 1) {
-                        if (ScheduleList[i+1].day_of_week - ScheduleList[i-2].day_of_week < 0)
+                while (i < ScheduleList.size)
+                    if (ScheduleList[i - 1].day_of_week == 9 && ScheduleList[i].day_of_week == 9 && i > 1) {
+                        if (ScheduleList[i + 1].day_of_week - ScheduleList[i - 2].day_of_week < 0)
                             calendar.add(
                                 Calendar.DATE,
-                                -ScheduleList[i + 1].day_of_week + ScheduleList[i-2].day_of_week - 7
+                                -ScheduleList[i + 1].day_of_week + ScheduleList[i - 2].day_of_week - 7
                             )
                         else
                             calendar.add(
                                 Calendar.DATE,
-                                -ScheduleList[i + 1].day_of_week + ScheduleList[i-1].day_of_week
+                                -ScheduleList[i + 1].day_of_week + ScheduleList[i - 1].day_of_week
                             )
                         ScheduleList.removeAt(i - 1)
-                    i--
-                    }
-                    else
+                        i--
+                    } else
                         break
 
-                if (ScheduleList[i+1].day_of_week - ScheduleList[i-1].day_of_week < 0)
-                        calendar.add(
-                            Calendar.DATE,
-                            ScheduleList[i + 1].day_of_week - ScheduleList[i-1].day_of_week + 7
-                        )
-                    else
-                        calendar.add(
-                            Calendar.DATE,
-                            ScheduleList[i + 1].day_of_week - ScheduleList[i-1].day_of_week
-                        )
-                    i+=0
+                if (ScheduleList[i + 1].day_of_week - ScheduleList[i - 1].day_of_week < 0)
+                    calendar.add(
+                        Calendar.DATE,
+                        ScheduleList[i + 1].day_of_week - ScheduleList[i - 1].day_of_week + 7
+                    )
+                else
+                    calendar.add(
+                        Calendar.DATE,
+                        ScheduleList[i + 1].day_of_week - ScheduleList[i - 1].day_of_week
+                    )
+                i += 0
 
             }
 
-
             i++
 
         }
-
-        i = 0
-
-
-   /*     while(i < ScheduleList.size )
-        {
-            while(i < ScheduleList.size-1)
-                if(ScheduleList[i].day_of_week == 9 && ScheduleList[i+1].day_of_week == 9)
-                    ScheduleList.removeAt(i)
-                else
-                    break
-
-            i++
-        }
-*/
 
         return if (response.errorCode != 0) response.errorCode else 0
     }
@@ -896,7 +857,6 @@ object Data {
     private fun fillEmployeesTable(db: SQLiteDatabase): Int {
         val response: JSONArrayResponse = Requests.getEmployeesList("https://iis.bsuir.by/api/v1/")
 
-
         val employeesList: JSONArray = response.arr
 
         if (response.errorCode != 0)
@@ -936,7 +896,6 @@ object Data {
                 //db.execSQL("DELETE FROM ${DBContract.Employees.TABLE_NAME}")
                 return 1
             }
-
 
             i++
         }
@@ -1043,7 +1002,7 @@ object Data {
         listOfFavorites.add(gr)
     }
 
-    fun makeFavoritesList(context: Context, mode: Int): Int {
+    fun makeFavoritesList(context: Context): Int {
         val dbHelper = DbHelper(context)
         val db = dbHelper.writableDatabase
 
@@ -1099,7 +1058,6 @@ object Data {
 
             i++
         }
-        // listOfFavorites
         return 0
     }
 

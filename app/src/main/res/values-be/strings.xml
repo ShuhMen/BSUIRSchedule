@@ -4,4 +4,9 @@
     <string name="schedule_doesnt_exist">"Расклад атсутничае "</string>
     <string name="favorites_available">Дадайце любiмае</string>
     <string name="search">Пошук</string>
+    <string name="creator_fio">Шухман Максім Юр\'евіч</string>
+    <string name="developer">Распрацоўшчык</string>
+    <string name="vesion">Версiя</string>
+    <string name="item_about_app">Аб дадатку</string>
+    <string name="creator_inf">ФITIK АСAI, 220604, 1 курс</string>
 </resources>
