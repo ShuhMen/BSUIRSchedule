@@ -473,7 +473,7 @@ object Data {
         if (ind == -1) {
             while (ind == -1) {
                 if (curday == 7)
-                    week++
+                    week = week % 4 + 1
 
                 curday = curday % 7 + 1
                 calendar.add(Calendar.DATE, 1)
@@ -513,14 +513,14 @@ object Data {
 
         l.day_of_week = 9
         l.note = "${
-            when (ScheduleList[i].day_of_week) {
-                1 -> "Понедельник"
-                2 -> "Вторник"
-                3 -> "Среда"
-                4 -> "Четверг"
-                5 -> "Пятница"
-                6 -> "Суббота"
-                7 -> "Воскресенье"
+            when (calendar.get(Calendar.DAY_OF_WEEK)) {
+                2 -> "Понедельник"
+                3 -> "Вторник"
+                4 -> "Среда"
+                5 -> "Четверг"
+                6 -> "Пятница"
+                7 -> "Суббота"
+                1 -> "Воскресенье"
                 else -> "Ошибка"
             }
         }, " + calendar.get(Calendar.DAY_OF_MONTH) + " " +
@@ -617,7 +617,7 @@ object Data {
         if (ind == -1) {
             while (ind == -1) {
                 if (curday == 7)
-                    week++
+                    week = week % 4 + 1
 
 
                 curday = curday % 7 + 1
