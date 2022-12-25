@@ -26,6 +26,7 @@ import com.maximshuhman.bsuirschedule.MainActivity
 import com.maximshuhman.bsuirschedule.PreferenceHelper
 import com.maximshuhman.bsuirschedule.PreferenceHelper.openedGroup
 import com.maximshuhman.bsuirschedule.R
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 
@@ -36,6 +37,7 @@ class ScheduleFragment : Fragment() {
     lateinit var scheduleSituated: TextView
     private lateinit var ToolBar: androidx.appcompat.widget.Toolbar
     lateinit var swipeRefreshLayout: SwipeRefreshLayout
+    lateinit var executors: ExecutorService
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -185,7 +187,8 @@ class ScheduleFragment : Fragment() {
 
         var err = 0
 
-        Executors.newSingleThreadExecutor().execute {
+        executors =  Executors.newSingleThreadExecutor()
+        executors.execute {
 
 
             err = Data.makeSchedule(
@@ -218,6 +221,15 @@ class ScheduleFragment : Fragment() {
 
             }
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+
+        Data.ScheduleList.clear()
+        Data.listOfGroups.clear()
+    executors.shutdown()
+
     }
 
 

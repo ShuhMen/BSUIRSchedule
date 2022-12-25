@@ -27,7 +27,7 @@ object Data {
     private val listOfPairs = mutableListOf<Lesson>()
     val ScheduleList = mutableListOf<Lesson>()
     var GroupsList = mutableListOf<Group>()
-    private var listOfGroups = mutableListOf<Group>()
+    var listOfGroups = mutableListOf<Group>()
     var FavoritesList = mutableListOf<Group>()
     private var listOfFavorites = mutableListOf<Group>()
     var curGroupID: Int? = 0
@@ -159,7 +159,7 @@ object Data {
             )
             count.moveToFirst()
 
-            if (count.getInt(0) != 0) {
+            if (count.getInt(0) == 0) {
 
                 count.close()
 
@@ -662,7 +662,7 @@ object Data {
                         "DateParce",
                         "can't parse date" + ScheduleList[i].subject + " " + ScheduleList[i].weekNumber + " " + ScheduleList[i].day_of_week
                     )
-                }
+                }catch (e: java.lang.IndexOutOfBoundsException){}
 
             } else {
 

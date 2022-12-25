@@ -110,9 +110,9 @@ class DbHelper(context: Context) :
             "override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {"
         )
 
-        if (oldVersion == 2)
+        if (oldVersion < 3)
             db.execSQL("ALTER TABLE ${DBContract.Employees.TABLE_NAME} ADD COLUMN ${DBContract.Employees.photo} BLOB")
-        if (oldVersion < 5) {
+        if (oldVersion < 4) {
             db.execSQL("PRAGMA foreign_keys = OFF")
             // db.execSQL("DROP TABLE ${DBContract.Schedule.TABLE_NAME}")
             db.execSQL("DELETE FROM ${DBContract.Employees.TABLE_NAME}")
