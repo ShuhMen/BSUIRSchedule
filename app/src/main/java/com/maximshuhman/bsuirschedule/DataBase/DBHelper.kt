@@ -68,6 +68,26 @@ class DbHelper(context: Context) :
                 "${DBContract.Favorites.groupID} INTEGER PRIMARY KEY," +
                 "FOREIGN KEY (${DBContract.Favorites.groupID}) REFERENCES ${DBContract.Groups.TABLE_NAME}(${DBContract.Groups.groupID}))"
 
+    private val SQL_CREATE_EXAMS =
+        "CREATE TABLE ${DBContract.Exams.TABLE_NAME} (" +
+                "${DBContract.Schedule.scheduleID} INTEGER PRIMARY KEY," +
+                "${DBContract.Schedule.day_of_week} INTEGER," +
+                "${DBContract.Schedule.auditories} TEXT," +
+                "${DBContract.Schedule.endLessonTime} TEXT," +
+                "${DBContract.Schedule.lessonTypeAbbrev} TEXT," +
+                "${DBContract.Schedule.note} TEXT," +
+                "${DBContract.Schedule.numSubgroup} INTEGER," +
+                "${DBContract.Schedule.startLessonTime} TEXT," +
+                "${DBContract.Schedule.studentGroups} TEXT," +
+                "${DBContract.Schedule.subject} TEXT," +
+                "${DBContract.Schedule.subjectFullName} TEXT," +
+                "${DBContract.Schedule.weekNumber} INTEGER," +
+                "${DBContract.Schedule.employeeID} INTEGER," +
+                "${DBContract.Schedule.groupID} INTEGER," +
+                "${DBContract.Exams.dateLesson} TEXT," +
+                "FOREIGN KEY (${DBContract.Schedule.groupID}) REFERENCES ${DBContract.Groups.TABLE_NAME}(${DBContract.CommonSchedule.commonScheduleID})," +
+                "FOREIGN KEY (${DBContract.Schedule.employeeID}) REFERENCES ${DBContract.Employees.TABLE_NAME}(${DBContract.Employees.employeeID}))"
+
     private val SQL_DELETE_ENTRIES = "DROP TABLE IF EXISTS ${DBContract.Groups.TABLE_NAME}"
 
 
@@ -99,6 +119,12 @@ class DbHelper(context: Context) :
                 val a5 = it.execSQL(SQL_CREATE_FAVORITES)
             } catch (e: Exception) {
                 Log.v("DBDD", "SQL_CREATE_FAVORITES ERROR")
+            }
+
+            try {
+                val a5 = it.execSQL(SQL_CREATE_EXAMS)
+            } catch (e: Exception) {
+                Log.v("DBDD", "SQL_CREATE_EXAMS ERROR")
             }
         }
     }
@@ -140,6 +166,22 @@ class DbHelper(context: Context) :
             db.execSQL("PRAGMA foreign_keys = ON")
         }
 
+        if(oldVersion < 8){
+            try {
+                val a5 = db.execSQL(SQL_CREATE_EXAMS)
+            } catch (e: Exception) {
+                Log.v("DBDD", "SQL_CREATE_EXAMS ERROR")
+            }
+
+            db.execSQL("PRAGMA foreign_keys = OFF")
+            // db.execSQL("DROP TABLE ${DBContract.Schedule.TABLE_NAME}")
+            db.execSQL("DELETE FROM ${DBContract.Schedule.TABLE_NAME}")
+            db.execSQL("DELETE FROM ${DBContract.CommonSchedule.TABLE_NAME}")
+
+            db.execSQL("PRAGMA foreign_keys = ON")
+
+        }
+
 
     }
 
@@ -149,7 +191,7 @@ class DbHelper(context: Context) :
 
     companion object {
         // If you change the database schema, you must increment the database version.
-        const val DATABASE_VERSION = 6
+        const val DATABASE_VERSION = 7
         const val DATABASE_NAME = "Schedule"
     }
 }

@@ -6,7 +6,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.fragment.app.Fragment
+import com.maximshuhman.bsuirschedule.BuildConfig
 import com.maximshuhman.bsuirschedule.R
 
 
@@ -29,6 +31,10 @@ class AboutFragment : Fragment() {
             val builder = AlertDialog.Builder(requireActivity(), R.style.CustomAlertDialog)
             val dialogView: View =
                 inflater.inflate(R.layout.dialog_about, container, false)
+
+            var version: TextView = dialogView.findViewById(R.id.current_version)
+            version.text = BuildConfig.VERSION_NAME
+
             builder.setView(dialogView)
             val alertDialog = builder.create()
             alertDialog.show()

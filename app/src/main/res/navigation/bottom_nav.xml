@@ -25,6 +25,9 @@
         <action
             android:id="@+id/action_scheduleFragment_to_lessonInfDialog"
             app:destination="@id/lessonInfDialog" />
+        <action
+            android:id="@+id/action_scheduleFragment_to_examsFragment"
+            app:destination="@id/examsFragment" />
 
     </fragment>
     <fragment
@@ -57,4 +60,13 @@
         android:id="@+id/lessonInfDialog"
         android:name="com.maximshuhman.bsuirschedule.LessonInfDialog"
         android:label="LessonInfDialog" />
+    <fragment
+        android:id="@+id/examsFragment"
+        android:name="com.maximshuhman.bsuirschedule.Views.ExamsFragment"
+        android:label="fragment_exams"
+        tools:layout="@layout/fragment_exams" >
+        <action
+            android:id="@+id/action_examsFragment_to_lessonInfDialog"
+            app:destination="@id/lessonInfDialog" />
+    </fragment>
 </navigation>

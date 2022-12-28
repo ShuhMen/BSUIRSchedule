@@ -50,6 +50,12 @@ object DBContract {
         const val endLessonDate = "endLessonDate"
     }
 
+    object Exams : BaseColumns {
+        const val TABLE_NAME = "EXAMS"
+        const val examID = BaseColumns._ID
+        const val dateLesson = "dateLesson"
+    }
+
     object Employees {
         const val TABLE_NAME = "EMPLOYEES"
         const val employeeID = "employeeID"

@@ -10,6 +10,7 @@ import android.view.*
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.res.ResourcesCompat
@@ -83,8 +84,8 @@ class ScheduleFragment : Fragment() {
 
 
 
-        ToolBar.title = "Группа ${Data.curGroupName}, " +
-                "${Data.curGroupCourse} курс"
+        ToolBar.title = "Группа ${Data.curGroupName} " //+
+               // "${Data.curGroupCourse} курс"
 
 
         //ToolBar.setSubtitleTextColor(R.color.white)
@@ -171,6 +172,18 @@ class ScheduleFragment : Fragment() {
                 return true
             }
 
+            R.id.exams -> {
+                val args = Data.curGroupID?.let {
+                    ExamsFragment.getBundle(
+                        it,
+                        ToolBar.title.toString())
+                }
+                val navController = findNavController()
+                navController.navigate(R.id.action_scheduleFragment_to_examsFragment, args)
+
+                return true
+            }
+
             else -> return super.onOptionsItemSelected(item)
         }
 
@@ -198,26 +211,33 @@ class ScheduleFragment : Fragment() {
                 mode
             )
             Handler(Looper.getMainLooper()).post {
+                if(err != 4) {
 
-                /*   if (err != 0)
+                   if (err != 0)
                        Toast.makeText(
                            activity?.applicationContext,
                            "Ошибка получения данных",
                            Toast.LENGTH_SHORT
                        ).show()
-   */
-                if (Data.ScheduleList.size == 0) {
-                    scheduleSituated.visibility = View.VISIBLE
-                    ScheduleRecycler.visibility = View.GONE
-                } else {
-                    scheduleSituated.visibility = View.GONE
-                    ScheduleRecycler.visibility = View.VISIBLE
-                    ScheduleRecycler.adapter = ScheduleRecyclerAdapter(Data.ScheduleList)
-                    ScheduleRecycler.recycledViewPool.clear()
-                    ScheduleRecycler.adapter!!.notifyDataSetChanged()
+
+
+
+                    if (Data.ScheduleList.size == 0) {
+                        scheduleSituated.visibility = View.VISIBLE
+                        ScheduleRecycler.visibility = View.GONE
+                    } else {
+                        scheduleSituated.visibility = View.GONE
+                        ScheduleRecycler.visibility = View.VISIBLE
+                        ScheduleRecycler.adapter = ScheduleRecyclerAdapter(Data.ScheduleList)
+                        ScheduleRecycler.recycledViewPool.clear()
+                        ScheduleRecycler.adapter!!.notifyDataSetChanged()
+                    }
+                    ProgressBar.visibility = View.INVISIBLE
+                    swipeRefreshLayout.isRefreshing = false
+                }else
+                {
+
                 }
-                ProgressBar.visibility = View.INVISIBLE
-                swipeRefreshLayout.isRefreshing = false
 
             }
         }
