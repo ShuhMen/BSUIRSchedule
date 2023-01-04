@@ -1,9 +1,13 @@
 package com.maximshuhman.bsuirschedule.DataBase
 
+import android.content.ContentValues
 import android.content.Context
+import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.util.Log
+import java.text.SimpleDateFormat
+import java.util.*
 
 
 class DbHelper(context: Context) :
@@ -25,6 +29,7 @@ class DbHelper(context: Context) :
                 "${DBContract.CommonSchedule.endExamsDate} TEXT," +
                 "${DBContract.CommonSchedule.startDate} TEXT," +
                 "${DBContract.CommonSchedule.endDate} TEXT," +
+                "${DBContract.CommonSchedule.lastUpdate} TEXT," +
                 "FOREIGN KEY (${DBContract.CommonSchedule.commonScheduleID}) REFERENCES ${DBContract.Groups.TABLE_NAME}(${DBContract.Groups.groupID}));"
 
     private val SQL_CREATE_SCHEDULE =
@@ -157,7 +162,7 @@ class DbHelper(context: Context) :
             db.execSQL("PRAGMA foreign_keys = ON")
         }
 
-        if (oldVersion < 7) {
+        if (oldVersion < 5) {
             db.execSQL("PRAGMA foreign_keys = OFF")
             // db.execSQL("DROP TABLE ${DBContract.Schedule.TABLE_NAME}")
             db.execSQL("DELETE FROM ${DBContract.Schedule.TABLE_NAME}")
@@ -166,7 +171,7 @@ class DbHelper(context: Context) :
             db.execSQL("PRAGMA foreign_keys = ON")
         }
 
-        if(oldVersion < 8){
+        if (oldVersion < 6) {
             try {
                 val a5 = db.execSQL(SQL_CREATE_EXAMS)
             } catch (e: Exception) {
@@ -179,19 +184,55 @@ class DbHelper(context: Context) :
             db.execSQL("DELETE FROM ${DBContract.CommonSchedule.TABLE_NAME}")
 
             db.execSQL("PRAGMA foreign_keys = ON")
+        }
 
+        if (oldVersion < 7) {
+            db.execSQL("ALTER TABLE ${DBContract.CommonSchedule.TABLE_NAME} ADD COLUMN ${DBContract.CommonSchedule.lastUpdate} TEXT")
+
+            val c: Cursor = db.rawQuery(
+                "SELECT * FROM ${DBContract.CommonSchedule.TABLE_NAME} " +
+                        "INNER JOIN ${DBContract.Groups.TABLE_NAME} ON (${DBContract.Groups.TABLE_NAME}.${DBContract.Groups.groupID} = ${DBContract.CommonSchedule.TABLE_NAME}.${DBContract.CommonSchedule.commonScheduleID})",
+                null
+            )
+
+            with(c) {
+                //  moveToFirst()
+
+                while (moveToNext()) {
+                    val lastUpdate = SimpleDateFormat(
+                        "dd.MM.yyyy", Locale.getDefault(
+                            Locale.Category.FORMAT
+                        )
+                    ).format(Calendar.getInstance().time)   //Requests.getLastUpdate(getString(getColumnIndexOrThrow(DBContract.Groups.name)))
+                    val id =
+                        getInt(getColumnIndexOrThrow(DBContract.CommonSchedule.commonScheduleID))
+                    val values = ContentValues().apply {
+                        put(DBContract.CommonSchedule.lastUpdate, lastUpdate)
+                    }
+
+
+                    db.update(
+                        DBContract.CommonSchedule.TABLE_NAME,
+                        values,
+                        "${DBContract.CommonSchedule.commonScheduleID} = $id",
+                        null
+                    ) //rawQuery("UPDATE ${DBContract.CommonSchedule.TABLE_NAME} SET ${DBContract.CommonSchedule.lastUpdate} = ${lastUpdate.res.toString()} WHERE ${DBContract.CommonSchedule.commonScheduleID} = $id", null)
+                }
+            }
+
+            c.close()
         }
 
 
     }
 
     override fun onDowngrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        onUpgrade(db, oldVersion, newVersion)
+        // onUpgrade(db, oldVersion, newVersion)
     }
 
     companion object {
         // If you change the database schema, you must increment the database version.
-        const val DATABASE_VERSION = 7
+        const val DATABASE_VERSION = 8
         const val DATABASE_NAME = "Schedule"
     }
 }

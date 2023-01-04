@@ -9,4 +9,9 @@
     <string name="vesion">Версiя</string>
     <string name="item_about_app">Аб дадатку</string>
     <string name="creator_inf">ФITIK АСAI, 220604, 1 курс</string>
+    <string name="endOfSchedule">Занятки скончылiся!</string>
+    <string name="update">Абнова</string>
+    <string name="update_schedule">Даступна абнова раскладу. Абнавиць?</string>
+    <string name="yes">Так</string>
+    <string name="no">Не</string>
 </resources>

@@ -16,6 +16,7 @@
         android:icon="@drawable/exams"
         android:title="Экзамены"
         app:showAsAction="ifRoom|collapseActionView"
+        android:visible="false"
         />
 
 </menu>

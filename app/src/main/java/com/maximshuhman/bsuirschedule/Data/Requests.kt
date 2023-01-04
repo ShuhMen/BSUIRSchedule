@@ -53,10 +53,7 @@ object Requests {
             return try {
                 val json = JSONObject(jsonString)
 
-                if (json.getString("startDate") == "")
-                    JSONResponse(-1, "REQUEST ERROR", JSONObject())
-                else
-                    JSONResponse(0, "", json)
+                JSONResponse(0, "", json)
 
             } catch (e: JSONException) {
                 JSONResponse(-1, "REQUEST ERROR", JSONObject())
@@ -228,23 +225,24 @@ object Requests {
 
     }
 
-    fun getLastUpdate(): IntResponse {
+    fun getLastUpdate(groupNumber: String): StringResponse {
         var response: Response<ResponseBody>
 
-        val retrofit = Clientbuilder.getGroupScheduleClient("https://iis.bsuir.by/api/v1/schedule/")
+        val retrofit =
+            Clientbuilder.getGroupScheduleClient("https://iis.bsuir.by/api/v1/last-update-date/")
 
         try {
             val service = retrofit!!.create(IISApi::class.java)
 
             try {
                 runBlocking {
-                    response = service.getCurrrentWeek()
+                    response = service.getLastUpdate(groupNumber)
                 }
             } catch (e: Exception) {
-                return IntResponse(-1, "REQUEST ERROR", 0)
+                return StringResponse(-1, "REQUEST ERROR", "")
             }
         } catch (e: NullPointerException) {
-            return IntResponse(-2, "WRONG ADDRESS TYPE", 0)
+            return StringResponse(-2, "WRONG ADDRESS TYPE", "")
         }
 
         if (response.isSuccessful) {
@@ -260,11 +258,11 @@ object Requests {
             // val jsonString = response.body().toString()
 
             return try {
-                jsonString
-                IntResponse(0, "", jsonString.toInt())
+                val json = JSONObject(jsonString)
+                StringResponse(0, "", json.getString("lastUpdateDate"))
 
             } catch (e: JSONException) {
-                IntResponse(-1, "REQUEST ERROR", 0)
+                StringResponse(-1, "REQUEST ERROR", "")
             }
         } else {
 
@@ -280,14 +278,14 @@ object Requests {
                         )
                         val json = JSONObject(jsonString)
 
-                        return IntResponse(-1, "REQUEST ERROR", 0)
+                        return StringResponse(-1, "REQUEST ERROR", "")
 
                     } catch (e: Exception) {
-                        return IntResponse(-9, "UNEXPECTED ERROR", 0)
+                        return StringResponse(-9, "UNEXPECTED ERROR", "")
                     }
                 }
-                "Unauthorized" -> IntResponse(-3, "WRONG_ANSWER", 0)
-                else -> IntResponse(-1, "REQUEST ERROR", 0)
+                "Unauthorized" -> StringResponse(-3, "WRONG_ANSWER", "")
+                else -> StringResponse(-1, "REQUEST ERROR", "")
             }
         }
     }

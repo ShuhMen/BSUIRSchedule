@@ -30,9 +30,10 @@ interface IISApi {
         @Path("id") emplId: String
     ): Response<ResponseBody>
 
-    //   fun groupList(@Path("id") groupId: Int, @Query("sort") sort: String?): Call<List<User?>?>?
-    // @POST("/api")
-    //  suspend fun postApi(@Body requestBody: RequestBody): Response<ResponseBody>
+    @GET("student-group?")
+    suspend fun getLastUpdate(
+        @Query("groupNumber") groupNumber: String
+    ): Response<ResponseBody>
 
 
 }

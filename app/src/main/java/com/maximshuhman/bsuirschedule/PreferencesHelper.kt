@@ -8,6 +8,8 @@ object PreferenceHelper {
 
 
     val OPENED_GROUP = "OPENED_GROUP"
+    val WEEK = "WEEK"
+
 
     fun defaultPreference(context: Context): SharedPreferences =
         PreferenceManager.getDefaultSharedPreferences(context)

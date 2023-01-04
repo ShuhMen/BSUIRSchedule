@@ -28,6 +28,7 @@ object DBContract {
         const val startDate = "startDate"
         const val endDate = "endDate"
         const val commonScheduleID = "commonScheduleID"
+        const val lastUpdate = "lastUpdate"
     }
 
     object Schedule : BaseColumns {

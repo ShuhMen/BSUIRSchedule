@@ -24,8 +24,8 @@ class ExamsFragment : Fragment() {
     // TODO: Rename and change types of parameters
     private var groupID: Int? = null
     private var groupInf: String? = null
-  //  private var groupNum: String? = null
-    
+    //  private var groupNum: String? = null
+
     lateinit var ExamsRecyclerView: RecyclerView
     lateinit var toolbarExams: Toolbar
 
@@ -37,7 +37,6 @@ class ExamsFragment : Fragment() {
         const val INF = "INF"
 
 
-
         fun getBundle(
             id: Int,
             inf: String,
@@ -45,7 +44,7 @@ class ExamsFragment : Fragment() {
         ): Bundle {
             return Bundle().apply {
                 putString(INF, inf)
-               // putString(NAME, name)
+                // putString(NAME, name)
                 putInt(ID, id)
             }
         }
@@ -62,7 +61,7 @@ class ExamsFragment : Fragment() {
         })
 
         arguments?.let {
-           // groupNum = it.getString("NAME")
+            // groupNum = it.getString("NAME")
             groupInf = it.getString("INF")
             groupID = it.getInt("ID")
         }
@@ -73,7 +72,7 @@ class ExamsFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        val v =  inflater.inflate(R.layout.fragment_exams, container, false)
+        val v = inflater.inflate(R.layout.fragment_exams, container, false)
 
         ExamsRecyclerView = v.findViewById(R.id.exams_recycler_view)
         toolbarExams = v.findViewById(R.id.exams_toolbar)
@@ -95,11 +94,11 @@ class ExamsFragment : Fragment() {
 
     fun updateUI() {
 
-       
+
         ExamsRecyclerView.adapter = null
 
         Data.makeExams(requireContext(), groupID)
-  
+
         ExamsRecyclerView.adapter = ExamsRecyclerAdapter(Data.ExamsList)
         ExamsRecyclerView.recycledViewPool.clear()
         ExamsRecyclerView.adapter!!.notifyDataSetChanged()
@@ -242,7 +241,7 @@ class ExamsFragment : Fragment() {
                                 "12" -> "Декабря"
                                 else -> "Ошибка"
                             }
-                }catch (e:Exception){
+                } catch (e: Exception) {
 
                 }
 

@@ -9,4 +9,9 @@
     <string name="vesion">Версия</string>
     <string name="item_about_app">О приложении</string>
     <string name="creator_inf">ФИТиУ АСОИ, 220604, 1 курс</string>
+    <string name="endOfSchedule">Занятия закончились!</string>
+    <string name="update">Обновление</string>
+    <string name="update_schedule">Доступно обновление расписания. Обновить?</string>
+    <string name="yes">Да</string>
+    <string name="no">Нет</string>
 </resources>

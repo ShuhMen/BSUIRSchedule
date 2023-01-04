@@ -13,5 +13,5 @@ data class Lesson(
     var employees: Employees,
     var startLessonDate: String?,
     var endLessonDate: String?,
-    var dateLesson : String?
+    var dateLesson: String?
 )

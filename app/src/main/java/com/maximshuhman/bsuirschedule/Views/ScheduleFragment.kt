@@ -2,15 +2,13 @@ package com.maximshuhman.bsuirschedule.Views
 
 import Lesson
 import android.annotation.SuppressLint
+import android.content.ContentValues
 import android.database.Cursor
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.*
-import android.widget.ImageView
-import android.widget.ProgressBar
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.res.ResourcesCompat
@@ -19,7 +17,9 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.maximshuhman.bsuirschedule.Data.Data
+import com.maximshuhman.bsuirschedule.Data.Requests
 import com.maximshuhman.bsuirschedule.DataBase.DBContract
 import com.maximshuhman.bsuirschedule.DataBase.DbHelper
 import com.maximshuhman.bsuirschedule.LessonInfDialog
@@ -27,6 +27,8 @@ import com.maximshuhman.bsuirschedule.MainActivity
 import com.maximshuhman.bsuirschedule.PreferenceHelper
 import com.maximshuhman.bsuirschedule.PreferenceHelper.openedGroup
 import com.maximshuhman.bsuirschedule.R
+import java.text.SimpleDateFormat
+import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -39,6 +41,7 @@ class ScheduleFragment : Fragment() {
     private lateinit var ToolBar: androidx.appcompat.widget.Toolbar
     lateinit var swipeRefreshLayout: SwipeRefreshLayout
     lateinit var executors: ExecutorService
+    lateinit var endOfSchedule: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,6 +66,7 @@ class ScheduleFragment : Fragment() {
         scheduleSituated = view.findViewById(R.id.schedule_situating_text)
         ToolBar = view.findViewById(R.id.toolbar)
         swipeRefreshLayout = view.findViewById(R.id.swipe_refresh)
+        endOfSchedule = view.findViewById(R.id.endOfSchedule)
 
         swipeRefreshLayout.setColorSchemeResources(R.color.BSUIR_blue)
 
@@ -82,30 +86,116 @@ class ScheduleFragment : Fragment() {
         else
             Data.curGroupCourse = 0
 
-
-
         ToolBar.title = "Группа ${Data.curGroupName} " //+
-               // "${Data.curGroupCourse} курс"
+        // "${Data.curGroupCourse} курс"
 
 
-        //ToolBar.setSubtitleTextColor(R.color.white)
-        //ToolBar.setTitleTextColor(R.color.white)
+        val dbHelper = DbHelper(requireContext())
+        val db = dbHelper.writableDatabase
 
-        ScheduleRecycler.layoutManager = LinearLayoutManager(requireContext())
+        val exist = db.rawQuery(
+            "SELECT COUNT(*) as cnt FROM ${DBContract.CommonSchedule.TABLE_NAME} WHERE ${DBContract.CommonSchedule.commonScheduleID} = ${Data.curGroupID}",
+            null
+        )
+        exist.moveToFirst()
+        if (exist.getInt(0) != 0) {
+            exist.close()
+            //ToolBar.setSubtitleTextColor(R.color.white)
+            //ToolBar.setTitleTextColor(R.color.white)
+            ScheduleRecycler.layoutManager = LinearLayoutManager(requireContext())
+            val lastUpdateResponse = Requests.getLastUpdate(Data.curGroupName)
+            var lastUpdate = ""
 
+            if (lastUpdateResponse.errorCode == 0) {
+                lastUpdate = lastUpdateResponse.res
 
+                val formatter =
+                    SimpleDateFormat("dd.MM.yyyy", Locale.getDefault(Locale.Category.FORMAT))
 
-        try {
-            (requireActivity() as MainActivity).bottomNavigationView.menu.findItem(R.id.listOfGroupsFragment).isChecked =
-                true
-        } catch (_: UninitializedPropertyAccessException) {
-            //do nothing
-        }
-        updateUI(0)
+                val lastUpdateDate = formatter.parse(lastUpdate)
+                //  val calendar = Calendar.getInstance()
+                //val curent = formatter.parse(formatter.format(calendar.time))
+
+                val c: Cursor = db.rawQuery(
+                    "SELECT * FROM ${DBContract.CommonSchedule.TABLE_NAME} WHERE ${DBContract.CommonSchedule.commonScheduleID} = ${Data.curGroupID}",
+                    null
+                )
+
+                var curLastUpdate = ""
+                c.moveToFirst()
+
+                with(c) {
+                    curLastUpdate =
+                        getString(getColumnIndexOrThrow(DBContract.CommonSchedule.lastUpdate))
+                }
+                c.close()
+                if (curLastUpdate != "") {
+                    if (formatter.parse(curLastUpdate).before(lastUpdateDate)) {
+
+                        MaterialAlertDialogBuilder(requireContext(), R.style.RoundShapeTheme)
+                            .setTitle(resources.getString(R.string.update))
+                            .setMessage(resources.getString(R.string.update_schedule))
+                            .setPositiveButton(resources.getString(R.string.yes)) { dialogInterface, i ->
+                                updateUI(1)
+                                val values = ContentValues().apply {
+                                    put(DBContract.CommonSchedule.lastUpdate, lastUpdate)
+                                }
+                                db.update(
+                                    DBContract.CommonSchedule.TABLE_NAME,
+                                    values,
+                                    "${DBContract.CommonSchedule.commonScheduleID} = ${Data.curGroupID}",
+                                    null
+                                )
+                            }
+                            .setNegativeButton(resources.getString(R.string.no)) { dialogInterface, i ->
+                                updateUI(0)
+                            }
+                            .show()
+                    } else
+                        updateUI(0)
+                } else
+                    updateUI(0)
+
+            } else
+                updateUI(0)
+
+            try {
+                (requireActivity() as MainActivity).bottomNavigationView.menu.findItem(R.id.listOfGroupsFragment).isChecked =
+                    true
+            } catch (_: UninitializedPropertyAccessException) {
+                //do nothing
+            }
+        } else
+            updateUI(0)
 
         //helloText.text = Data.response
 
-        setHasOptionsMenu(true)
+        /* val alertDialog = AlertDialog.Builder(requireContext()).create()
+         alertDialog.setTitle("Title")
+         alertDialog.setMessage("Появилось обновление расписания. Обновить?")
+
+         alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Да") {
+                 dialog, which ->  dialog.dismiss()
+
+             updateUI(1)
+         }
+
+         alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Нет") {
+                 dialog, which -> dialog.dismiss()
+             updateUI(0)
+         }
+         alertDialog.show()
+
+         val btnPositive = alertDialog.getButton(AlertDialog.BUTTON_POSITIVE)
+         val btnNegative = alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE)
+
+         val layoutParams = btnPositive.layoutParams as LinearLayout.LayoutParams
+         layoutParams.weight = 10f
+         btnPositive.layoutParams = layoutParams
+         btnNegative.layoutParams = layoutParams
+
+         btnNegative.setTextColor(resources.getColor(R.color.white, null))
+         btnPositive.setTextColor(resources.getColor(R.color.white, null))*/
 
         (activity as AppCompatActivity?)!!.setSupportActionBar(ToolBar)
 
@@ -114,7 +204,6 @@ class ScheduleFragment : Fragment() {
             prefs.openedGroup = 0
             findNavController().popBackStack()
         }
-
 
         swipeRefreshLayout.setOnRefreshListener {
             updateUI(1)
@@ -132,6 +221,15 @@ class ScheduleFragment : Fragment() {
 
         val dbHelper = DbHelper(requireContext())
         val db = dbHelper.writableDatabase
+
+        val exams = db.rawQuery(
+            "SELECT COUNT(*) as cnt FROM ${DBContract.Exams.TABLE_NAME} WHERE ${DBContract.Exams.TABLE_NAME}.${DBContract.Schedule.groupID} = ${Data.curGroupID}",
+            null
+        )
+        exams.moveToFirst()
+        if (exams.getInt(0) != 0)
+            menu.findItem(R.id.exams).isVisible = true
+        exams.close()
 
         val exist: Cursor =
             db.rawQuery(
@@ -176,7 +274,8 @@ class ScheduleFragment : Fragment() {
                 val args = Data.curGroupID?.let {
                     ExamsFragment.getBundle(
                         it,
-                        ToolBar.title.toString())
+                        ToolBar.title.toString()
+                    )
                 }
                 val navController = findNavController()
                 navController.navigate(R.id.action_scheduleFragment_to_examsFragment, args)
@@ -200,7 +299,7 @@ class ScheduleFragment : Fragment() {
 
         var err = 0
 
-        executors =  Executors.newSingleThreadExecutor()
+        executors = Executors.newSingleThreadExecutor()
         executors.execute {
 
 
@@ -211,34 +310,37 @@ class ScheduleFragment : Fragment() {
                 mode
             )
             Handler(Looper.getMainLooper()).post {
-                if(err != 4) {
-
-                   if (err != 0)
-                       Toast.makeText(
-                           activity?.applicationContext,
-                           "Ошибка получения данных",
-                           Toast.LENGTH_SHORT
-                       ).show()
-
-
-
-                    if (Data.ScheduleList.size == 0) {
-                        scheduleSituated.visibility = View.VISIBLE
-                        ScheduleRecycler.visibility = View.GONE
-                    } else {
-                        scheduleSituated.visibility = View.GONE
-                        ScheduleRecycler.visibility = View.VISIBLE
-                        ScheduleRecycler.adapter = ScheduleRecyclerAdapter(Data.ScheduleList)
-                        ScheduleRecycler.recycledViewPool.clear()
-                        ScheduleRecycler.adapter!!.notifyDataSetChanged()
+                when (err) {
+                    0 -> {
+                        if (Data.ScheduleList.size == 0) {
+                            scheduleSituated.visibility = View.VISIBLE
+                            ScheduleRecycler.visibility = View.GONE
+                        } else {
+                            scheduleSituated.visibility = View.GONE
+                            ScheduleRecycler.visibility = View.VISIBLE
+                            ScheduleRecycler.adapter = ScheduleRecyclerAdapter(Data.ScheduleList)
+                            ScheduleRecycler.recycledViewPool.clear()
+                            ScheduleRecycler.adapter!!.notifyDataSetChanged()
+                        }
                     }
-                    ProgressBar.visibility = View.INVISIBLE
-                    swipeRefreshLayout.isRefreshing = false
-                }else
-                {
+                    4 -> endOfSchedule.visibility = View.VISIBLE
+                    5 -> Toast.makeText(
+                        activity?.applicationContext,
+                        "Расписание отсутствует!",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    else -> Toast.makeText(
+                        activity?.applicationContext,
+                        "Ошибка получения данных",
+                        Toast.LENGTH_SHORT
+                    ).show()
 
                 }
 
+                ProgressBar.visibility = View.INVISIBLE
+                swipeRefreshLayout.isRefreshing = false
+
+                setHasOptionsMenu(true)
             }
         }
     }
@@ -248,7 +350,7 @@ class ScheduleFragment : Fragment() {
 
         Data.ScheduleList.clear()
         Data.listOfGroups.clear()
-    executors.shutdown()
+        executors.shutdown()
 
     }
 
