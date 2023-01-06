@@ -159,15 +159,19 @@ class ScheduleFragment : Fragment() {
             } else
                 updateUI(0)
 
-            try {
-                (requireActivity() as MainActivity).bottomNavigationView.menu.findItem(R.id.listOfGroupsFragment).isChecked =
-                    true
-            } catch (_: UninitializedPropertyAccessException) {
-                //do nothing
-            }
+
+
         } else
             updateUI(0)
 
+    try {
+        (requireActivity() as MainActivity).bottomNavigationView.menu.findItem(R.id.listOfGroupsFragment).isChecked =
+            true
+    } catch (_: UninitializedPropertyAccessException) {
+        //do nothing
+    }
+
+        ScheduleRecycler.layoutManager = LinearLayoutManager(requireContext())
         //helloText.text = Data.response
 
         /* val alertDialog = AlertDialog.Builder(requireContext()).create()
@@ -295,7 +299,7 @@ class ScheduleFragment : Fragment() {
             ProgressBar.visibility = View.VISIBLE
             ProgressBar.isIndeterminate = true
         }
-        ScheduleRecycler.adapter = null
+       // ScheduleRecycler.adapter = null
 
         var err = 0
 
@@ -319,7 +323,7 @@ class ScheduleFragment : Fragment() {
                             scheduleSituated.visibility = View.GONE
                             ScheduleRecycler.visibility = View.VISIBLE
                             ScheduleRecycler.adapter = ScheduleRecyclerAdapter(Data.ScheduleList)
-                            ScheduleRecycler.recycledViewPool.clear()
+                                // ScheduleRecycler.recycledViewPool.clear()
                             ScheduleRecycler.adapter!!.notifyDataSetChanged()
                         }
                     }

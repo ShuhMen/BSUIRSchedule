@@ -671,8 +671,6 @@ object Data {
 
                 var err = 0
 
-                fillExamsTable(response.obj, context)
-
                 if (fillSheduleTable(response.obj, context) != 0)
                     err = 4
 
@@ -881,7 +879,6 @@ object Data {
 
         while (i < ScheduleList.size - 1) {
 
-
             if (ScheduleList[i].day_of_week != 9) {
 
                 val curent = formatter.parse(formatter.format(calendar.time))
@@ -910,6 +907,7 @@ object Data {
                         "can't parse date" + ScheduleList[i].subject + " " + ScheduleList[i].weekNumber + " " + ScheduleList[i].day_of_week
                     )
                 } catch (e: java.lang.IndexOutOfBoundsException) {
+
                 }
 
             } else {
@@ -951,6 +949,9 @@ object Data {
 
         if (ScheduleList.size == 1)
             return 4
+
+        if(ScheduleList[1].day_of_week == ScheduleList[1].day_of_week)
+            ScheduleList.removeAt(0)
 
         return if (response.errorCode != 0)
             response.errorCode
