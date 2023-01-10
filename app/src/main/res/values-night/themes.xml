@@ -4,11 +4,11 @@
         <!-- Primary brand color. -->
         <item name="colorPrimary">@color/BSUIR_blue</item>
         <item name="colorPrimaryVariant">@color/BSUIR_light_blue</item>
-        <item name="colorOnPrimary">@color/black</item>
+        <item name="colorOnPrimary">#ECECEC</item>
         <!-- Secondary brand color. -->
         <item name="colorSecondary">@color/BSUIR_blue</item>
         <item name="colorSecondaryVariant">@color/BSUIR_light_blue</item>
-        <item name="colorOnSecondary">@color/black</item>
+        <item name="colorOnSecondary">@color/white</item>
         <!-- Status bar color. -->
         <item name="android:statusBarColor" tools:targetApi="l">@color/black</item>
         <!-- Customize your theme here. -->

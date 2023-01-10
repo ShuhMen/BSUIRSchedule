@@ -950,7 +950,7 @@ object Data {
         if (ScheduleList.size == 1)
             return 4
 
-        if(ScheduleList[1].day_of_week == ScheduleList[1].day_of_week)
+        if(ScheduleList[0].day_of_week == ScheduleList[1].day_of_week)
             ScheduleList.removeAt(0)
 
         return if (response.errorCode != 0)

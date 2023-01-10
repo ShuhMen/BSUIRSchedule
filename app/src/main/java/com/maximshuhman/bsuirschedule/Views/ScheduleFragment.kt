@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.maximshuhman.bsuirschedule.Data.Data
 import com.maximshuhman.bsuirschedule.Data.Requests
 import com.maximshuhman.bsuirschedule.DataBase.DBContract
@@ -42,6 +43,7 @@ class ScheduleFragment : Fragment() {
     lateinit var swipeRefreshLayout: SwipeRefreshLayout
     lateinit var executors: ExecutorService
     lateinit var endOfSchedule: TextView
+    lateinit var floatingButton: FloatingActionButton
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,7 +69,9 @@ class ScheduleFragment : Fragment() {
         ToolBar = view.findViewById(R.id.toolbar)
         swipeRefreshLayout = view.findViewById(R.id.swipe_refresh)
         endOfSchedule = view.findViewById(R.id.endOfSchedule)
+        floatingButton = view.findViewById(R.id.floatingActionButton)
 
+        floatingButton.hide()
         swipeRefreshLayout.setColorSchemeResources(R.color.BSUIR_blue)
 
         val prefs = PreferenceHelper.defaultPreference(requireContext())
@@ -158,20 +162,57 @@ class ScheduleFragment : Fragment() {
 
             } else
                 updateUI(0)
-
-
-
         } else
-            updateUI(0)
+            updateUI(1)
 
-    try {
-        (requireActivity() as MainActivity).bottomNavigationView.menu.findItem(R.id.listOfGroupsFragment).isChecked =
-            true
-    } catch (_: UninitializedPropertyAccessException) {
-        //do nothing
-    }
+        try {
+            (requireActivity() as MainActivity).bottomNavigationView.menu.findItem(R.id.listOfGroupsFragment).isChecked =
+                true
+        } catch (_: UninitializedPropertyAccessException) {
+            //do nothing
+        }
 
         ScheduleRecycler.layoutManager = LinearLayoutManager(requireContext())
+
+        ScheduleRecycler.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+              /*  if ((recyclerView?.layoutManager as LinearLayoutManager)
+                        .findFirstCompletelyVisibleItemPosition() == 0) {
+                    floatingButton.visibility = View.GONE
+                }*/
+                if (dy > 10 && floatingButton.isShown) {
+                    floatingButton.hide()
+                }
+
+                // if the recycler view is
+                // scrolled above show the FAB
+                if (dy < -10 && !floatingButton.isShown) {
+                    floatingButton.show()
+                }
+
+                // of the recycler view is at the first
+                // item always show the FAB
+                if (!recyclerView.canScrollVertically(-1)) {
+                    floatingButton.hide()
+                }
+
+            }
+        })
+
+        floatingButton.setOnClickListener{
+            ScheduleRecycler.smoothScrollToPosition(0)
+        }
+
+
+                /*if ((recyclerView?.layoutManager as LinearLayoutManager)
+                        .findFirstCompletelyVisibleItemPosition() == 0) {
+                    buttonReturnToTop.visibility = View.GONE
+                }
+
+        }
+        */
+
         //helloText.text = Data.response
 
         /* val alertDialog = AlertDialog.Builder(requireContext()).create()
@@ -299,7 +340,7 @@ class ScheduleFragment : Fragment() {
             ProgressBar.visibility = View.VISIBLE
             ProgressBar.isIndeterminate = true
         }
-       // ScheduleRecycler.adapter = null
+        ScheduleRecycler.adapter = null
 
         var err = 0
 
@@ -323,7 +364,7 @@ class ScheduleFragment : Fragment() {
                             scheduleSituated.visibility = View.GONE
                             ScheduleRecycler.visibility = View.VISIBLE
                             ScheduleRecycler.adapter = ScheduleRecyclerAdapter(Data.ScheduleList)
-                                // ScheduleRecycler.recycledViewPool.clear()
+                            // ScheduleRecycler.recycledViewPool.clear()
                             ScheduleRecycler.adapter!!.notifyDataSetChanged()
                         }
                     }

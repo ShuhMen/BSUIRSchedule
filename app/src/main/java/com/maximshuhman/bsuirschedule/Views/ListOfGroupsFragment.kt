@@ -15,6 +15,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.maximshuhman.bsuirschedule.Data.Data
 import com.maximshuhman.bsuirschedule.DataClasses.Group
 import com.maximshuhman.bsuirschedule.PreferenceHelper
@@ -31,6 +32,7 @@ class ListOfGroupsFragment : Fragment() {
     lateinit var searchView: SearchView
     private lateinit var toolbar: Toolbar
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
+    lateinit var floatingButton: FloatingActionButton
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -44,12 +46,45 @@ class ListOfGroupsFragment : Fragment() {
         progressBar = view.findViewById(R.id.progress_bar_groups)
         swipeRefreshLayout = view.findViewById(R.id.swipe_refresh_groups)
         //SearchView = view.findViewById(R.id.search_view)
+        floatingButton = view.findViewById(R.id.upButtonGroups)
+
+        floatingButton.hide()
 
         swipeRefreshLayout.setColorSchemeResources(R.color.BSUIR_blue)
         //  swipeRefreshLayout.setProgressBackgroundColorSchemeColor(R.color.night_icon_stroke)
 
         GroupsResyclerView.layoutManager = LinearLayoutManager(requireContext())
         GroupsResyclerView.adapter = GroupsRecyclerAdapter()
+
+        GroupsResyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                /*  if ((recyclerView?.layoutManager as LinearLayoutManager)
+                          .findFirstCompletelyVisibleItemPosition() == 0) {
+                      floatingButton.visibility = View.GONE
+                  }*/
+                if (dy > 10 && floatingButton.isShown) {
+                    floatingButton.hide()
+                }
+
+                // if the recycler view is
+                // scrolled above show the FAB
+                if (dy < -10 && !floatingButton.isShown) {
+                    floatingButton.show()
+                }
+
+                // of the recycler view is at the first
+                // item always show the FAB
+                if (!recyclerView.canScrollVertically(-1)) {
+                    floatingButton.hide()
+                }
+
+            }
+        })
+
+        floatingButton.setOnClickListener{
+            GroupsResyclerView.smoothScrollToPosition(0)
+        }
 
 
         setHasOptionsMenu(true)

@@ -14,4 +14,5 @@
     <string name="update_schedule">Даступна абнова раскладу. Абнавиць?</string>
     <string name="yes">Так</string>
     <string name="no">Не</string>
+    <string name="up_button">Вверх</string>
 </resources>
