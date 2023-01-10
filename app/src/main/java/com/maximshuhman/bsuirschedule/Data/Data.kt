@@ -750,8 +750,6 @@ object Data {
             }
         }
 
-
-
         i = 2
 
         val l = ScheduleList[0].copy()
@@ -787,27 +785,56 @@ object Data {
 
         ScheduleList.add(0, l)
 
-
-
-
-
         while (i < ScheduleList.size) {
 
             if ((ScheduleList[i - 1].day_of_week != ScheduleList[i].day_of_week)) {
 
-                if (ScheduleList[i].day_of_week - ScheduleList[i - 1].day_of_week < 0)
+                var k: Int = i-1
+                //i--
+                var curent = formatter.parse(formatter.format(calendar.time))
+
+
+                var delta = ScheduleList[i].day_of_week - ScheduleList[i - 1].day_of_week
+
+                while(ScheduleList[k].day_of_week != 9) {
+
+
+                    try {
+                        val start = formatter.parse(ScheduleList[k].startLessonDate.toString())
+                        val end = formatter.parse(ScheduleList[k].endLessonDate.toString())
+
+                        if (start != null && curent != null) {
+                            if ((curent.after(end) || start.after(curent))) {
+                                ScheduleList.removeAt(k)
+                                i--
+                            }
+                        }
+
+                    } catch (e: ParseException) {
+                        Log.v(
+                            "DateParce",
+                            "can't parse date" + ScheduleList[k].subject + " " + ScheduleList[k].weekNumber + " " + ScheduleList[k].day_of_week
+                        )
+                    } catch (e: java.lang.IndexOutOfBoundsException) {
+
+                    }
+
+                    k--
+                }
+
+                if (delta < 0)
                     calendar.add(
                         Calendar.DATE,
-                        ScheduleList[i].day_of_week - ScheduleList[i - 1].day_of_week + 7
+                        delta + 7
                     )
                 else
                     calendar.add(
                         Calendar.DATE,
-                        ScheduleList[i].day_of_week - ScheduleList[i - 1].day_of_week
+                        delta
                     )
 
 
-                val curent = formatter.parse(formatter.format(calendar.time))
+                curent = formatter.parse(formatter.format(calendar.time))
 
                 if (curent?.after(endLessonsDate) == true || startLessonsDate?.after(curent) == true) {
                     ScheduleList.subList(i, ScheduleList.size).clear()
@@ -847,110 +874,52 @@ object Data {
                 ScheduleList.add(i, les)
                 i++
             }
-
             i++
         }
 
-        week = wk
-        calendar = Calendar.getInstance()
-        day = calendar.get(Calendar.DAY_OF_WEEK)
+        var k: Int = i-1
 
-        curday = if (day == 1) 7 else day - 1
+        val curent = formatter.parse(formatter.format(calendar.time))
+        while(ScheduleList[k].day_of_week != 9) {
 
-        ind = listOfPairs.indexOf(listOfPairs.firstOrNull { it.day_of_week == curday })
+            try {
+                val start = formatter.parse(ScheduleList[k].startLessonDate.toString())
+                val end = formatter.parse(ScheduleList[k].endLessonDate.toString())
 
-        if (ind == -1) {
-            while (ind == -1) {
-                if (curday == 7)
-                    week = week % 4 + 1
+                if (start != null && curent != null) {
+                    if ((curent.after(end) || start.after(curent))) {
+                        ScheduleList.removeAt(k)
+                    }
+                }
 
+            } catch (e: ParseException) {
+                Log.v(
+                    "DateParce",
+                    "can't parse date" + ScheduleList[k].subject + " " + ScheduleList[k].weekNumber + " " + ScheduleList[k].day_of_week
+                )
+            } catch (e: java.lang.IndexOutOfBoundsException) {
 
-                curday = curday % 7 + 1
-                calendar.add(Calendar.DATE, 1)
-
-                ind = listOfPairs.indexOf(listOfPairs.firstOrNull { it.day_of_week == curday })
             }
 
+            k--
         }
 
-        i = 1
+        i = ScheduleList.size-1
 
-
-
-        while (i < ScheduleList.size - 1) {
-
-            if (ScheduleList[i].day_of_week != 9) {
-
-                val curent = formatter.parse(formatter.format(calendar.time))
-
-                if (curent != null && startLessonsDate != null) {
-                    if (curent.after(endLessonsDate) || startLessonsDate.after(curent)) {
-                        ScheduleList.subList(i, ScheduleList.size).clear()
-                        break
-                    }
-                }
-
-                try {
-                    val start = formatter.parse(ScheduleList[i].startLessonDate.toString())
-                    val end = formatter.parse(ScheduleList[i].endLessonDate.toString())
-
-                    if (start != null && curent != null) {
-                        if ((curent.after(end) || start.after(curent)) && ScheduleList[i].day_of_week != 9) {
-                            ScheduleList.removeAt(i--)
-                        }
-
-                    }
-
-                } catch (e: ParseException) {
-                    Log.v(
-                        "DateParce",
-                        "can't parse date" + ScheduleList[i].subject + " " + ScheduleList[i].weekNumber + " " + ScheduleList[i].day_of_week
-                    )
-                } catch (e: java.lang.IndexOutOfBoundsException) {
-
-                }
-
-            } else {
-
-                while (i < ScheduleList.size)
-                    if (ScheduleList[i - 1].day_of_week == 9 && ScheduleList[i].day_of_week == 9 && i > 1) {
-                        if (ScheduleList[i + 1].day_of_week - ScheduleList[i - 2].day_of_week < 0)
-                            calendar.add(
-                                Calendar.DATE,
-                                -ScheduleList[i + 1].day_of_week + ScheduleList[i - 2].day_of_week - 7
-                            )
-                        else
-                            calendar.add(
-                                Calendar.DATE,
-                                -ScheduleList[i + 1].day_of_week + ScheduleList[i - 1].day_of_week
-                            )
-                        ScheduleList.removeAt(i - 1)
-                        i--
-                    } else
-                        break
-
-                if (ScheduleList[i + 1].day_of_week - ScheduleList[i - 1].day_of_week < 0)
-                    calendar.add(
-                        Calendar.DATE,
-                        ScheduleList[i + 1].day_of_week - ScheduleList[i - 1].day_of_week + 7
-                    )
-                else
-                    calendar.add(
-                        Calendar.DATE,
-                        ScheduleList[i + 1].day_of_week - ScheduleList[i - 1].day_of_week
-                    )
-                i += 0
-
-            }
-
-            i++
-
+        while (i > 1)
+        {
+            if (ScheduleList[i - 1].day_of_week == 9 && ScheduleList[i].day_of_week == 9)
+                ScheduleList.removeAt(i - 1)
+            i--
         }
 
         if (ScheduleList.size == 1)
             return 4
 
-        if(ScheduleList[0].day_of_week == ScheduleList[1].day_of_week)
+        if(ScheduleList[ScheduleList.size-1].day_of_week == 9)
+            ScheduleList.removeAt(ScheduleList.size-1)
+
+       if(ScheduleList[0].day_of_week == ScheduleList[1].day_of_week)
             ScheduleList.removeAt(0)
 
         return if (response.errorCode != 0)
@@ -1091,10 +1060,8 @@ object Data {
                 listOfGroups[i].copy()
             )
 
-            if (listOfGroups[i].name!!.substring(0, 3) != listOfGroups[i + 1].name!!.substring(
-                    0,
-                    3
-                ) && listOfGroups[i + 1].type != 3
+            if (listOfGroups[i].name!!.substring(0, 3) !=
+                listOfGroups[i + 1].name!!.substring(0, 3) && listOfGroups[i + 1].type != 3
             ) {
                 val group = listOfGroups[i + 1].copy()
                 group.name = group.name!!.substring(0, 3)

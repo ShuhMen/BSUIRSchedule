@@ -18,8 +18,6 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.maximshuhman.bsuirschedule.Data.Data
 import com.maximshuhman.bsuirschedule.DataClasses.Group
-import com.maximshuhman.bsuirschedule.PreferenceHelper
-import com.maximshuhman.bsuirschedule.PreferenceHelper.openedGroup
 import com.maximshuhman.bsuirschedule.R
 import java.util.concurrent.Executors
 
@@ -91,11 +89,11 @@ class ListOfGroupsFragment : Fragment() {
         toolbar = view.findViewById(R.id.toolbar_groups)
         (activity as AppCompatActivity?)!!.setSupportActionBar(toolbar)
 
-        val prefs = PreferenceHelper.defaultPreference(requireContext())
+       /* val prefs = PreferenceHelper.defaultPreference(requireContext())
 
         val group = prefs.openedGroup
 
-        /* if(group != 0)
+         if(group != 0)
          {
              val navController = findNavController()
 

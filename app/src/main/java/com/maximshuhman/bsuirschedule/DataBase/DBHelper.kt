@@ -162,7 +162,7 @@ class DbHelper(context: Context) :
             db.execSQL("PRAGMA foreign_keys = ON")
         }
 
-        if (oldVersion < 5) {
+        if (oldVersion < 6) {
             db.execSQL("PRAGMA foreign_keys = OFF")
             // db.execSQL("DROP TABLE ${DBContract.Schedule.TABLE_NAME}")
             db.execSQL("DELETE FROM ${DBContract.Schedule.TABLE_NAME}")
@@ -171,7 +171,7 @@ class DbHelper(context: Context) :
             db.execSQL("PRAGMA foreign_keys = ON")
         }
 
-        if (oldVersion < 6) {
+        if (oldVersion < 7) {
             try {
                 val a5 = db.execSQL(SQL_CREATE_EXAMS)
             } catch (e: Exception) {
@@ -186,7 +186,7 @@ class DbHelper(context: Context) :
             db.execSQL("PRAGMA foreign_keys = ON")
         }
 
-        if (oldVersion < 7) {
+        if (oldVersion < 8) {
             db.execSQL("ALTER TABLE ${DBContract.CommonSchedule.TABLE_NAME} ADD COLUMN ${DBContract.CommonSchedule.lastUpdate} TEXT")
 
             val c: Cursor = db.rawQuery(
