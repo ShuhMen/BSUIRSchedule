@@ -488,16 +488,16 @@ object Data {
         return 0
     }
 
-    private fun fillListOfPairs(db: SQLiteDatabase, grID: Int): Int {
+    private fun fillListOfPairs(db: SQLiteDatabase, grID: Int, tableName: String): Int {
 
 
         val c: Cursor = db.rawQuery(
-            "SELECT * FROM ${DBContract.Schedule.TABLE_NAME} " +
-                    "INNER JOIN ${DBContract.CommonSchedule.TABLE_NAME} ON (${DBContract.Schedule.TABLE_NAME}.${DBContract.Schedule.groupID} = ${DBContract.CommonSchedule.TABLE_NAME}.${DBContract.CommonSchedule.commonScheduleID}) " +
+            "SELECT * FROM ${tableName} " +
+                    "INNER JOIN ${DBContract.CommonSchedule.TABLE_NAME} ON (${tableName}.${DBContract.Schedule.groupID} = ${DBContract.CommonSchedule.TABLE_NAME}.${DBContract.CommonSchedule.commonScheduleID}) " +
                     "INNER JOIN ${DBContract.Groups.TABLE_NAME} ON (${DBContract.Groups.TABLE_NAME}.${DBContract.Groups.groupID} = ${DBContract.CommonSchedule.TABLE_NAME}.${DBContract.CommonSchedule.commonScheduleID}) " +
                     "INNER JOIN ${DBContract.Employees.TABLE_NAME} ON (${DBContract.Schedule.TABLE_NAME}.${DBContract.Schedule.employeeID} = ${DBContract.Employees.TABLE_NAME}.${DBContract.Employees.employeeID}) " +
                     "WHERE ${DBContract.Groups.TABLE_NAME}.${DBContract.Groups.groupID} = $grID " +
-                    "ORDER BY ${DBContract.Schedule.TABLE_NAME}.${DBContract.Schedule.day_of_week} ",
+                    "ORDER BY ${tableName}.${DBContract.Schedule.day_of_week} ",
 
             null
         )
@@ -509,7 +509,8 @@ object Data {
             commonSchedule = CommonSchedule(
                 getString(getColumnIndexOrThrow(DBContract.CommonSchedule.startDate)),
                 getString(getColumnIndexOrThrow(DBContract.CommonSchedule.endDate)),
-                "", ""
+                "", "",
+                getString(getColumnIndexOrThrow(DBContract.CommonSchedule.lastBuild))
             )
 
             while (moveToNext()) {
@@ -595,8 +596,6 @@ object Data {
         val formatter = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault(Locale.Category.FORMAT))
         val cur: String = formatter.format(calendar.time)
 
-
-
         try {
             grID = json_common.getJSONObject("studentGroupDto").getInt("id")
         } catch (e: JSONException) {
@@ -641,69 +640,14 @@ object Data {
         return 0
     }
 
-    fun makeSchedule(grNum: String, context: Context?, groupID: Int?, mode: Int?): Int {
-
-        if (grNum == "" || groupID == null || context == null)
-            return 1
-
-        val dbHelper = DbHelper(context)
-        val db = dbHelper.writableDatabase
-
-        ScheduleList.clear()
-        listOfPairs.clear()
-        val c: Cursor = db.rawQuery(
-            "SELECT COUNT(*) as cnt FROM ${DBContract.Schedule.TABLE_NAME} WHERE ${DBContract.Schedule.TABLE_NAME}.${DBContract.Schedule.groupID} = $groupID",
-            null
-        )
-        c.moveToFirst()
-
-        var response = JSONResponse(0, "", JSONObject())
-
-        if (c.getInt(0) == 0 || mode == 1) {
-
-            response = Requests.getGroupSchedule("https://iis.bsuir.by/api/v1/", grNum)
-            if (response.errorCode == 0) {
-
-                db.execSQL("DELETE FROM ${DBContract.Exams.TABLE_NAME} WHERE ${DBContract.Exams.TABLE_NAME}.${DBContract.Schedule.groupID} = $groupID")
-                db.execSQL("DELETE FROM ${DBContract.Schedule.TABLE_NAME} WHERE ${DBContract.Schedule.TABLE_NAME}.${DBContract.Schedule.groupID} = $groupID")
-                db.execSQL("DELETE FROM ${DBContract.Exams.TABLE_NAME} WHERE ${DBContract.Exams.TABLE_NAME}.${DBContract.Schedule.groupID} = $groupID")
-                db.execSQL("DELETE FROM ${DBContract.CommonSchedule.TABLE_NAME} WHERE ${DBContract.CommonSchedule.TABLE_NAME}.${DBContract.CommonSchedule.commonScheduleID} = $groupID")
-
-                var err = 0
-
-                if (fillSheduleTable(response.obj, context) != 0)
-                    err = 4
-
-                if (fillExamsTable(response.obj, context) != 0)
-                    err = 5
-
-                if (err != 0)
-                    return err
-
-                if (fillListOfPairs(db, groupID) == 1)
-                    return 1
-            } else {
-                if (c.getInt(0) != 0) {
-                    if (fillListOfPairs(db, groupID) == 1)
-                        return 1
-                } else
-                    return 1
-            }
-
-        } else
-            if (fillListOfPairs(db, groupID) == 1)
-                return 1
-
-        c.close()
-
+    fun fillScheduleList(calendar: Calendar, formatter: SimpleDateFormat) {
         var week: Int
 
         var ind: Int
         week = Requests.getCurrent().res
         val wk = week
-        var calendar: Calendar = Calendar.getInstance()
+
         var day: Int = calendar.get(Calendar.DAY_OF_WEEK)
-        val formatter = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault(Locale.Category.FORMAT))
 
         val startLessonsDate = formatter.parse(commonSchedule.startDate)
         val endLessonsDate = formatter.parse(commonSchedule.endDate)
@@ -789,14 +733,14 @@ object Data {
 
             if ((ScheduleList[i - 1].day_of_week != ScheduleList[i].day_of_week)) {
 
-                var k: Int = i-1
+                var k: Int = i - 1
                 //i--
                 var curent = formatter.parse(formatter.format(calendar.time))
 
 
                 var delta = ScheduleList[i].day_of_week - ScheduleList[i - 1].day_of_week
 
-                while(ScheduleList[k].day_of_week != 9) {
+                while (ScheduleList[k].day_of_week != 9) {
 
 
                     try {
@@ -877,10 +821,10 @@ object Data {
             i++
         }
 
-        var k: Int = i-1
+        var k: Int = i - 1
 
         val curent = formatter.parse(formatter.format(calendar.time))
-        while(ScheduleList[k].day_of_week != 9) {
+        while (ScheduleList[k].day_of_week != 9) {
 
             try {
                 val start = formatter.parse(ScheduleList[k].startLessonDate.toString())
@@ -904,23 +848,268 @@ object Data {
             k--
         }
 
-        i = ScheduleList.size-1
+        i = ScheduleList.size - 1
 
-        while (i > 1)
-        {
+        while (i > 1) {
             if (ScheduleList[i - 1].day_of_week == 9 && ScheduleList[i].day_of_week == 9)
                 ScheduleList.removeAt(i - 1)
             i--
         }
 
+
+
+        if (ScheduleList[ScheduleList.size - 1].day_of_week == 9)
+            ScheduleList.removeAt(ScheduleList.size - 1)
+
+        if (ScheduleList[0].day_of_week == ScheduleList[1].day_of_week)
+            ScheduleList.removeAt(0)
+
+    }
+
+    fun finalBuild(db: SQLiteDatabase, groupID: Int) {
+        db.execSQL("DELETE FROM ${DBContract.finalSchedule.TABLE_NAME} WHERE ${DBContract.Schedule.groupID} = $groupID")
+        for (i in 0 until ScheduleList.size) {
+            val values = ContentValues().apply {
+                put(DBContract.finalSchedule.groupID, groupID)
+                put(DBContract.finalSchedule.dayIndex, i)
+                put(DBContract.finalSchedule.day_of_week, ScheduleList[i].day_of_week)
+                put(DBContract.finalSchedule.auditories, ScheduleList[i].auditories)
+                put(DBContract.finalSchedule.endLessonTime, ScheduleList[i].endLessonTime)
+                put(DBContract.finalSchedule.lessonTypeAbbrev, ScheduleList[i].lessonTypeAbbrev)
+                put(DBContract.finalSchedule.note, ScheduleList[i].note)
+                put(DBContract.finalSchedule.numSubgroup, ScheduleList[i].numSubgroup)
+                put(DBContract.finalSchedule.startLessonTime, ScheduleList[i].startLessonTime)
+                put(DBContract.finalSchedule.subject, ScheduleList[i].subject)
+                put(DBContract.finalSchedule.subjectFullName, ScheduleList[i].subjectFullName)
+                put(DBContract.finalSchedule.weekNumber, ScheduleList[i].weekNumber)
+                put(
+                    DBContract.finalSchedule.employeeID, ScheduleList[i].employees.id
+                )
+                put(
+                    DBContract.finalSchedule.startLessonDate, ScheduleList[i].startLessonDate
+                )
+                put(DBContract.finalSchedule.endLessonDate, ScheduleList[i].endLessonDate)
+            }
+
+            db.insert(DBContract.finalSchedule.TABLE_NAME, null, values)
+        }
+    }
+
+    fun loadFromFinal(
+        groupID: Int,
+        formatter: SimpleDateFormat,
+        curent: Date,
+        db: SQLiteDatabase
+    ): Int {
+
+
+        val calendar = Calendar.getInstance()
+        val common: Cursor = db.rawQuery(
+            "SELECT * FROM ${DBContract.CommonSchedule.TABLE_NAME} " +
+                    "WHERE ${DBContract.CommonSchedule.commonScheduleID} = $groupID ",
+
+            null
+        )
+
+        with(common) {
+            moveToFirst()
+            commonSchedule = CommonSchedule(
+                getString(getColumnIndexOrThrow(DBContract.CommonSchedule.startDate)),
+                getString(getColumnIndexOrThrow(DBContract.CommonSchedule.endDate)),
+                "", "",
+                getString(getColumnIndexOrThrow(DBContract.CommonSchedule.lastBuild))
+            )
+        }
+
+
+        if (commonSchedule.lastBuild != null && commonSchedule.lastBuild != "") {
+            if (formatter.parse(commonSchedule.lastBuild).before(curent)) {
+                if (fillListOfPairs(db, groupID, DBContract.Schedule.TABLE_NAME) == 1)
+                    return 1
+                fillScheduleList(calendar, formatter)
+                finalBuild(db, groupID)
+
+                val values = ContentValues().apply {
+                    put(DBContract.CommonSchedule.lastBuild, formatter.format(calendar.time))
+                }
+
+                db.update(
+                    DBContract.CommonSchedule.TABLE_NAME,
+                    values,
+                    "${DBContract.CommonSchedule.commonScheduleID} = $groupID",
+                    null
+                )
+                return 0
+
+            } else {
+                val c: Cursor = db.rawQuery(
+                    "SELECT * FROM ${DBContract.finalSchedule.TABLE_NAME} " +
+                            "INNER JOIN ${DBContract.CommonSchedule.TABLE_NAME} ON (${DBContract.finalSchedule.TABLE_NAME}.${DBContract.Schedule.groupID} = ${DBContract.CommonSchedule.TABLE_NAME}.${DBContract.CommonSchedule.commonScheduleID}) " +
+                            "INNER JOIN ${DBContract.Groups.TABLE_NAME} ON (${DBContract.Groups.TABLE_NAME}.${DBContract.Groups.groupID} = ${DBContract.CommonSchedule.TABLE_NAME}.${DBContract.CommonSchedule.commonScheduleID}) " +
+                            "INNER JOIN ${DBContract.Employees.TABLE_NAME} ON (${DBContract.finalSchedule.TABLE_NAME}.${DBContract.Schedule.employeeID} = ${DBContract.Employees.TABLE_NAME}.${DBContract.Employees.employeeID}) " +
+                            "WHERE ${DBContract.Groups.TABLE_NAME}.${DBContract.Groups.groupID} = $groupID " +
+                            "ORDER BY ${DBContract.finalSchedule.TABLE_NAME}.${DBContract.finalSchedule.dayIndex} ",
+
+                    null
+                )
+
+                with(c) {
+                    while (moveToNext()) {
+                        ScheduleList.add(
+                            Lesson(
+                                getInt(getColumnIndexOrThrow(DBContract.Schedule.day_of_week)),
+                                getString(getColumnIndexOrThrow(DBContract.Schedule.auditories)),
+                                getString(getColumnIndexOrThrow(DBContract.Schedule.endLessonTime)),
+                                getString(getColumnIndexOrThrow(DBContract.Schedule.lessonTypeAbbrev)),
+                                getString(getColumnIndexOrThrow(DBContract.Schedule.note)),
+                                getInt(getColumnIndexOrThrow(DBContract.Schedule.numSubgroup)),
+                                getString(getColumnIndexOrThrow(DBContract.Schedule.startLessonTime)),
+                                getString(getColumnIndexOrThrow(DBContract.Schedule.subject)),
+                                getString(getColumnIndexOrThrow(DBContract.Schedule.subjectFullName)),
+                                getString(getColumnIndexOrThrow(DBContract.Schedule.weekNumber)),
+                                Employees(
+                                    try {
+                                        getInt(getColumnIndexOrThrow(DBContract.Employees.employeeID))
+                                    } catch (e: Exception) {
+                                        0
+                                    },
+                                    try {
+                                        getString(getColumnIndexOrThrow(DBContract.Employees.firstName))
+                                    } catch (e: Exception) {
+                                        ""
+                                    } as String,
+                                    try {
+                                        getString(getColumnIndexOrThrow(DBContract.Employees.middleName))
+                                    } catch (e: Exception) {
+                                        ""
+                                    } as String,
+                                    try {
+                                        getString(getColumnIndexOrThrow(DBContract.Employees.lastName))
+                                    } catch (e: Exception) {
+                                        ""
+                                    } as String,
+                                    try {
+                                        getString(getColumnIndexOrThrow(DBContract.Employees.photoLink))
+                                    } catch (e: Exception) {
+                                        ""
+                                    } as String,
+                                    try {
+                                        getBlob(getColumnIndexOrThrow(DBContract.Employees.photo))
+                                    } catch (e: Exception) {
+                                        ByteArray(0)
+                                    }
+                                ),
+                                try {
+                                    getString(getColumnIndexOrThrow(DBContract.Schedule.startLessonDate))
+                                } catch (e: Exception) {
+                                    ""
+                                },
+                                try {
+                                    getString(getColumnIndexOrThrow(DBContract.Schedule.endLessonDate))
+                                } catch (e: Exception) {
+                                    ""
+                                }, null
+                            )
+                        )
+
+
+                    }
+                }
+                c.close()
+
+                return if (ScheduleList.size != 0) {
+                    0
+                } else
+                    1
+
+            }
+        } else {
+            val values = ContentValues().apply {
+                put(DBContract.CommonSchedule.lastBuild, formatter.format(calendar.time))
+            }
+
+            db.update(
+                DBContract.CommonSchedule.TABLE_NAME,
+                values,
+                "${DBContract.CommonSchedule.commonScheduleID} = $groupID",
+                null
+            )
+
+            if (fillListOfPairs(db, groupID, DBContract.Schedule.TABLE_NAME) == 1)
+                return 1
+
+            fillScheduleList(calendar, formatter)
+            finalBuild(db, groupID)
+            return 0
+        }
+    }
+
+    fun makeSchedule(grNum: String, context: Context?, groupID: Int?, mode: Int?): Int {
+
+        if (grNum == "" || groupID == null || context == null)
+            return 1
+
+        val dbHelper = DbHelper(context)
+        val db = dbHelper.writableDatabase
+
+        var calendar: Calendar = Calendar.getInstance()
+        val formatter = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault(Locale.Category.FORMAT))
+
+        val curent = formatter.parse(formatter.format(calendar.time))
+
+        ScheduleList.clear()
+        listOfPairs.clear()
+        val c: Cursor = db.rawQuery(
+            "SELECT COUNT(*) as cnt FROM ${DBContract.Schedule.TABLE_NAME} WHERE ${DBContract.Schedule.TABLE_NAME}.${DBContract.Schedule.groupID} = $groupID",
+            null
+        )
+        c.moveToFirst()
+
+        var response = JSONResponse(0, "", JSONObject())
+
+        if (c.getInt(0) == 0 || mode == 1) {
+
+            response = Requests.getGroupSchedule("https://iis.bsuir.by/api/v1/", grNum)
+            if (response.errorCode == 0) {
+
+                db.execSQL("DELETE FROM ${DBContract.Schedule.TABLE_NAME} WHERE ${DBContract.Schedule.TABLE_NAME}.${DBContract.Schedule.groupID} = $groupID")
+                db.execSQL("DELETE FROM ${DBContract.Exams.TABLE_NAME} WHERE ${DBContract.Exams.TABLE_NAME}.${DBContract.Schedule.groupID} = $groupID")
+                db.execSQL("DELETE FROM ${DBContract.CommonSchedule.TABLE_NAME} WHERE ${DBContract.CommonSchedule.TABLE_NAME}.${DBContract.CommonSchedule.commonScheduleID} = $groupID")
+
+                var err = 0
+
+                if (fillSheduleTable(response.obj, context) != 0)
+                    err = 4
+
+                if (fillExamsTable(response.obj, context) != 0)
+                    err = 5
+
+                if (err != 0)
+                    return err
+
+                if (fillListOfPairs(db, groupID, DBContract.Schedule.TABLE_NAME) == 1)
+                    return 1
+
+                fillScheduleList(calendar, formatter)
+
+                finalBuild(db, groupID)
+            } else
+                if (c.getInt(0) != 0) {
+                    c.close()
+                    if (loadFromFinal(groupID, formatter, curent, db) == 1)
+                        return 1
+                } else
+                    return 1
+        } else
+            if (loadFromFinal(groupID, formatter, curent, db) == 1)
+                return 1
+
+
+
+
+
         if (ScheduleList.size == 1)
             return 4
-
-        if(ScheduleList[ScheduleList.size-1].day_of_week == 9)
-            ScheduleList.removeAt(ScheduleList.size-1)
-
-       if(ScheduleList[0].day_of_week == ScheduleList[1].day_of_week)
-            ScheduleList.removeAt(0)
 
         return if (response.errorCode != 0)
             response.errorCode

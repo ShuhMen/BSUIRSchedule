@@ -30,6 +30,7 @@ class DbHelper(context: Context) :
                 "${DBContract.CommonSchedule.startDate} TEXT," +
                 "${DBContract.CommonSchedule.endDate} TEXT," +
                 "${DBContract.CommonSchedule.lastUpdate} TEXT," +
+                "${DBContract.CommonSchedule.lastBuild} TEXT," +
                 "FOREIGN KEY (${DBContract.CommonSchedule.commonScheduleID}) REFERENCES ${DBContract.Groups.TABLE_NAME}(${DBContract.Groups.groupID}));"
 
     private val SQL_CREATE_SCHEDULE =
@@ -52,6 +53,28 @@ class DbHelper(context: Context) :
                 "${DBContract.Schedule.endLessonDate} TEXT," +
                 "FOREIGN KEY (${DBContract.Schedule.groupID}) REFERENCES ${DBContract.Groups.TABLE_NAME}(${DBContract.CommonSchedule.commonScheduleID})," +
                 "FOREIGN KEY (${DBContract.Schedule.employeeID}) REFERENCES ${DBContract.Employees.TABLE_NAME}(${DBContract.Employees.employeeID}))"
+
+    private val SQL_CREATE_FINALSCHEDULE =
+        "CREATE TABLE ${DBContract.finalSchedule.TABLE_NAME} (" +
+                "${DBContract.finalSchedule.scheduleID} INTEGER PRIMARY KEY," +
+                "${DBContract.finalSchedule.dayIndex} INTEGER," +
+                "${DBContract.finalSchedule.day_of_week} INTEGER," +
+                "${DBContract.finalSchedule.auditories} TEXT," +
+                "${DBContract.finalSchedule.endLessonTime} TEXT," +
+                "${DBContract.finalSchedule.lessonTypeAbbrev} TEXT," +
+                "${DBContract.finalSchedule.note} TEXT," +
+                "${DBContract.finalSchedule.numSubgroup} INTEGER," +
+                "${DBContract.finalSchedule.startLessonTime} TEXT," +
+                "${DBContract.finalSchedule.studentGroups} TEXT," +
+                "${DBContract.finalSchedule.subject} TEXT," +
+                "${DBContract.finalSchedule.subjectFullName} TEXT," +
+                "${DBContract.finalSchedule.weekNumber} INTEGER," +
+                "${DBContract.finalSchedule.employeeID} INTEGER," +
+                "${DBContract.finalSchedule.groupID} INTEGER," +
+                "${DBContract.finalSchedule.startLessonDate} TEXT," +
+                "${DBContract.finalSchedule.endLessonDate} TEXT," +
+                "FOREIGN KEY (${DBContract.finalSchedule.groupID}) REFERENCES ${DBContract.Groups.TABLE_NAME}(${DBContract.CommonSchedule.commonScheduleID})," +
+                "FOREIGN KEY (${DBContract.finalSchedule.employeeID}) REFERENCES ${DBContract.Employees.TABLE_NAME}(${DBContract.Employees.employeeID}))"
 
     private val SQL_CREATE_EMPlOYEES =
         "CREATE TABLE ${DBContract.Employees.TABLE_NAME} (" +
@@ -127,7 +150,13 @@ class DbHelper(context: Context) :
             }
 
             try {
-                val a5 = it.execSQL(SQL_CREATE_EXAMS)
+                val a6 = it.execSQL(SQL_CREATE_EXAMS)
+            } catch (e: Exception) {
+                Log.v("DBDD", "SQL_CREATE_EXAMS ERROR")
+            }
+
+            try {
+                val a7 = it.execSQL(SQL_CREATE_FINALSCHEDULE)
             } catch (e: Exception) {
                 Log.v("DBDD", "SQL_CREATE_EXAMS ERROR")
             }
@@ -223,6 +252,16 @@ class DbHelper(context: Context) :
             c.close()
         }
 
+        if(oldVersion < 9){
+            db.execSQL("ALTER TABLE ${DBContract.CommonSchedule.TABLE_NAME} ADD COLUMN ${DBContract.CommonSchedule.lastBuild} TEXT")
+
+            try {
+                val a5 = db.execSQL(SQL_CREATE_FINALSCHEDULE)
+            } catch (e: Exception) {
+                Log.v("DBDD", "SQL_CREATE_FINALSCHEDULE ERROR")
+            }
+        }
+
 
     }
 
@@ -232,7 +271,7 @@ class DbHelper(context: Context) :
 
     companion object {
         // If you change the database schema, you must increment the database version.
-        const val DATABASE_VERSION = 8
+        const val DATABASE_VERSION = 9
         const val DATABASE_NAME = "Schedule"
     }
 }

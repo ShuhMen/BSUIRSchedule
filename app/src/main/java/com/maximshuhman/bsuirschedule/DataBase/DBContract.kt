@@ -29,11 +29,33 @@ object DBContract {
         const val endDate = "endDate"
         const val commonScheduleID = "commonScheduleID"
         const val lastUpdate = "lastUpdate"
+        const val lastBuild = "lastBuild"
     }
 
     object Schedule : BaseColumns {
         const val TABLE_NAME = "schedule"
         const val scheduleID = BaseColumns._ID
+        const val groupID = "groupID"
+        const val day_of_week = "day_of_week"
+        const val auditories = "auditories"
+        const val endLessonTime = "endLessonTime"
+        const val lessonTypeAbbrev = "lessonTypeAbbrev"
+        const val note = "note"
+        const val numSubgroup = "numSubgroup"
+        const val startLessonTime = "startLessonTime"
+        const val studentGroups = "studentGroups"
+        const val subject = "subject"
+        const val subjectFullName = "subjectFullName"
+        const val weekNumber = "weekNumber"
+        const val employeeID = "employeeID"
+        const val startLessonDate = "startLessonDate"
+        const val endLessonDate = "endLessonDate"
+    }
+
+    object finalSchedule : BaseColumns {
+        const val TABLE_NAME = "finalSchedule"
+        const val scheduleID = BaseColumns._ID
+        const val dayIndex = "dayIndex"
         const val groupID = "groupID"
         const val day_of_week = "day_of_week"
         const val auditories = "auditories"
