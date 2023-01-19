@@ -9,6 +9,7 @@ import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
+import androidx.cardview.widget.CardView
 import androidx.fragment.app.Fragment
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
@@ -16,6 +17,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.firebase.crashlytics.ktx.crashlytics
+import com.google.firebase.ktx.Firebase
 import com.maximshuhman.bsuirschedule.Data.Data
 import com.maximshuhman.bsuirschedule.DataClasses.Group
 import com.maximshuhman.bsuirschedule.R
@@ -246,6 +249,7 @@ class ListOfGroupsFragment : Fragment() {
             }
 
             private val GroupNumber: TextView = itemView.findViewById(R.id.group_number_text)
+            private val cardView: CardView = itemView.findViewById(R.id.group_card_view)
 
             @SuppressLint("SetTextI18n")
             fun bind(group: Group) {
@@ -272,6 +276,8 @@ class ListOfGroupsFragment : Fragment() {
                 //navController?.navigate(R.id.action_listOfdataFilterFragment_to_scheduleFragment)
 
                 //val action = ScheduleFragment().action
+
+                dataFilter = Data.GroupsList
                 navController!!.navigate(R.id.scheduleFragment, bundle)
 
 
@@ -319,12 +325,14 @@ class ListOfGroupsFragment : Fragment() {
                     return filterResults
                 }
 
-                @SuppressLint("NotifyDataSetChanged")
-                @Suppress("UNCHECKED_CAST")
                 override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
-                    dataFilter = results?.values as MutableList<Group>
-                    // updateUI()
-                    GroupsResyclerView.adapter!!.notifyDataSetChanged()
+                    try {
+                        dataFilter = results?.values as MutableList<Group>
+                        GroupsResyclerView.adapter!!.notifyDataSetChanged()
+                    }catch (e:java.lang.NullPointerException){
+                        Firebase.crashlytics.log(results?.values.toString())
+
+                    }
                 }
 
             }

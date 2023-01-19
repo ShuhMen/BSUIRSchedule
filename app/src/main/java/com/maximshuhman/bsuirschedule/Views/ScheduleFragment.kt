@@ -359,32 +359,39 @@ class ScheduleFragment : Fragment() {
                     0 -> {
                         if (Data.ScheduleList.size == 0) {
                             scheduleSituated.visibility = View.VISIBLE
-                            ScheduleRecycler.visibility = View.GONE
+                            ScheduleRecycler.visibility = View.INVISIBLE
                         } else {
                             scheduleSituated.visibility = View.GONE
                             ScheduleRecycler.visibility = View.VISIBLE
-                            ScheduleRecycler.adapter = ScheduleRecyclerAdapter(Data.ScheduleList)
-                            // ScheduleRecycler.recycledViewPool.clear()
-                            ScheduleRecycler.adapter!!.notifyDataSetChanged()
                         }
                     }
-                    4 -> endOfSchedule.visibility = View.VISIBLE
+                    4 -> {
+                        endOfSchedule.visibility = View.VISIBLE
+                    }
                     5 -> Toast.makeText(
-                        activity?.applicationContext,
-                        "Расписание отсутствует!",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    else -> Toast.makeText(
-                        activity?.applicationContext,
-                        "Ошибка получения данных",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                            requireContext(),
+                            "Расписание отсутствует!",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    6 -> Toast.makeText(
+                            requireContext(),
+                            "Что-то пошло не так",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    else -> {
+                        Toast.makeText(
+                            requireContext(),
+                            "Ошибка получения данных",
+                            Toast.LENGTH_SHORT
+                        ).show()
 
+                    }
                 }
 
                 ProgressBar.visibility = View.INVISIBLE
                 swipeRefreshLayout.isRefreshing = false
-
+                ScheduleRecycler.adapter = ScheduleRecyclerAdapter(Data.ScheduleList)
+                ScheduleRecycler.adapter!!.notifyDataSetChanged()
                 setHasOptionsMenu(true)
             }
         }

@@ -55,7 +55,7 @@ class DbHelper(context: Context) :
                 "FOREIGN KEY (${DBContract.Schedule.employeeID}) REFERENCES ${DBContract.Employees.TABLE_NAME}(${DBContract.Employees.employeeID}))"
 
     private val SQL_CREATE_FINALSCHEDULE =
-        "CREATE TABLE ${DBContract.finalSchedule.TABLE_NAME} (" +
+        "CREATE TABLE IF NOT EXISTS ${DBContract.finalSchedule.TABLE_NAME} (" +
                 "${DBContract.finalSchedule.scheduleID} INTEGER PRIMARY KEY," +
                 "${DBContract.finalSchedule.dayIndex} INTEGER," +
                 "${DBContract.finalSchedule.day_of_week} INTEGER," +
@@ -97,7 +97,7 @@ class DbHelper(context: Context) :
                 "FOREIGN KEY (${DBContract.Favorites.groupID}) REFERENCES ${DBContract.Groups.TABLE_NAME}(${DBContract.Groups.groupID}))"
 
     private val SQL_CREATE_EXAMS =
-        "CREATE TABLE ${DBContract.Exams.TABLE_NAME} (" +
+        "CREATE TABLE IF NOT EXISTS ${DBContract.Exams.TABLE_NAME} (" +
                 "${DBContract.Schedule.scheduleID} INTEGER PRIMARY KEY," +
                 "${DBContract.Schedule.day_of_week} INTEGER," +
                 "${DBContract.Schedule.auditories} TEXT," +
@@ -216,8 +216,10 @@ class DbHelper(context: Context) :
         }
 
         if (oldVersion < 8) {
+            try{
             db.execSQL("ALTER TABLE ${DBContract.CommonSchedule.TABLE_NAME} ADD COLUMN ${DBContract.CommonSchedule.lastUpdate} TEXT")
-
+             }catch(e: Exception) {
+            }
             val c: Cursor = db.rawQuery(
                 "SELECT * FROM ${DBContract.CommonSchedule.TABLE_NAME} " +
                         "INNER JOIN ${DBContract.Groups.TABLE_NAME} ON (${DBContract.Groups.TABLE_NAME}.${DBContract.Groups.groupID} = ${DBContract.CommonSchedule.TABLE_NAME}.${DBContract.CommonSchedule.commonScheduleID})",
@@ -253,13 +255,33 @@ class DbHelper(context: Context) :
         }
 
         if(oldVersion < 9){
-            db.execSQL("ALTER TABLE ${DBContract.CommonSchedule.TABLE_NAME} ADD COLUMN ${DBContract.CommonSchedule.lastBuild} TEXT")
+            try{
+                db.execSQL("ALTER TABLE ${DBContract.CommonSchedule.TABLE_NAME} ADD COLUMN ${DBContract.CommonSchedule.lastBuild} TEXT")
+            }catch(e: Exception)
+            {
 
+            }
             try {
                 val a5 = db.execSQL(SQL_CREATE_FINALSCHEDULE)
             } catch (e: Exception) {
                 Log.v("DBDD", "SQL_CREATE_FINALSCHEDULE ERROR")
             }
+        }
+
+        if(oldVersion < 10)
+        {
+            try {
+                val a6 = db.execSQL(SQL_CREATE_EXAMS)
+            } catch (e: Exception) {
+                Log.v("DBDD", "SQL_CHECK_EXAMS ERROR")
+            }
+
+            try {
+                val a7 = db.execSQL(SQL_CREATE_FINALSCHEDULE)
+            } catch (e: Exception) {
+                Log.v("DBDD", "SQL_CHECK_EXAMS ERROR")
+            }
+
         }
 
 
@@ -271,7 +293,7 @@ class DbHelper(context: Context) :
 
     companion object {
         // If you change the database schema, you must increment the database version.
-        const val DATABASE_VERSION = 9
+        const val DATABASE_VERSION = 10
         const val DATABASE_NAME = "Schedule"
     }
 }

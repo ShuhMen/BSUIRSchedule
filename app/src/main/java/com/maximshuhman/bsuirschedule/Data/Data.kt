@@ -138,7 +138,7 @@ object Data {
                         java.net.URL(ph).openStream()
                     val bitmap = BitmapFactory.decodeStream(`in`)
                     val stream = ByteArrayOutputStream()
-                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 50, stream)
                     byte = stream.toByteArray()
                 } catch (e: Exception) {
                     Log.v("Request", "Failed to load photo $empId")
@@ -864,6 +864,7 @@ object Data {
         if (ScheduleList[0].day_of_week == ScheduleList[1].day_of_week)
             ScheduleList.removeAt(0)
 
+
     }
 
     fun finalBuild(db: SQLiteDatabase, groupID: Int) {
@@ -1046,74 +1047,90 @@ object Data {
 
     fun makeSchedule(grNum: String, context: Context?, groupID: Int?, mode: Int?): Int {
 
-        if (grNum == "" || groupID == null || context == null)
-            return 1
-
-        val dbHelper = DbHelper(context)
-        val db = dbHelper.writableDatabase
-
-        var calendar: Calendar = Calendar.getInstance()
-        val formatter = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault(Locale.Category.FORMAT))
-
-        val curent = formatter.parse(formatter.format(calendar.time))
-
-        ScheduleList.clear()
-        listOfPairs.clear()
-        val c: Cursor = db.rawQuery(
-            "SELECT COUNT(*) as cnt FROM ${DBContract.Schedule.TABLE_NAME} WHERE ${DBContract.Schedule.TABLE_NAME}.${DBContract.Schedule.groupID} = $groupID",
-            null
-        )
-        c.moveToFirst()
-
-        var response = JSONResponse(0, "", JSONObject())
-
-        if (c.getInt(0) == 0 || mode == 1) {
-
-            response = Requests.getGroupSchedule("https://iis.bsuir.by/api/v1/", grNum)
-            if (response.errorCode == 0) {
-
-                db.execSQL("DELETE FROM ${DBContract.Schedule.TABLE_NAME} WHERE ${DBContract.Schedule.TABLE_NAME}.${DBContract.Schedule.groupID} = $groupID")
-                db.execSQL("DELETE FROM ${DBContract.Exams.TABLE_NAME} WHERE ${DBContract.Exams.TABLE_NAME}.${DBContract.Schedule.groupID} = $groupID")
-                db.execSQL("DELETE FROM ${DBContract.CommonSchedule.TABLE_NAME} WHERE ${DBContract.CommonSchedule.TABLE_NAME}.${DBContract.CommonSchedule.commonScheduleID} = $groupID")
-
-                var err = 0
-
-                if (fillSheduleTable(response.obj, context) != 0)
-                    err = 4
-
-                if (fillExamsTable(response.obj, context) != 0)
-                    err = 5
-
-                if (err != 0)
-                    return err
-
-                if (fillListOfPairs(db, groupID, DBContract.Schedule.TABLE_NAME) == 1)
-                    return 1
-
-                fillScheduleList(calendar, formatter)
-
-                finalBuild(db, groupID)
-            } else
-                if (c.getInt(0) != 0) {
-                    c.close()
-                    if (loadFromFinal(groupID, formatter, curent, db) == 1)
-                        return 1
-                } else
-                    return 1
-        } else
-            if (loadFromFinal(groupID, formatter, curent, db) == 1)
+        try {
+            if (grNum == "" || groupID == null || context == null)
                 return 1
 
+            val dbHelper = DbHelper(context)
+            val db = dbHelper.writableDatabase
+
+            var calendar: Calendar = Calendar.getInstance()
+            val formatter =
+                SimpleDateFormat("dd.MM.yyyy", Locale.getDefault(Locale.Category.FORMAT))
+
+            val curent = formatter.parse(formatter.format(calendar.time))
+
+            ScheduleList.clear()
+            listOfPairs.clear()
+            val c: Cursor = db.rawQuery(
+                "SELECT COUNT(*) as cnt FROM ${DBContract.Schedule.TABLE_NAME} WHERE ${DBContract.Schedule.TABLE_NAME}.${DBContract.Schedule.groupID} = $groupID",
+                null
+            )
+            c.moveToFirst()
+
+            var response = JSONResponse(0, "", JSONObject())
+
+            if (c.getInt(0) == 0 || mode == 1) {
+
+                response = Requests.getGroupSchedule("https://iis.bsuir.by/api/v1/", grNum)
+                if (response.errorCode == 0) {
+
+                    db.execSQL("DELETE FROM ${DBContract.Schedule.TABLE_NAME} WHERE ${DBContract.Schedule.TABLE_NAME}.${DBContract.Schedule.groupID} = $groupID")
+                    db.execSQL("DELETE FROM ${DBContract.Exams.TABLE_NAME} WHERE ${DBContract.Exams.TABLE_NAME}.${DBContract.Schedule.groupID} = $groupID")
+                    db.execSQL("DELETE FROM ${DBContract.CommonSchedule.TABLE_NAME} WHERE ${DBContract.CommonSchedule.TABLE_NAME}.${DBContract.CommonSchedule.commonScheduleID} = $groupID")
+
+                    var err = 0
+
+                    if (fillSheduleTable(response.obj, context) != 0)
+                        err = 4
+
+                    if (fillExamsTable(response.obj, context) != 0)
+                        err = 5
+
+                    if (err != 0)
+                        return err
+
+                    if (fillListOfPairs(db, groupID, DBContract.Schedule.TABLE_NAME) == 1)
+                        return 1
+
+                    fillScheduleList(calendar, formatter)
+
+                    finalBuild(db, groupID)
+
+                    val values = ContentValues().apply {
+                        put(DBContract.CommonSchedule.lastBuild, formatter.format(calendar.time))
+                    }
+
+                    db.update(
+                        DBContract.CommonSchedule.TABLE_NAME,
+                        values,
+                        "${DBContract.CommonSchedule.commonScheduleID} = $groupID",
+                        null
+                    )
+                } else
+                    if (c.getInt(0) != 0) {
+                        c.close()
+                        if (loadFromFinal(groupID, formatter, curent, db) == 1)
+                            return 1
+                    } else
+                        return 1
+            } else
+                if (loadFromFinal(groupID, formatter, curent, db) == 1)
+                    return 1
 
 
 
 
-        if (ScheduleList.size == 1)
-            return 4
 
-        return if (response.errorCode != 0)
-            response.errorCode
-        else 0
+            if (ScheduleList.size == 1)
+                return 4
+
+            return if (response.errorCode != 0)
+                response.errorCode
+            else 0
+        }catch (e:Exception){
+            return 6
+        }
     }
 
 
