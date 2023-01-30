@@ -11,10 +11,6 @@ import androidx.fragment.app.Fragment
 import com.maximshuhman.bsuirschedule.BuildConfig
 import com.maximshuhman.bsuirschedule.R
 
-
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-
 class AboutFragment : Fragment() {
 
 

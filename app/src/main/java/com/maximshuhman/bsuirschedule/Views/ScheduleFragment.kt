@@ -295,6 +295,7 @@ class ScheduleFragment : Fragment() {
 
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
         when (item.itemId) {
@@ -369,18 +370,18 @@ class ScheduleFragment : Fragment() {
                         endOfSchedule.visibility = View.VISIBLE
                     }
                     5 -> Toast.makeText(
-                            requireContext(),
+                            context,
                             "Расписание отсутствует!",
                             Toast.LENGTH_SHORT
                         ).show()
                     6 -> Toast.makeText(
-                            requireContext(),
+                            context,
                             "Что-то пошло не так",
                             Toast.LENGTH_SHORT
                         ).show()
                     else -> {
                         Toast.makeText(
-                            requireContext(),
+                            context,
                             "Ошибка получения данных",
                             Toast.LENGTH_SHORT
                         ).show()

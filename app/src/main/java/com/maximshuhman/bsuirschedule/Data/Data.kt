@@ -75,12 +75,14 @@ object Data {
             val js: JSONArray = json.getJSONArray(arrayName)
 
             for (i in 0 until js.length()) {
-                val newRowId = db.insert(
-                    DBContract.Schedule.TABLE_NAME,
-                    null,
-                    addPairToList(dayOfWeek, js.getJSONObject(i), grID, db)
-                )
-
+                if(getStringDef(js.getJSONObject(i), "lessonTypeAbbrev") != "Консультация" &&
+                    getStringDef(js.getJSONObject(i), "lessonTypeAbbrev") != "Экзамен") {
+                    val newRowId = db.insert(
+                       DBContract.Schedule.TABLE_NAME,
+                       null,
+                       addPairToList(dayOfWeek, js.getJSONObject(i), grID, db)
+                     )
+                }
 
                 //listOfPairs.add(addPairToList(1, monday.getJSONObject(i), grID))
             }
@@ -169,7 +171,6 @@ object Data {
         Array(startPair.getJSONArray("auditories").length()) {
             auditories += startPair.getJSONArray("auditories").getString(it).toString() + " "
         }
-
 
         val values = ContentValues().apply {
             put(DBContract.Schedule.groupID, groupNum)
@@ -371,6 +372,7 @@ object Data {
         try {
             grID = json_common.getJSONObject("studentGroupDto").getInt("id")
         } catch (e: JSONException) {
+            Log.v("ExamsTable", e.toString())
             return 1
         }
 
@@ -602,6 +604,7 @@ object Data {
             return 1
         }
 
+
         val values = ContentValues().apply {
             put(DBContract.CommonSchedule.commonScheduleID, grID)
             put(DBContract.CommonSchedule.startDate, getStringDef(json_common, "startDate"))
@@ -780,7 +783,7 @@ object Data {
 
                 curent = formatter.parse(formatter.format(calendar.time))
 
-                if (curent?.after(endLessonsDate) == true || startLessonsDate?.after(curent) == true) {
+                if (curent?.after(endLessonsDate) == true) {
                     ScheduleList.subList(i, ScheduleList.size).clear()
                     break
                 }
@@ -904,7 +907,7 @@ object Data {
     ): Int {
 
 
-        val calendar = Calendar.getInstance()
+        var calendar = Calendar.getInstance()
         val common: Cursor = db.rawQuery(
             "SELECT * FROM ${DBContract.CommonSchedule.TABLE_NAME} " +
                     "WHERE ${DBContract.CommonSchedule.commonScheduleID} = $groupID ",
@@ -929,6 +932,8 @@ object Data {
                     return 1
                 fillScheduleList(calendar, formatter)
                 finalBuild(db, groupID)
+
+                calendar = Calendar.getInstance()
 
                 val values = ContentValues().apply {
                     put(DBContract.CommonSchedule.lastBuild, formatter.format(calendar.time))
@@ -1096,6 +1101,8 @@ object Data {
                     fillScheduleList(calendar, formatter)
 
                     finalBuild(db, groupID)
+
+                    calendar = Calendar.getInstance()
 
                     val values = ContentValues().apply {
                         put(DBContract.CommonSchedule.lastBuild, formatter.format(calendar.time))

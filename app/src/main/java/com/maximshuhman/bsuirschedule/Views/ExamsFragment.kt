@@ -21,7 +21,6 @@ import com.maximshuhman.bsuirschedule.R
 import java.util.*
 
 class ExamsFragment : Fragment() {
-    // TODO: Rename and change types of parameters
     private var groupID: Int? = null
     private var groupInf: String? = null
     //  private var groupNum: String? = null

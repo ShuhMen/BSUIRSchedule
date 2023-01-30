@@ -3,7 +3,7 @@ plugins {
     id 'com.google.gms.google-services'
     id 'com.google.firebase.crashlytics'
     id 'org.jetbrains.kotlin.android'
-    id 'org.jetbrains.kotlin.plugin.serialization' version '1.7.10'
+    id 'org.jetbrains.kotlin.plugin.serialization' version '1.8.0'
 }
 
 android {
@@ -13,8 +13,8 @@ android {
         applicationId "com.maximshuhman.bsuirschedule"
         minSdk 26
         targetSdk 33
-        versionCode 30
-        versionName "1.0.1.28"
+        versionCode 31
+        versionName "1.0.1.29"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -50,9 +50,10 @@ android {
 
 
 dependencies {
-    implementation platform('com.google.firebase:firebase-bom:31.1.1')
-    implementation 'com.google.firebase:firebase-analytics-ktx:21.2.0'
-    implementation 'com.google.firebase:firebase-crashlytics-ktx:18.3.2'
+    implementation platform('com.google.firebase:firebase-bom:31.2.0')
+    // When using the BoM, you don't specify versions in Firebase library dependencies
+    implementation 'com.google.firebase:firebase-crashlytics-ktx'
+    implementation 'com.google.firebase:firebase-analytics-ktx'
 
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
     implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1'
@@ -72,6 +73,7 @@ dependencies {
     //implementation "androidx.navigation:navigation-safe-args-gradle-plugin:2.5.2"
     implementation("com.squareup.okhttp3:okhttp")
     implementation('com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.11')
+    implementation 'androidx.core:core-ktx:1.9.0'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
