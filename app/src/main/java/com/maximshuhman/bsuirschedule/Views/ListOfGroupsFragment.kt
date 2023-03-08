@@ -13,27 +13,27 @@ import androidx.cardview.widget.CardView
 import androidx.fragment.app.Fragment
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.crashlytics.ktx.crashlytics
 import com.google.firebase.ktx.Firebase
-import com.maximshuhman.bsuirschedule.Data.Data
+import com.maximshuhman.bsuirschedule.Data.EmployeeData
+import com.maximshuhman.bsuirschedule.Data.StudentData
 import com.maximshuhman.bsuirschedule.DataClasses.Group
 import com.maximshuhman.bsuirschedule.R
+import com.maximshuhman.bsuirschedule.RecyclerLinearManager
 import java.util.concurrent.Executors
 
 class ListOfGroupsFragment : Fragment() {
 
-
     private lateinit var GroupsResyclerView: RecyclerView
-
     private lateinit var progressBar: ProgressBar
-    lateinit var searchView: SearchView
     private lateinit var toolbar: Toolbar
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     lateinit var floatingButton: FloatingActionButton
+
+    private var dataFilter: MutableList<Group> = StudentData.GroupsList
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -83,54 +83,13 @@ class ListOfGroupsFragment : Fragment() {
             }
         })
 
-        floatingButton.setOnClickListener{
+        floatingButton.setOnClickListener {
             GroupsResyclerView.smoothScrollToPosition(0)
         }
-
 
         setHasOptionsMenu(true)
         toolbar = view.findViewById(R.id.toolbar_groups)
         (activity as AppCompatActivity?)!!.setSupportActionBar(toolbar)
-
-       /* val prefs = PreferenceHelper.defaultPreference(requireContext())
-
-        val group = prefs.openedGroup
-
-         if(group != 0)
-         {
-             val navController = findNavController()
-
-             val bundle = Bundle()
-
-             val dbHelper = DbHelper(requireContext())
-
-             val db = dbHelper.writableDatabase
-
-             val c: Cursor = db.rawQuery(
-                 "SELECT * FROM ${DBContract.Groups.TABLE_NAME} " +
-                         "WHERE ${DBContract.Groups.TABLE_NAME}.${DBContract.Groups.groupID} = $group ",
-
-                 null
-             )
-
-             c.moveToFirst()
-             with(c) {
-                 bundle.putString(
-                     "groupNumber",
-                     getString(getColumnIndexOrThrow(DBContract.Groups.name))
-                 )
-                 bundle.putString(
-                     "specialityAbbrev",
-                     getString(getColumnIndexOrThrow(DBContract.Groups.specialityAbbrev))
-                 )
-                 bundle.putInt("course",  getInt(getColumnIndexOrThrow(DBContract.Groups.course)))
-                 bundle.putInt("id",  group)
-             }
-             //navController?.navigate(R.id.action_listOfdataFilterFragment_to_scheduleFragment)
-
-             //val action = ScheduleFragment().action
-             navController!!.navigate(R.id.scheduleFragment, bundle)
-         }*/
 
         updateUI(0)
 
@@ -159,7 +118,7 @@ class ListOfGroupsFragment : Fragment() {
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                if (Data.GroupsList.size != 0)
+                if (StudentData.GroupsList.size != 0)
                     GroupsRecyclerAdapter().filter.filter(newText)
 
                 return false
@@ -181,16 +140,17 @@ class ListOfGroupsFragment : Fragment() {
 
         Executors.newSingleThreadExecutor().execute {
 
-            emError = Data.makeEmployeesList(requireContext())
+            emError = EmployeeData.makeEmployeesList(requireContext())
+            grError = StudentData.makeGroupsList(context, mode)
 
-            grError = Data.makeGroupsList(requireContext(), mode)
             Handler(Looper.getMainLooper()).post {
                 if (emError != 0 || grError != 0) {
-                    Toast.makeText(requireContext(), "Ошибка получения данных", Toast.LENGTH_SHORT)
+                    Toast.makeText(context, "Ошибка получения данных", Toast.LENGTH_SHORT)
                         .show()
                 } else {
+                    dataFilter = StudentData.GroupsList
                     GroupsResyclerView.adapter = GroupsRecyclerAdapter()
-                    GroupsResyclerView.recycledViewPool.clear()
+//                    GroupsResyclerView.recycledViewPool.clear()
                     GroupsResyclerView.adapter!!.notifyDataSetChanged()
                 }
                 progressBar.visibility = View.INVISIBLE
@@ -200,7 +160,6 @@ class ListOfGroupsFragment : Fragment() {
         }
     }
 
-    private var dataFilter: MutableList<Group> = Data.GroupsList
 
     inner class GroupsRecyclerAdapter :
         RecyclerView.Adapter<RecyclerView.ViewHolder>(), Filterable {
@@ -277,7 +236,7 @@ class ListOfGroupsFragment : Fragment() {
 
                 //val action = ScheduleFragment().action
 
-                dataFilter = Data.GroupsList
+                dataFilter = StudentData.GroupsList
                 navController!!.navigate(R.id.scheduleFragment, bundle)
 
 
@@ -305,10 +264,10 @@ class ListOfGroupsFragment : Fragment() {
 
                     dataFilter =
                         if (charSearch.isEmpty()) {
-                            Data.GroupsList
+                            StudentData.GroupsList
                         } else {
                             val resultList = mutableListOf<Group>()
-                            for (row in Data.GroupsList) {
+                            for (row in StudentData.GroupsList) {
                                 if (row.name.toString().contains(
                                         charSearch,
                                         true
@@ -329,7 +288,7 @@ class ListOfGroupsFragment : Fragment() {
                     try {
                         dataFilter = results?.values as MutableList<Group>
                         GroupsResyclerView.adapter!!.notifyDataSetChanged()
-                    }catch (e:java.lang.NullPointerException){
+                    } catch (e: java.lang.NullPointerException) {
                         Firebase.crashlytics.log(results?.values.toString())
 
                     }

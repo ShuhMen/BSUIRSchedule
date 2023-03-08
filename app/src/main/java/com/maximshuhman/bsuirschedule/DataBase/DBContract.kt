@@ -35,6 +35,7 @@ object DBContract {
     object Schedule : BaseColumns {
         const val TABLE_NAME = "schedule"
         const val scheduleID = BaseColumns._ID
+        const val inScheduleID = "inScheduleID"
         const val groupID = "groupID"
         const val day_of_week = "day_of_week"
         const val auditories = "auditories"
@@ -55,6 +56,7 @@ object DBContract {
     object finalSchedule : BaseColumns {
         const val TABLE_NAME = "finalSchedule"
         const val scheduleID = BaseColumns._ID
+        const val inScheduleID = "inScheduleID"
         const val dayIndex = "dayIndex"
         const val groupID = "groupID"
         const val day_of_week = "day_of_week"
@@ -99,5 +101,11 @@ object DBContract {
         const val groupID = "groupID"
     }
 
+    object PairToEmployers {
+        const val TABLE_NAME = "PairToEmployers"
+        const val employeeID = "employeeID"
+        const val lessonID = "lessonID"
+        const val groupID = "groupID"
+    }
 
 }

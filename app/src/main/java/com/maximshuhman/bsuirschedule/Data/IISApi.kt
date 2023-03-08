@@ -11,12 +11,12 @@ interface IISApi {
 
 
     @GET("schedule?")
-    suspend fun getgroupSchedule(
+    suspend fun getGroupSchedule(
         @Query("studentGroup") groupId: String
     ): Response<ResponseBody>
 
     @GET("current-week")
-    suspend fun getCurrrentWeek(): Response<ResponseBody>
+    suspend fun getCurWeek(): Response<ResponseBody>
 
     @GET("student-groups")
     suspend fun getGroupsList(): Response<ResponseBody>
@@ -26,7 +26,7 @@ interface IISApi {
     suspend fun getEmployeesList(): Response<ResponseBody>
 
     @GET("photo/{id}")
-    suspend fun getemployeePhoto(
+    suspend fun getEmployeePhoto(
         @Path("id") emplId: String
     ): Response<ResponseBody>
 

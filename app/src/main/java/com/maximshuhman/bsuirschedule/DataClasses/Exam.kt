@@ -1,5 +1,8 @@
-data class Lesson(
-    var inLessonID: Int,
+package com.maximshuhman.bsuirschedule.DataClasses
+
+import Employees
+
+data class Exam(
     var day_of_week: Int,
     var auditories: String,
     var endLessonTime: String?,
@@ -10,7 +13,7 @@ data class Lesson(
     var subject: String?,
     var subjectFullName: String?,
     var weekNumber: String,
-    var employees: MutableList<Employees>,
+    var employees: Employees,
     var startLessonDate: String?,
     var endLessonDate: String?,
     var dateLesson: String?

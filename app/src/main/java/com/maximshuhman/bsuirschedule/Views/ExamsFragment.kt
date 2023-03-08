@@ -1,8 +1,8 @@
 package com.maximshuhman.bsuirschedule.Views
 
-import Lesson
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,7 +15,8 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.maximshuhman.bsuirschedule.Data.Data
+import com.maximshuhman.bsuirschedule.Data.StudentData
+import com.maximshuhman.bsuirschedule.DataClasses.Exam
 import com.maximshuhman.bsuirschedule.LessonInfDialog
 import com.maximshuhman.bsuirschedule.R
 import java.util.*
@@ -96,15 +97,15 @@ class ExamsFragment : Fragment() {
 
         ExamsRecyclerView.adapter = null
 
-        Data.makeExams(requireContext(), groupID)
+        StudentData.makeExams(requireContext(), groupID)
 
-        ExamsRecyclerView.adapter = ExamsRecyclerAdapter(Data.ExamsList)
+        ExamsRecyclerView.adapter = ExamsRecyclerAdapter(StudentData.ExamsList)
         ExamsRecyclerView.recycledViewPool.clear()
         ExamsRecyclerView.adapter!!.notifyDataSetChanged()
 
     }
 
-    inner class ExamsRecyclerAdapter(var exams: MutableList<Lesson>) :
+    inner class ExamsRecyclerAdapter(var exams: MutableList<Exam>) :
         RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
         private val TYPE_LIST: Int = 1
@@ -149,7 +150,7 @@ class ExamsFragment : Fragment() {
 
 
             @SuppressLint("SetTextI18n")
-            fun bind(pair: Lesson) {
+            fun bind(pair: Exam) {
                 PairNameText.text = "${pair.subject} (${pair.lessonTypeAbbrev})"
                 StartTimeText.text = pair.startLessonTime
                 EndTimeText.text = pair.endLessonTime
@@ -261,7 +262,11 @@ class ExamsFragment : Fragment() {
                     exams[position].note
                 )
                 val navController = findNavController()
-                navController.navigate(R.id.action_examsFragment_to_lessonInfDialog, args)
+                try {
+                    navController.navigate(R.id.action_examsFragment_to_lessonInfDialog, args)
+                } catch (e: IllegalArgumentException) {
+                    Log.d("LessInf", "ExamsFragment")
+                }
             }
 
 

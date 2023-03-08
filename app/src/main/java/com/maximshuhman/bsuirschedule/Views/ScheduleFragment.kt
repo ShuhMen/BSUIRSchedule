@@ -7,6 +7,7 @@ import android.database.Cursor
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.*
 import android.widget.*
 import androidx.activity.OnBackPressedCallback
@@ -19,15 +20,17 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.maximshuhman.bsuirschedule.Data.Data
+import com.google.firebase.crashlytics.ktx.crashlytics
+import com.google.firebase.ktx.Firebase
 import com.maximshuhman.bsuirschedule.Data.Requests
+import com.maximshuhman.bsuirschedule.Data.StudentData
 import com.maximshuhman.bsuirschedule.DataBase.DBContract
 import com.maximshuhman.bsuirschedule.DataBase.DbHelper
 import com.maximshuhman.bsuirschedule.LessonInfDialog
-import com.maximshuhman.bsuirschedule.MainActivity
 import com.maximshuhman.bsuirschedule.PreferenceHelper
 import com.maximshuhman.bsuirschedule.PreferenceHelper.openedGroup
 import com.maximshuhman.bsuirschedule.R
+import com.maximshuhman.bsuirschedule.RecyclerLinearManager
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.ExecutorService
@@ -52,6 +55,7 @@ class ScheduleFragment : Fragment() {
             override fun handleOnBackPressed() {
                 val prefs = PreferenceHelper.defaultPreference(requireContext())
                 prefs.openedGroup = 0
+               // (requireActivity() as MainActivity).bottomNavigationView.visibility = View.VISIBLE
                 findNavController().popBackStack()
             }
         })
@@ -77,20 +81,20 @@ class ScheduleFragment : Fragment() {
         val prefs = PreferenceHelper.defaultPreference(requireContext())
 
         if (arguments?.getInt("id") != null) {
-            Data.curGroupID = arguments?.getInt("id")
+            StudentData.curGroupID = arguments?.getInt("id")
             prefs.openedGroup = arguments?.getInt("id")!!
         } else
-            Data.curGroupID = null
+            StudentData.curGroupID = null
 
-        Data.curGroupName = arguments?.getString("groupNumber").toString()
-        Data.curGroupSpeciality = arguments?.getString("specialityAbbrev").toString()
+        StudentData.curGroupName = arguments?.getString("groupNumber").toString()
+        StudentData.curGroupSpeciality = arguments?.getString("specialityAbbrev").toString()
 
         if (arguments?.getInt("id") != null)
-            Data.curGroupCourse = arguments?.getInt("course")
+            StudentData.curGroupCourse = arguments?.getInt("course")
         else
-            Data.curGroupCourse = 0
+            StudentData.curGroupCourse = 0
 
-        ToolBar.title = "Группа ${Data.curGroupName} " //+
+        ToolBar.title = "Группа ${StudentData.curGroupName} " //+
         // "${Data.curGroupCourse} курс"
 
 
@@ -98,7 +102,7 @@ class ScheduleFragment : Fragment() {
         val db = dbHelper.writableDatabase
 
         val exist = db.rawQuery(
-            "SELECT COUNT(*) as cnt FROM ${DBContract.CommonSchedule.TABLE_NAME} WHERE ${DBContract.CommonSchedule.commonScheduleID} = ${Data.curGroupID}",
+            "SELECT COUNT(*) as cnt FROM ${DBContract.CommonSchedule.TABLE_NAME} WHERE ${DBContract.CommonSchedule.commonScheduleID} = ${StudentData.curGroupID}",
             null
         )
         exist.moveToFirst()
@@ -107,7 +111,7 @@ class ScheduleFragment : Fragment() {
             //ToolBar.setSubtitleTextColor(R.color.white)
             //ToolBar.setTitleTextColor(R.color.white)
             ScheduleRecycler.layoutManager = LinearLayoutManager(requireContext())
-            val lastUpdateResponse = Requests.getLastUpdate(Data.curGroupName)
+            val lastUpdateResponse = Requests.getLastUpdate(StudentData.curGroupName)
             var lastUpdate = ""
 
             if (lastUpdateResponse.errorCode == 0) {
@@ -121,7 +125,7 @@ class ScheduleFragment : Fragment() {
                 //val curent = formatter.parse(formatter.format(calendar.time))
 
                 val c: Cursor = db.rawQuery(
-                    "SELECT * FROM ${DBContract.CommonSchedule.TABLE_NAME} WHERE ${DBContract.CommonSchedule.commonScheduleID} = ${Data.curGroupID}",
+                    "SELECT * FROM ${DBContract.CommonSchedule.TABLE_NAME} WHERE ${DBContract.CommonSchedule.commonScheduleID} = ${StudentData.curGroupID}",
                     null
                 )
 
@@ -147,7 +151,7 @@ class ScheduleFragment : Fragment() {
                                 db.update(
                                     DBContract.CommonSchedule.TABLE_NAME,
                                     values,
-                                    "${DBContract.CommonSchedule.commonScheduleID} = ${Data.curGroupID}",
+                                    "${DBContract.CommonSchedule.commonScheduleID} = ${StudentData.curGroupID}",
                                     null
                                 )
                             }
@@ -163,24 +167,30 @@ class ScheduleFragment : Fragment() {
             } else
                 updateUI(0)
         } else
+        {
+            exist.close()
             updateUI(1)
+        }
 
-        try {
-            (requireActivity() as MainActivity).bottomNavigationView.menu.findItem(R.id.listOfGroupsFragment).isChecked =
-                true
+
+      /*  try {
+            (requireActivity() as MainActivity).bottomNavigationView.visibility =
+                    //.menu.findItem(R.id.favoritesFragment).isChecked =
+                    //true
+                View.GONE
         } catch (_: UninitializedPropertyAccessException) {
             //do nothing
         }
-
-        ScheduleRecycler.layoutManager = LinearLayoutManager(requireContext())
+*/
+        ScheduleRecycler.layoutManager = RecyclerLinearManager(requireContext())
 
         ScheduleRecycler.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
-              /*  if ((recyclerView?.layoutManager as LinearLayoutManager)
-                        .findFirstCompletelyVisibleItemPosition() == 0) {
-                    floatingButton.visibility = View.GONE
-                }*/
+                /*  if ((recyclerView?.layoutManager as LinearLayoutManager)
+                          .findFirstCompletelyVisibleItemPosition() == 0) {
+                      floatingButton.visibility = View.GONE
+                  }*/
                 if (dy > 10 && floatingButton.isShown) {
                     floatingButton.hide()
                 }
@@ -200,18 +210,18 @@ class ScheduleFragment : Fragment() {
             }
         })
 
-        floatingButton.setOnClickListener{
+        floatingButton.setOnClickListener {
             ScheduleRecycler.smoothScrollToPosition(0)
         }
 
 
-                /*if ((recyclerView?.layoutManager as LinearLayoutManager)
-                        .findFirstCompletelyVisibleItemPosition() == 0) {
-                    buttonReturnToTop.visibility = View.GONE
-                }
-
+        /*if ((recyclerView?.layoutManager as LinearLayoutManager)
+                .findFirstCompletelyVisibleItemPosition() == 0) {
+            buttonReturnToTop.visibility = View.GONE
         }
-        */
+
+}
+*/
 
         //helloText.text = Data.response
 
@@ -247,6 +257,7 @@ class ScheduleFragment : Fragment() {
         ToolBar.setNavigationIcon(R.drawable.ic_baseline_arrow_back_24)
         ToolBar.setNavigationOnClickListener {
             prefs.openedGroup = 0
+            //(requireActivity() as MainActivity).bottomNavigationView.visibility = View.VISIBLE
             findNavController().popBackStack()
         }
 
@@ -267,19 +278,44 @@ class ScheduleFragment : Fragment() {
         val dbHelper = DbHelper(requireContext())
         val db = dbHelper.writableDatabase
 
-        val exams = db.rawQuery(
-            "SELECT COUNT(*) as cnt FROM ${DBContract.Exams.TABLE_NAME} WHERE ${DBContract.Exams.TABLE_NAME}.${DBContract.Schedule.groupID} = ${Data.curGroupID}",
+        var exams = db.rawQuery(
+            "SELECT COUNT(*) as cnt FROM ${DBContract.Exams.TABLE_NAME} WHERE ${DBContract.Exams.TABLE_NAME}.${DBContract.Schedule.groupID} = ${StudentData.curGroupID}",
             null
         )
         exams.moveToFirst()
-        if (exams.getInt(0) != 0)
+        if (exams.getInt(0) != 0) {
             menu.findItem(R.id.exams).isVisible = true
+            exams.close()
+
+            exams = db.rawQuery(
+                "SELECT ${DBContract.CommonSchedule.endExamsDate} FROM ${DBContract.CommonSchedule.TABLE_NAME} WHERE ${DBContract.CommonSchedule.TABLE_NAME}.${DBContract.CommonSchedule.commonScheduleID} = ${StudentData.curGroupID}",
+                null
+            )
+
+            exams.moveToFirst()
+
+            val endString =
+                exams.getString(exams.getColumnIndexOrThrow(DBContract.CommonSchedule.endExamsDate))
+            if (endString != null) {
+                var calendar: Calendar = Calendar.getInstance()
+                val formatter =
+                    SimpleDateFormat("dd.MM.yyyy", Locale.getDefault(Locale.Category.FORMAT))
+                var curent = formatter.parse(formatter.format(calendar.time))
+                val end = formatter.parse(endString)
+
+
+                if (curent.after(end))
+                    menu.findItem(R.id.exams).isVisible = false
+            }
+            exams.close()
+        }
         exams.close()
+
 
         val exist: Cursor =
             db.rawQuery(
                 "SELECT COUNT(*) as cnt FROM ${DBContract.Favorites.TABLE_NAME} " +
-                        "WHERE ${DBContract.Favorites.TABLE_NAME}.${DBContract.Favorites.groupID} = ${Data.curGroupID}",
+                        "WHERE ${DBContract.Favorites.TABLE_NAME}.${DBContract.Favorites.groupID} = ${StudentData.curGroupID}",
                 null
             )
         exist.moveToFirst()
@@ -303,11 +339,11 @@ class ScheduleFragment : Fragment() {
 
                 if (item.isChecked) {
                     item.setIcon(R.drawable.ic_baseline_favorite_border_24)
-                    Data.add_removeFavGroup(requireContext(), 1, Data.curGroupID!!)
+                    StudentData.add_removeFavGroup(requireContext(), 1, StudentData.curGroupID!!)
 
                 } else {
                     item.setIcon(R.drawable.ic_baseline_favorite_24)
-                    Data.add_removeFavGroup(requireContext(), 0, Data.curGroupID!!)
+                    StudentData.add_removeFavGroup(requireContext(), 0, StudentData.curGroupID!!)
                 }
                 item.isChecked = !item.isChecked
 
@@ -317,7 +353,7 @@ class ScheduleFragment : Fragment() {
             }
 
             R.id.exams -> {
-                val args = Data.curGroupID?.let {
+                val args = StudentData.curGroupID?.let {
                     ExamsFragment.getBundle(
                         it,
                         ToolBar.title.toString()
@@ -349,16 +385,16 @@ class ScheduleFragment : Fragment() {
         executors.execute {
 
 
-            err = Data.makeSchedule(
-                Data.curGroupName,
+            err = StudentData.makeSchedule(
+                StudentData.curGroupName,
                 activity?.applicationContext,
-                Data.curGroupID,
+                StudentData.curGroupID,
                 mode
             )
             Handler(Looper.getMainLooper()).post {
                 when (err) {
                     0 -> {
-                        if (Data.ScheduleList.size == 0) {
+                        if (StudentData.ScheduleList.size == 0) {
                             scheduleSituated.visibility = View.VISIBLE
                             ScheduleRecycler.visibility = View.INVISIBLE
                         } else {
@@ -369,29 +405,38 @@ class ScheduleFragment : Fragment() {
                     4 -> {
                         endOfSchedule.visibility = View.VISIBLE
                     }
-                    5 -> Toast.makeText(
+                    5 -> try {
+                        Toast.makeText(
                             context,
                             "Расписание отсутствует!",
                             Toast.LENGTH_SHORT
                         ).show()
-                    6 -> Toast.makeText(
+                    } catch (e: java.lang.NullPointerException) {
+                        Firebase.crashlytics.log("SсheduleFragmentToast5")
+                    }
+                    6 -> try {
+                        Toast.makeText(
                             context,
                             "Что-то пошло не так",
                             Toast.LENGTH_SHORT
                         ).show()
-                    else -> {
+                    } catch (e: java.lang.NullPointerException) {
+                        Firebase.crashlytics.log("SсheduleFragmentToast6")
+                    }
+                    else -> try {
                         Toast.makeText(
                             context,
                             "Ошибка получения данных",
                             Toast.LENGTH_SHORT
                         ).show()
-
+                    } catch (e: java.lang.NullPointerException) {
+                        Firebase.crashlytics.log("SсheduleFragmentToastElse")
                     }
                 }
 
                 ProgressBar.visibility = View.INVISIBLE
                 swipeRefreshLayout.isRefreshing = false
-                ScheduleRecycler.adapter = ScheduleRecyclerAdapter(Data.ScheduleList)
+                ScheduleRecycler.adapter = ScheduleRecyclerAdapter(StudentData.ScheduleList)
                 ScheduleRecycler.adapter!!.notifyDataSetChanged()
                 setHasOptionsMenu(true)
             }
@@ -401,8 +446,8 @@ class ScheduleFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
 
-        Data.ScheduleList.clear()
-        Data.listOfGroups.clear()
+        StudentData.ScheduleList.clear()
+        StudentData.listOfGroups.clear()
         executors.shutdown()
 
     }
@@ -504,12 +549,18 @@ class ScheduleFragment : Fragment() {
                 }
 
                 try {
-                    EmployeesText.text =
-                        "${pair.employees.lastName} " +
-                                "${pair.employees.firstName!!.substring(0, 1)}. " +
-                                "${
-                                    pair.employees.middleName!!.substring(0, 1)
-                                }."
+                    var emp: String = ""
+                    for (i in 0 until pair.employees.size) {
+                        if (i != 0)
+                            emp += "\n"
+                        emp +=
+                            "${pair.employees[i].lastName} " +
+                                    "${pair.employees[i].firstName!!.substring(0, 1)}. " +
+                                    "${
+                                        pair.employees[i].middleName!!.substring(0, 1)
+                                    }."
+                    }
+                    EmployeesText.text = emp
                 } catch (e: Exception) {
                     EmployeesText.text = ""
                 }
@@ -528,20 +579,25 @@ class ScheduleFragment : Fragment() {
 
             override fun onClick(p0: View?) {
                 val args = LessonInfDialog.getBundle(
-                    pairs[position].employees.photo,
+                    pairs[position].employees[0].photo,
                     StartTimeText.text.toString(),
                     EndTimeText.text.toString(),
                     pairs[position].auditories,
 
-                    pairs[position].employees.lastName.toString() + ' ' +
-                            pairs[position].employees.firstName.toString() + ' ' +
-                            pairs[position].employees.middleName.toString(),
+                    pairs[position].employees[0].lastName.toString() + ' ' +
+                            pairs[position].employees[0].firstName.toString() + ' ' +
+                            pairs[position].employees[0].middleName.toString(),
 
                     pairs[position].subjectFullName.toString() + '(' + pairs[position].lessonTypeAbbrev + ')',
                     pairs[position].note
                 )
                 val navController = findNavController()
-                navController.navigate(R.id.action_scheduleFragment_to_lessonInfDialog, args)
+                try {
+                    navController.navigate(R.id.action_scheduleFragment_to_lessonInfDialog, args)
+                } catch (e: IllegalArgumentException) {
+                    Log.d("LessInf", "ScheduleFragment")
+
+                }
             }
 
 

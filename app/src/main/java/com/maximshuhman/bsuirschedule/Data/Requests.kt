@@ -29,7 +29,7 @@ object Requests {
 
             try {
                 runBlocking {
-                    response = service.getgroupSchedule(grNum)
+                    response = service.getGroupSchedule(grNum)
                 }
             } catch (e: Exception) {
                 return JSONResponse(-1, "REQUEST ERROR", JSONObject())
@@ -94,7 +94,7 @@ object Requests {
 
             try {
                 runBlocking {
-                    response = service.getCurrrentWeek()
+                    response = service.getCurWeek()
                 }
             } catch (e: Exception) {
                 return IntResponse(-1, "REQUEST ERROR", 0)
@@ -378,7 +378,7 @@ object Requests {
 
             try {
                 runBlocking {
-                    response = service.getemployeePhoto(id)
+                    response = service.getEmployeePhoto(id)
                 }
             } catch (e: Exception) {
                 return StringResponse(-1, "REQUEST ERROR", "")

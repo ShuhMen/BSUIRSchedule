@@ -14,7 +14,7 @@ import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.maximshuhman.bsuirschedule.Data.Data
+import com.maximshuhman.bsuirschedule.Data.StudentData
 import com.maximshuhman.bsuirschedule.DataBase.DBContract
 import com.maximshuhman.bsuirschedule.DataBase.DbHelper
 import com.maximshuhman.bsuirschedule.DataClasses.Group
@@ -105,7 +105,7 @@ class FavoritesFragment : Fragment() {
 
         Executors.newSingleThreadExecutor().execute {
 
-            grError = Data.makeFavoritesList(requireContext())
+            grError = StudentData.makeFavoritesList(requireContext())
             Handler(Looper.getMainLooper()).post {
                 if (grError == 0) {
 
@@ -123,7 +123,7 @@ class FavoritesFragment : Fragment() {
         }
     }
 
-    private var dataFilter: MutableList<Group> = Data.FavoritesList
+    private var dataFilter: MutableList<Group> = StudentData.FavoritesList
 
     inner class FavoritesRecyclerAdapter :
         RecyclerView.Adapter<RecyclerView.ViewHolder>() {

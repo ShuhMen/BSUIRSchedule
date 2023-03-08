@@ -36,6 +36,7 @@ class DbHelper(context: Context) :
     private val SQL_CREATE_SCHEDULE =
         "CREATE TABLE ${DBContract.Schedule.TABLE_NAME} (" +
                 "${DBContract.Schedule.scheduleID} INTEGER PRIMARY KEY," +
+                "${DBContract.Schedule.inScheduleID} INTEGER," +
                 "${DBContract.Schedule.day_of_week} INTEGER," +
                 "${DBContract.Schedule.auditories} TEXT," +
                 "${DBContract.Schedule.endLessonTime} TEXT," +
@@ -47,16 +48,16 @@ class DbHelper(context: Context) :
                 "${DBContract.Schedule.subject} TEXT," +
                 "${DBContract.Schedule.subjectFullName} TEXT," +
                 "${DBContract.Schedule.weekNumber} INTEGER," +
-                "${DBContract.Schedule.employeeID} INTEGER," +
                 "${DBContract.Schedule.groupID} INTEGER," +
                 "${DBContract.Schedule.startLessonDate} TEXT," +
                 "${DBContract.Schedule.endLessonDate} TEXT," +
-                "FOREIGN KEY (${DBContract.Schedule.groupID}) REFERENCES ${DBContract.Groups.TABLE_NAME}(${DBContract.CommonSchedule.commonScheduleID})," +
-                "FOREIGN KEY (${DBContract.Schedule.employeeID}) REFERENCES ${DBContract.Employees.TABLE_NAME}(${DBContract.Employees.employeeID}))"
+                "FOREIGN KEY (${DBContract.Schedule.groupID}) REFERENCES ${DBContract.CommonSchedule.TABLE_NAME}(${DBContract.CommonSchedule.commonScheduleID}))"//," +
+    // "FOREIGN KEY (${DBContract.Schedule.employeeID}) REFERENCES ${DBContract.Employees.TABLE_NAME}(${DBContract.Employees.employeeID}))"
 
     private val SQL_CREATE_FINALSCHEDULE =
         "CREATE TABLE IF NOT EXISTS ${DBContract.finalSchedule.TABLE_NAME} (" +
                 "${DBContract.finalSchedule.scheduleID} INTEGER PRIMARY KEY," +
+                "${DBContract.Schedule.inScheduleID} INTEGER," +
                 "${DBContract.finalSchedule.dayIndex} INTEGER," +
                 "${DBContract.finalSchedule.day_of_week} INTEGER," +
                 "${DBContract.finalSchedule.auditories} TEXT," +
@@ -69,12 +70,11 @@ class DbHelper(context: Context) :
                 "${DBContract.finalSchedule.subject} TEXT," +
                 "${DBContract.finalSchedule.subjectFullName} TEXT," +
                 "${DBContract.finalSchedule.weekNumber} INTEGER," +
-                "${DBContract.finalSchedule.employeeID} INTEGER," +
                 "${DBContract.finalSchedule.groupID} INTEGER," +
                 "${DBContract.finalSchedule.startLessonDate} TEXT," +
                 "${DBContract.finalSchedule.endLessonDate} TEXT," +
-                "FOREIGN KEY (${DBContract.finalSchedule.groupID}) REFERENCES ${DBContract.Groups.TABLE_NAME}(${DBContract.CommonSchedule.commonScheduleID})," +
-                "FOREIGN KEY (${DBContract.finalSchedule.employeeID}) REFERENCES ${DBContract.Employees.TABLE_NAME}(${DBContract.Employees.employeeID}))"
+                "FOREIGN KEY (${DBContract.finalSchedule.groupID}) REFERENCES ${DBContract.CommonSchedule.TABLE_NAME}(${DBContract.CommonSchedule.commonScheduleID}))"//," +
+    // "FOREIGN KEY (${DBContract.finalSchedule.employeeID}) REFERENCES ${DBContract.Employees.TABLE_NAME}(${DBContract.Employees.employeeID}))"
 
     private val SQL_CREATE_EMPlOYEES =
         "CREATE TABLE ${DBContract.Employees.TABLE_NAME} (" +
@@ -118,6 +118,16 @@ class DbHelper(context: Context) :
 
     private val SQL_DELETE_ENTRIES = "DROP TABLE IF EXISTS ${DBContract.Groups.TABLE_NAME}"
 
+    private val SQL_CREATE_PAIRTOEMPLOYER =
+        "CREATE TABLE IF NOT EXISTS ${DBContract.PairToEmployers.TABLE_NAME} (" +
+                "${DBContract.PairToEmployers.lessonID} INTEGER," +
+                "${DBContract.PairToEmployers.employeeID} INTEGER," +
+                "${DBContract.PairToEmployers.groupID} INTEGER," +
+                //   "FOREIGN KEY (${DBContract.PairToEmployers.lessonID}) REFERENCES ${DBContract.Schedule.TABLE_NAME}(${DBContract.Schedule.scheduleID})," +
+                "FOREIGN KEY (${DBContract.PairToEmployers.employeeID}) REFERENCES ${DBContract.Employees.TABLE_NAME}(${DBContract.Employees.employeeID}))"
+
+    private val SQL_CREATE_SCHEDULE_INDEX =
+        "CREATE INDEX lessonID ON ${DBContract.Schedule.TABLE_NAME} (${DBContract.Schedule.groupID})"
 
     override fun onCreate(p0: SQLiteDatabase?) {
         Log.v("DBDD", "p0 override fun onCreate(db: SQLiteDatabase?) {")
@@ -158,7 +168,13 @@ class DbHelper(context: Context) :
             try {
                 val a7 = it.execSQL(SQL_CREATE_FINALSCHEDULE)
             } catch (e: Exception) {
-                Log.v("DBDD", "SQL_CREATE_EXAMS ERROR")
+                Log.v("DBDD", "SQL_CREATE_FINALSCHEDULE ERROR")
+            }
+
+            try {
+                val a8 = it.execSQL(SQL_CREATE_PAIRTOEMPLOYER)
+            } catch (e: Exception) {
+                Log.v("DBDD", "SQL_CREATE_PAIRTOEMPLOYER ERROR")
             }
         }
     }
@@ -216,9 +232,9 @@ class DbHelper(context: Context) :
         }
 
         if (oldVersion < 8) {
-            try{
-            db.execSQL("ALTER TABLE ${DBContract.CommonSchedule.TABLE_NAME} ADD COLUMN ${DBContract.CommonSchedule.lastUpdate} TEXT")
-             }catch(e: Exception) {
+            try {
+                db.execSQL("ALTER TABLE ${DBContract.CommonSchedule.TABLE_NAME} ADD COLUMN ${DBContract.CommonSchedule.lastUpdate} TEXT")
+            } catch (e: Exception) {
             }
             val c: Cursor = db.rawQuery(
                 "SELECT * FROM ${DBContract.CommonSchedule.TABLE_NAME} " +
@@ -254,11 +270,10 @@ class DbHelper(context: Context) :
             c.close()
         }
 
-        if(oldVersion < 9){
-            try{
+        if (oldVersion < 9) {
+            try {
                 db.execSQL("ALTER TABLE ${DBContract.CommonSchedule.TABLE_NAME} ADD COLUMN ${DBContract.CommonSchedule.lastBuild} TEXT")
-            }catch(e: Exception)
-            {
+            } catch (e: Exception) {
 
             }
             try {
@@ -268,8 +283,7 @@ class DbHelper(context: Context) :
             }
         }
 
-        if(oldVersion < 10)
-        {
+        if (oldVersion < 10) {
             try {
                 val a6 = db.execSQL(SQL_CREATE_EXAMS)
             } catch (e: Exception) {
@@ -283,6 +297,28 @@ class DbHelper(context: Context) :
             }
 
         }
+        if (oldVersion < 11) {
+            val a1 = db.execSQL("DROP TABLE IF EXISTS ${DBContract.finalSchedule.TABLE_NAME}")
+            val a2 = db.execSQL("DROP TABLE IF EXISTS ${DBContract.Schedule.TABLE_NAME}")
+
+            try {
+                val a3 = db.execSQL(SQL_CREATE_SCHEDULE)
+            } catch (e: Exception) {
+                Log.v("DBDD", "SQL_CREATE_SCHEDULE ERROR")
+            }
+
+            try {
+                val a7 = db.execSQL(SQL_CREATE_FINALSCHEDULE)
+            } catch (e: Exception) {
+                Log.v("DBDD", "SQL_CREATE_FINALSCHEDULE ERROR")
+            }
+
+            try {
+                val a8 = db.execSQL(SQL_CREATE_PAIRTOEMPLOYER)
+            } catch (e: Exception) {
+                Log.v("DBDD", "SQL_CREATE_PAIRTOEMPLOYER ERROR")
+            }
+        }
 
 
     }
@@ -293,7 +329,7 @@ class DbHelper(context: Context) :
 
     companion object {
         // If you change the database schema, you must increment the database version.
-        const val DATABASE_VERSION = 10
+        const val DATABASE_VERSION = 11
         const val DATABASE_NAME = "Schedule"
     }
 }

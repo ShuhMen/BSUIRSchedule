@@ -8,4 +8,4 @@ data class CommonSchedule(
     val startExamsDate: String,
     val endExamsDate: String,
     val lastBuild: String?,
-    )
+)

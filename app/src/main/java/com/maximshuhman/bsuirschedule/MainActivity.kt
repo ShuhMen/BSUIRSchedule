@@ -2,6 +2,7 @@ package com.maximshuhman.bsuirschedule
 
 import android.database.Cursor
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
@@ -40,8 +41,10 @@ class MainActivity : AppCompatActivity() {
         )
         c.moveToFirst()
 
-        if (c.getInt(0) != 0)
+        if (c.getInt(0) != 0) {
+            c.close()
             bottomNavigationView.selectedItemId = R.id.favoritesFragment
+        }
 
     }
 }
