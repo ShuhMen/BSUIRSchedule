@@ -1,5 +1,6 @@
 package com.maximshuhman.bsuirschedule.Views
 
+import Employees
 import android.annotation.SuppressLint
 import android.database.Cursor
 import android.os.Bundle
@@ -20,6 +21,7 @@ import com.maximshuhman.bsuirschedule.DataBase.DbHelper
 import com.maximshuhman.bsuirschedule.DataClasses.Group
 import com.maximshuhman.bsuirschedule.PreferenceHelper.defaultPreference
 import com.maximshuhman.bsuirschedule.PreferenceHelper.openedGroup
+import com.maximshuhman.bsuirschedule.PreferenceHelper.openedType
 import com.maximshuhman.bsuirschedule.R
 import java.util.concurrent.Executors
 
@@ -52,9 +54,9 @@ class FavoritesFragment : Fragment() {
 
         val prefs = defaultPreference(requireContext())
 
-        val group = prefs.openedGroup
-
-        if (group != 0) {
+        val opened = prefs.openedGroup
+        val type = prefs.openedType
+        if (opened != 0) {
             val navController = findNavController()
 
             val bundle = Bundle()
@@ -62,34 +64,56 @@ class FavoritesFragment : Fragment() {
             val dbHelper = DbHelper(requireContext())
 
             val db = dbHelper.writableDatabase
+            if (type == 0) {
+                val c: Cursor = db.rawQuery(
+                    "SELECT * FROM ${DBContract.Groups.TABLE_NAME} " +
+                            "WHERE ${DBContract.Groups.TABLE_NAME}.${DBContract.Groups.groupID} = $opened ",
 
-            val c: Cursor = db.rawQuery(
-                "SELECT * FROM ${DBContract.Groups.TABLE_NAME} " +
-                        "WHERE ${DBContract.Groups.TABLE_NAME}.${DBContract.Groups.groupID} = $group ",
+                    null
+                )
 
-                null
-            )
+                c.moveToFirst()
+                with(c) {
+                    bundle.putString(
+                        "groupNumber",
+                        getString(getColumnIndexOrThrow(DBContract.Groups.name))
+                    )
+                    bundle.putString(
+                        "specialityAbbrev",
+                        getString(getColumnIndexOrThrow(DBContract.Groups.specialityAbbrev))
+                    )
+                    bundle.putInt("course", getInt(getColumnIndexOrThrow(DBContract.Groups.course)))
+                    bundle.putInt("id", opened)
+                }
+                //navController?.navigate(R.id.action_listOfdataFilterFragment_to_scheduleFragment)
 
-            c.moveToFirst()
-            with(c) {
+                //val action = ScheduleFragment().action
+                navController.navigate(R.id.scheduleFragment, bundle)
+            } else {
+                val c: Cursor = db.rawQuery(
+                    "SELECT * FROM ${DBContract.Employees.TABLE_NAME} " +
+                            "WHERE ${DBContract.Employees.TABLE_NAME}.${DBContract.Employees.employeeID} = $opened ",
+
+                    null
+                )
+                c.moveToFirst()
+                with(c) {
                 bundle.putString(
-                    "groupNumber",
-                    getString(getColumnIndexOrThrow(DBContract.Groups.name))
+                    "employeeName",
+                    getString(getColumnIndexOrThrow(DBContract.Employees.urlId))
                 )
                 bundle.putString(
-                    "specialityAbbrev",
-                    getString(getColumnIndexOrThrow(DBContract.Groups.specialityAbbrev))
+                    "FIO",
+                    "${getString(getColumnIndexOrThrow(DBContract.Employees.lastName))} ${getString(getColumnIndexOrThrow(DBContract.Employees.firstName))} ${getString(getColumnIndexOrThrow(DBContract.Employees.middleName))}"
+
                 )
-                bundle.putInt("course", getInt(getColumnIndexOrThrow(DBContract.Groups.course)))
-                bundle.putInt("id", group)
+                bundle.putInt("id", getInt(getColumnIndexOrThrow(DBContract.Employees.employeeID)))
+                bundle.putString("urlId", getString(getColumnIndexOrThrow(DBContract.Employees.urlId)))
+                }
+
+                navController.navigate(R.id.employeeSchedule, bundle)
             }
-            //navController?.navigate(R.id.action_listOfdataFilterFragment_to_scheduleFragment)
-
-            //val action = ScheduleFragment().action
-            navController.navigate(R.id.scheduleFragment, bundle)
         }
-
-
         updateUI()
 
         return view
@@ -123,44 +147,77 @@ class FavoritesFragment : Fragment() {
         }
     }
 
-    private var dataFilter: MutableList<Group> = StudentData.FavoritesList
+    private var dataFilter: MutableList<Pair<Group?, Employees?>> = StudentData.FavoritesList
 
     inner class FavoritesRecyclerAdapter :
         RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
 
-        private val TYPE_HEADER: Int = 1
-        private val TYPE_LIST: Int = 0
+        private val TYPE_HEADER_GROUP = 1
+        private val TYPE_LIST = 0
+        private val TYPE_EMPLOYEE  = 2
+        private val TYPE_HEADER_EMPLOYEE = 3
 
         override fun getItemViewType(position: Int): Int {
 
-            if (dataFilter[position].type == TYPE_HEADER) {
-                return TYPE_HEADER
+            if ((dataFilter[position].first?.type ?: 4) == TYPE_HEADER_GROUP) {
+                return TYPE_HEADER_GROUP
             }
-            return TYPE_LIST
+            if ((dataFilter[position].second?.type ?: 4) == TYPE_HEADER_EMPLOYEE) {
+                return TYPE_HEADER_EMPLOYEE
+            }
+
+            if (dataFilter[position].first?.type ?: 4 == TYPE_LIST)
+                return TYPE_LIST
+
+            return TYPE_EMPLOYEE
         }
 
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-            if (viewType == TYPE_HEADER) {
-                val header = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.item_speciality_name, parent, false)
-                return SpecialityViewHolder(header)
+            when(viewType){
+                TYPE_HEADER_GROUP -> {
+                    val header = LayoutInflater.from(parent.context)
+                        .inflate(R.layout.item_speciality_name, parent, false)
+                    return SpecialityViewHolder(header)
+                }
+                TYPE_HEADER_EMPLOYEE -> {
+                    val header = LayoutInflater.from(parent.context)
+                        .inflate(R.layout.item_speciality_name, parent, false)
+                    return LastNameViewHolder(header)
+                }
+                TYPE_EMPLOYEE -> {
+                    val header = LayoutInflater.from(parent.context)
+                        .inflate(R.layout.item_group_view, parent, false)
+                    return EmployeeViewHolder(header)
+                }
+
+                else -> {
+                    val itemView =
+                        LayoutInflater.from(parent.context).inflate(R.layout.item_group_view, parent, false)
+                    //  itemView.setOnClickListener(myOn)
+                    return GroupViewHolder(itemView)
+                }
             }
-            val itemView =
-                LayoutInflater.from(parent.context).inflate(R.layout.item_group_view, parent, false)
-            //  itemView.setOnClickListener(myOn)
-            return GroupViewHolder(itemView)
+
         }
 
         override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-            when (dataFilter[position].type) {
-                TYPE_HEADER -> (holder as SpecialityViewHolder).bind(dataFilter[position])
-                else ->
-                    (holder as GroupViewHolder).bind(dataFilter[position])
-            }
-        }
 
+            if ((dataFilter[position].first?.type ?: 4) == TYPE_HEADER_GROUP) {
+                return (holder as SpecialityViewHolder).bind(dataFilter[position].first!!)
+            }
+            if ((dataFilter[position].second?.type ?: 4) == TYPE_HEADER_EMPLOYEE) {
+                return (holder as LastNameViewHolder).bind(dataFilter[position].second!!)
+            }
+
+            if (dataFilter[position].first?.type ?: 4 == TYPE_LIST)
+                return (holder as GroupViewHolder).bind(dataFilter[position].first!!)
+
+            return (holder as EmployeeViewHolder).bind(dataFilter[position].second!!)
+
+
+        }
         override fun getItemCount(): Int = dataFilter.size
 
 
@@ -187,18 +244,58 @@ class FavoritesFragment : Fragment() {
 
                 val bundle = Bundle()
 
-                bundle.putString("groupNumber", dataFilter[position].name.toString())
+                bundle.putString("groupNumber", dataFilter[position].first!!.name.toString())
                 bundle.putString(
                     "specialityAbbrev",
-                    dataFilter[position].specialityAbbrev.toString()
+                    dataFilter[position].first!!.specialityAbbrev.toString()
                 )
-                bundle.putInt("course", dataFilter[position].course!!.toInt())
-                bundle.putInt("id", dataFilter[position].id!!.toInt())
+                bundle.putInt("course", dataFilter[position].first!!.course!!.toInt())
+                bundle.putInt("id", dataFilter[position].first!!.id!!.toInt())
 
                 //navController?.navigate(R.id.action_listOfdataFilterFragment_to_scheduleFragment)
 
                 //val action = ScheduleFragment().action
                 navController!!.navigate(R.id.scheduleFragment, bundle)
+            }
+
+
+        }
+
+        inner class EmployeeViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView),
+            View.OnClickListener {
+
+            init {
+                itemView.setOnClickListener(this)
+            }
+
+            private val GroupNumber: TextView = itemView.findViewById(R.id.group_number_text)
+
+            @SuppressLint("SetTextI18n")
+            fun bind(emp: Employees) {
+                if (emp.lastName != "")
+                    GroupNumber.text =
+                        "${emp.lastName} ${emp.firstName} ${emp.middleName}"
+                else
+                    GroupNumber.text = "Ошибка"
+            }
+
+            override fun onClick(p0: View?) {
+                val navController = p0?.findNavController()
+
+                val bundle = Bundle()
+
+                bundle.putString("employeeName", dataFilter[layoutPosition].second!!.urlId.toString())
+                bundle.putString(
+                    "FIO",
+                    GroupNumber.text.toString()
+                )
+                bundle.putInt("id", dataFilter[layoutPosition].second!!.id)
+                bundle.putString("urlId", dataFilter[layoutPosition].second!!.urlId)
+
+                //navController?.navigate(R.id.action_listOfdataFilterFragment_to_scheduleFragment)
+
+                //val action = ScheduleFragment().action
+                navController!!.navigate(R.id.employeeSchedule, bundle)
             }
 
 
@@ -214,6 +311,15 @@ class FavoritesFragment : Fragment() {
             }
         }
 
+        inner class LastNameViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+            private val SpecialityText: TextView = itemView.findViewById(R.id.speciality_name_text)
+            fun bind(group: Employees) {
+                if (group.lastName != "")
+                    SpecialityText.text = group.lastName
+                else
+                    SpecialityText.text = "Ошибка"
+            }
+        }
 
     }
 

@@ -1,5 +1,6 @@
 package com.maximshuhman.bsuirschedule.Views
 
+import Employees
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.os.Handler
@@ -19,45 +20,43 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.crashlytics.ktx.crashlytics
 import com.google.firebase.ktx.Firebase
 import com.maximshuhman.bsuirschedule.Data.EmployeeData
-import com.maximshuhman.bsuirschedule.Data.StudentData
-import com.maximshuhman.bsuirschedule.DataClasses.Group
 import com.maximshuhman.bsuirschedule.R
 import com.maximshuhman.bsuirschedule.RecyclerLinearManager
 import java.util.concurrent.Executors
 
-class ListOfGroupsFragment : Fragment() {
+class TeachersFragment : Fragment() {
 
-    private lateinit var GroupsResyclerView: RecyclerView
+    private lateinit var employeesResyclerView: RecyclerView
     private lateinit var progressBar: ProgressBar
     private lateinit var toolbar: Toolbar
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     lateinit var floatingButton: FloatingActionButton
 
-    private var dataFilter: MutableList<Group> = StudentData.GroupsList
+    private var dataFilter: MutableList<Employees> = EmployeeData.employeesList
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_list_of_groups, container, false)
+        val view = inflater.inflate(R.layout.fragment_teachers, container, false)
 
         findNavController().clearBackStack(R.id.scheduleFragment)
 
-        GroupsResyclerView = view.findViewById(R.id.list_of_groups)
-        progressBar = view.findViewById(R.id.progress_bar_groups)
-        swipeRefreshLayout = view.findViewById(R.id.swipe_refresh_groups)
+        employeesResyclerView = view.findViewById(R.id.list_of_employees)
+        progressBar = view.findViewById(R.id.progress_bar_employees)
+        swipeRefreshLayout = view.findViewById(R.id.swipe_refresh_employees)
         //SearchView = view.findViewById(R.id.search_view)
-        floatingButton = view.findViewById(R.id.upButtonGroups)
+        floatingButton = view.findViewById(R.id.upButtonEmployees)
 
         floatingButton.hide()
 
         swipeRefreshLayout.setColorSchemeResources(R.color.BSUIR_blue)
         //  swipeRefreshLayout.setProgressBackgroundColorSchemeColor(R.color.night_icon_stroke)
 
-        GroupsResyclerView.layoutManager = RecyclerLinearManager(requireContext(), 10f)
-        GroupsResyclerView.adapter = GroupsRecyclerAdapter()
+        employeesResyclerView.layoutManager = RecyclerLinearManager(requireContext(), 5f)
+        employeesResyclerView.adapter = GroupsRecyclerAdapter()
 
-        GroupsResyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+        employeesResyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
                 /*  if ((recyclerView?.layoutManager as LinearLayoutManager)
@@ -84,11 +83,11 @@ class ListOfGroupsFragment : Fragment() {
         })
 
         floatingButton.setOnClickListener {
-            GroupsResyclerView.smoothScrollToPosition(0)
+            employeesResyclerView.smoothScrollToPosition(0)
         }
 
         setHasOptionsMenu(true)
-        toolbar = view.findViewById(R.id.toolbar_groups)
+        toolbar = view.findViewById(R.id.toolbar_employees)
         (activity as AppCompatActivity?)!!.setSupportActionBar(toolbar)
 
         updateUI(0)
@@ -118,7 +117,7 @@ class ListOfGroupsFragment : Fragment() {
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                if (StudentData.GroupsList.size != 0)
+                if (EmployeeData.employeesList.size != 0)
                     GroupsRecyclerAdapter().filter.filter(newText)
 
                 return false
@@ -132,7 +131,7 @@ class ListOfGroupsFragment : Fragment() {
             progressBar.visibility = View.VISIBLE
             progressBar.isIndeterminate = true
         }
-        GroupsResyclerView.adapter = null
+        employeesResyclerView.adapter = null
 
         var emError = 0
         var grError = 0
@@ -140,18 +139,17 @@ class ListOfGroupsFragment : Fragment() {
 
         Executors.newSingleThreadExecutor().execute {
 
-            emError = EmployeeData.makeEmployeesList(requireContext(), 0)
-            grError = StudentData.makeGroupsList(context, mode)
+            emError = EmployeeData.makeEmployeesList(requireContext(), mode)
 
             Handler(Looper.getMainLooper()).post {
                 if (emError != 0 || grError != 0) {
                     Toast.makeText(context, "Ошибка получения данных", Toast.LENGTH_SHORT)
                         .show()
                 } else {
-                    dataFilter = StudentData.GroupsList
-                    GroupsResyclerView.adapter = GroupsRecyclerAdapter()
-//                    GroupsResyclerView.recycledViewPool.clear()
-                    GroupsResyclerView.adapter!!.notifyDataSetChanged()
+                    dataFilter = EmployeeData.employeesList
+                    employeesResyclerView.adapter = GroupsRecyclerAdapter()
+//                    employeesResyclerView.recycledViewPool.clear()
+                    employeesResyclerView.adapter!!.notifyDataSetChanged()
                 }
                 progressBar.visibility = View.INVISIBLE
                 swipeRefreshLayout.isRefreshing = false
@@ -166,41 +164,39 @@ class ListOfGroupsFragment : Fragment() {
 
 
         private val TYPE_HEADER: Int = 1
-        private val TYPE_LIST: Int = 0
+        private val TYPE_EMPLOYEE: Int = 0
 
         override fun getItemViewType(position: Int): Int {
-
-            if (dataFilter[position].type == TYPE_HEADER) {
+            if ((dataFilter[position].type) == TYPE_HEADER) {
                 return TYPE_HEADER
             }
-            return TYPE_LIST
+
+            return TYPE_EMPLOYEE
         }
 
-
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-            if (viewType == TYPE_HEADER) {
+            if(viewType == 1){
                 val header = LayoutInflater.from(parent.context)
                     .inflate(R.layout.item_speciality_name, parent, false)
-                return SpecialityViewHolder(header)
+                return LastNameViewHolder(header)
             }
             val itemView =
                 LayoutInflater.from(parent.context).inflate(R.layout.item_group_view, parent, false)
-            //  itemView.setOnClickListener(myOn)
-            return GroupViewHolder(itemView)
+            return EmployeeViewHolder(itemView)
         }
 
         override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-            when (dataFilter[position].type) {
-                TYPE_HEADER -> (holder as SpecialityViewHolder).bind(dataFilter[position])
-                else ->
-                    (holder as GroupViewHolder).bind(dataFilter[position])
-            }
+            if(dataFilter[position].type == 1) {
+                (holder as LastNameViewHolder).bind(dataFilter[position])
+            }else
+            (holder as EmployeeViewHolder).bind(dataFilter[position])
+
         }
 
         override fun getItemCount(): Int = dataFilter.size
 
 
-        inner class GroupViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView),
+        inner class EmployeeViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView),
             View.OnClickListener {
 
             init {
@@ -211,12 +207,9 @@ class ListOfGroupsFragment : Fragment() {
             private val cardView: CardView = itemView.findViewById(R.id.group_card_view)
 
             @SuppressLint("SetTextI18n")
-            fun bind(group: Group) {
-                if (group.name != "")
-                    GroupNumber.text =
-                        "${group.name}, ${group.course} курс, ${group.facultyAbbrev}, ${group.specialityAbbrev}"
-                else
-                    GroupNumber.text = "Ошибка"
+            fun bind(employee: Employees) {
+                GroupNumber.text =
+                        "${employee.lastName} ${employee.firstName} ${employee.middleName}"
             }
 
             override fun onClick(p0: View?) {
@@ -224,37 +217,24 @@ class ListOfGroupsFragment : Fragment() {
 
                 val bundle = Bundle()
 
-                bundle.putString("groupNumber", dataFilter[position].name.toString())
+                bundle.putString("employeeName", dataFilter[layoutPosition].urlId.toString())
                 bundle.putString(
-                    "specialityAbbrev",
-                    dataFilter[position].specialityAbbrev.toString()
+                    "FIO",
+                    GroupNumber.text.toString()
                 )
-                bundle.putInt("course", dataFilter[position].course!!.toInt())
-                bundle.putInt("id", dataFilter[position].id!!.toInt())
+                bundle.putInt("id", dataFilter[layoutPosition].id)
+                bundle.putString("urlId", dataFilter[layoutPosition].urlId)
 
                 //navController?.navigate(R.id.action_listOfdataFilterFragment_to_scheduleFragment)
 
                 //val action = ScheduleFragment().action
 
-                dataFilter = StudentData.GroupsList
-                navController!!.navigate(R.id.scheduleFragment, bundle)
-
-
+                dataFilter = EmployeeData.employeesList
+                navController!!.navigate(R.id.employeeSchedule, bundle)
             }
 
 
         }
-
-        inner class SpecialityViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-            private val SpecialityText: TextView = itemView.findViewById(R.id.speciality_name_text)
-            fun bind(group: Group) {
-                if (group.name != "")
-                    SpecialityText.text = group.name
-                else
-                    SpecialityText.text = "Ошибка"
-            }
-        }
-
         override fun getFilter(): Filter {
             return object : Filter() {
                 override fun performFiltering(constraint: CharSequence?): FilterResults {
@@ -264,14 +244,14 @@ class ListOfGroupsFragment : Fragment() {
 
                     dataFilter =
                         if (charSearch.isEmpty()) {
-                            StudentData.GroupsList
+                            EmployeeData.employeesList
                         } else {
-                            val resultList = mutableListOf<Group>()
-                            for (row in StudentData.GroupsList) {
-                                if (row.name.toString().contains(
+                            val resultList = mutableListOf<Employees>()
+                            for (row in EmployeeData.employeesList) {
+                                if (("${row.lastName} ${row.firstName} ${row.middleName}").contains(
                                         charSearch,
-                                        true
-                                    ) || row.name.toString() == charSearch
+                                        true)
+                                // ||row.name.toString() == charSearch
                                 ) {
                                     resultList.add(row)
                                 }
@@ -286,8 +266,8 @@ class ListOfGroupsFragment : Fragment() {
 
                 override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
                     try {
-                        dataFilter = results?.values as MutableList<Group>
-                        GroupsResyclerView.adapter!!.notifyDataSetChanged()
+                        dataFilter = results?.values as MutableList<Employees>
+                        employeesResyclerView.adapter!!.notifyDataSetChanged()
                     } catch (e: java.lang.NullPointerException) {
                         Firebase.crashlytics.log(results?.values.toString())
 
@@ -298,9 +278,18 @@ class ListOfGroupsFragment : Fragment() {
 
 
         }
+
+        inner class LastNameViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+            private val SpecialityText: TextView = itemView.findViewById(R.id.speciality_name_text)
+            fun bind(group: Employees) {
+                if (group.lastName != "")
+                    SpecialityText.text = group.lastName
+                else
+                    SpecialityText.text = "Ошибка"
+            }
+        }
     }
 
 
+
 }
-
-

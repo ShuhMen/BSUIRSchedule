@@ -31,6 +31,28 @@ class MainActivity : AppCompatActivity() {
 
         val navController = findNavController(R.id.nav_fragment)
 
+        val noBottomNabBarDest = setOf(
+            R.id.scheduleFragment,
+            R.id.examsFragment,
+            R.id.lessonInfDialog,
+            R.id.employeeSchedule,
+            R.id.employeeLessonInf
+        )
+
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            if (destination.id in noBottomNabBarDest) {
+
+                //bottomNavigationView.animate().translationY(bottomNavigationView.height.toFloat())
+                bottomNavigationView.visibility = View.GONE
+
+            } else {
+              //  bottomNavigationView.animate().translationY(0f)
+
+                bottomNavigationView.visibility = View.VISIBLE
+            }
+        }
+
+
         bottomNavigationView.setupWithNavController(navController)
 
         val dbHelper = DbHelper(this.applicationContext)

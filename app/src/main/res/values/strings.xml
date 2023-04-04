@@ -14,4 +14,6 @@
     <string name="yes">Да</string>
     <string name="no">Нет</string>
     <string name="up_button">Вверх</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="groups">Группы</string>
 </resources>

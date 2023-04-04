@@ -2,54 +2,80 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/linearLayout2"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Views.TeachersFragment" >
-
+    tools:context=".Views.EmployeeSchedule">
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-        android:id="@+id/swipe_refresh_employees"
+        android:id="@+id/swipe_refresh"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:background="@color/background"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar_employees">
+        app:layout_constraintTop_toBottomOf="@+id/toolbar">
 
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/list_of_employees"
+            android:id="@+id/schedule_recycler_view"
             android:layout_width="match_parent"
             android:layout_height="0dp" />
 
+
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
+
     <ProgressBar
-        android:id="@+id/progress_bar_employees"
+        android:id="@+id/progressBar"
         style="?android:attr/progressBarStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:progressTint="@color/BSUIR_blue"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/swipe_refresh"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="?attr/colorPrimary"
+        android:minHeight="?attr/actionBarSize"
+        android:theme="?attr/actionBarTheme"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/schedule_situating_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="200dp"
+        android:text="@string/schedule_doesnt_exist"
+        android:textSize="20sp"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar_employees"
-        android:layout_width="0dp"
+    <TextView
+        android:id="@+id/endOfSchedule"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="?attr/colorPrimary"
-        android:minHeight="?attr/actionBarSize"
-        android:theme="@style/AppTheme.Toolbar"
+        android:layout_marginBottom="200dp"
+        android:text="@string/endOfSchedule"
+        android:textSize="20sp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/swipe_refresh"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:title="Список преподавателей"
-        app:titleTextColor="#FFFFFF" />
+        app:layout_constraintTop_toBottomOf="@+id/toolbar" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/upButtonEmployees"
+        android:id="@+id/floatingActionButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
@@ -57,6 +83,7 @@
         android:clickable="true"
         android:contentDescription="@string/up_button"
         android:src="@drawable/up_button"
+        app:backgroundTint="@color/BSUIR_blue"
         app:fabSize="mini"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

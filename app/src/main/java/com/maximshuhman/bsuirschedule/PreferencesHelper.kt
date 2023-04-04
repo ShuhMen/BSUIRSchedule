@@ -8,7 +8,7 @@ object PreferenceHelper {
 
 
     val OPENED_GROUP = "OPENED_GROUP"
-    val WEEK = "WEEK"
+    val TYPE = "TYPE"
 
 
     fun defaultPreference(context: Context): SharedPreferences =
@@ -31,15 +31,15 @@ object PreferenceHelper {
             }
         }
 
-    /*  var SharedPreferences.password
-          get() = getString(USER_PASSWORD, "")
+      var SharedPreferences.openedType
+          get() = getInt(TYPE, 0)
           set(value) {
               editMe {
-                  it.putString(USER_PASSWORD, value)
+                  it.putInt(TYPE, value)
               }
           }
 
-      var SharedPreferences.clearValues
+     /* var SharedPreferences.clearValues
           get() = { }
           set(value) {
               editMe {

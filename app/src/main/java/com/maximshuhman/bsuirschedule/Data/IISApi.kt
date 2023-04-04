@@ -31,9 +31,19 @@ interface IISApi {
     ): Response<ResponseBody>
 
     @GET("student-group?")
-    suspend fun getLastUpdate(
+    suspend fun getGroupScheduleLastUpdate(
         @Query("groupNumber") groupNumber: String
     ): Response<ResponseBody>
 
+    @GET("schedule/{id}")
+    suspend fun getEmployeeSchedule(
+        @Path("id") emplId: String
+    ): Response<ResponseBody>
 
+    @GET("employee?")
+    suspend fun getEmployeeScheduleLastUpdate(
+        @Query("id") employeeID: Int
+    ): Response<ResponseBody>
+
+   // https://iis.bsuir.by/api/v1/last-update-date/employee?id={empId}
 }

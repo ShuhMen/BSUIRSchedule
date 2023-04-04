@@ -32,8 +32,9 @@ object StudentData {
     val ExamsList = mutableListOf<Exam>()
     var GroupsList = mutableListOf<Group>()
     var listOfGroups = mutableListOf<Group>()
-    var FavoritesList = mutableListOf<Group>()
-    private var listOfFavorites = mutableListOf<Group>()
+    var FavoritesList = mutableListOf<Pair<Group?,Employees?>>()
+    private var listOfFavoriteGroups = mutableListOf<Group>()
+    private var listOfFavoriteEmployees = mutableListOf<Employees>()
     var curGroupID: Int? = 0
     var curGroupName: String = ""
     var curGroupSpeciality: String = ""
@@ -458,6 +459,7 @@ object StudentData {
                                 getString(getColumnIndexOrThrow(DBContract.Schedule.subjectFullName)),
                                 getString(getColumnIndexOrThrow(DBContract.Schedule.weekNumber)),
                                 Employees(
+                                    0,
                                     try {
                                         getInt(getColumnIndexOrThrow(DBContract.Employees.employeeID))
                                     } catch (e: Exception) {
@@ -487,10 +489,14 @@ object StudentData {
                                         getBlob(getColumnIndexOrThrow(DBContract.Employees.photo))
                                     } catch (e: Exception) {
                                         ByteArray(0)
+                                    },
+                                    try {
+                                        getString(getColumnIndexOrThrow(DBContract.Employees.urlId))
+                                    } catch (e: Exception) {
+                                        ""
                                     }
                                 ), "",
                                 "",
-
                                 try {
                                     getString(getColumnIndexOrThrow(DBContract.Exams.dateLesson))
                                 } catch (e: Exception) {
@@ -561,6 +567,7 @@ object StudentData {
                 do {
                     list.add(
                         Employees(
+                            0,
                             try {
                                 cursor.getInt(cursor.getColumnIndexOrThrow(DBContract.Employees.employeeID))
                             } catch (e: Exception) {
@@ -590,6 +597,11 @@ object StudentData {
                                 cursor.getBlob(cursor.getColumnIndexOrThrow(DBContract.Employees.photo))
                             } catch (e: Exception) {
                                 ByteArray(0)
+                            },
+                            try {
+                                cursor.getString(getColumnIndexOrThrow(DBContract.Employees.urlId))
+                            } catch (e: Exception) {
+                                ""
                             }
                         )
                     )
@@ -713,7 +725,7 @@ object StudentData {
 
         curday = if (day == 1) 7 else day - 1
 
-        ind = listOfPairs.indexOf(listOfPairs.firstOrNull { it.day_of_week == curday })
+        ind = listOfPairs.indexOf(listOfPairs.firstOrNull { (it.day_of_week == curday && it.weekNumber.contains(week.toString()))})
 
         if (ind == -1) {
             while (ind == -1) {
@@ -723,7 +735,7 @@ object StudentData {
                 curday = curday % 7 + 1
                 calendar.add(Calendar.DATE, 1)
 
-                ind = listOfPairs.indexOf(listOfPairs.firstOrNull { it.day_of_week == curday })
+                ind = listOfPairs.indexOf(listOfPairs.firstOrNull { (it.day_of_week == curday  && it.weekNumber.contains(week.toString()))})
             }
 
         }
@@ -787,7 +799,7 @@ object StudentData {
 
         while (i < ScheduleList.size) {
 
-            if ((ScheduleList[i - 1].day_of_week != ScheduleList[i].day_of_week)) {
+            if (ScheduleList[i - 1].day_of_week != ScheduleList[i].day_of_week || (ScheduleList[i-1].startLessonTime!! > ScheduleList[i].startLessonTime!! || ScheduleList[i-1].inLessonID == ScheduleList[i].inLessonID)) {
 
                 var k: Int = i - 1
                 //i--
@@ -795,6 +807,9 @@ object StudentData {
 
 
                 var delta = ScheduleList[i].day_of_week - ScheduleList[i - 1].day_of_week
+
+                if(delta == 0)
+                    delta = 7
 
                 while (ScheduleList[k].day_of_week != 9) {
 
@@ -1034,6 +1049,7 @@ object StudentData {
                         do {
                             list.add(
                                 Employees(
+                                    0,
                                     try {
                                         cursor.getInt(cursor.getColumnIndexOrThrow(DBContract.Employees.employeeID))
                                     } catch (e: Exception) {
@@ -1063,6 +1079,11 @@ object StudentData {
                                         cursor.getBlob(cursor.getColumnIndexOrThrow(DBContract.Employees.photo))
                                     } catch (e: Exception) {
                                         ByteArray(0)
+                                    },
+                                    try {
+                                        cursor.getString(getColumnIndexOrThrow(DBContract.Employees.urlId))
+                                    } catch (e: Exception) {
+                                        ""
                                     }
                                 )
                             )
@@ -1197,7 +1218,7 @@ object StudentData {
                         "${DBContract.CommonSchedule.commonScheduleID} = $groupID",
                         null
                     )
-                    dbHelper.createGroupScheduleIndex(db)
+
                 } else
                     if (c.getInt(0) != 0) {
                         c.close()
@@ -1291,15 +1312,11 @@ object StudentData {
                     Group(
                         0,
                         getString(getColumnIndexOrThrow(DBContract.Groups.name)),
-                        "",
                         getString(getColumnIndexOrThrow(DBContract.Groups.facultyAbbrev)),
-                        0,
                         getString(getColumnIndexOrThrow(DBContract.Groups.specialityName)),
                         getString(getColumnIndexOrThrow(DBContract.Groups.specialityAbbrev)),
                         getLong(getColumnIndexOrThrow(DBContract.Groups.course)).toInt(),
                         getLong(getColumnIndexOrThrow(DBContract.Groups.groupID)).toInt(),
-                        "",
-                        0
                     )
                 )
             }
@@ -1374,97 +1391,6 @@ object StudentData {
         return 0
     }
 
-    private fun fillEmployeesTable(db: SQLiteDatabase): Int {
-        val response: JSONArrayResponse = Requests.getEmployeesList("https://iis.bsuir.by/api/v1/")
-
-        val employeesList: JSONArray = response.arr
-
-        if (response.errorCode != 0)
-            return response.errorCode
-
-        var i = 0
-        while (i < employeesList.length() - 1) {
-
-            var dep = ""
-            val ar = employeesList.getJSONObject(i).getJSONArray("academicDepartment")
-
-            Array(ar.length()) {
-                dep += ar.getString(it).toString() + " "
-            }
-
-            val values = ContentValues().apply {
-                put(DBContract.Employees.employeeID, getStringDef(employeesList, i, "id"))
-                put(DBContract.Employees.firstName, getStringDef(employeesList, i, "firstName"))
-                put(
-                    DBContract.Employees.middleName,
-                    getStringDef(employeesList, i, "middleName")
-                )
-                put(DBContract.Employees.lastName, getStringDef(employeesList, i, "lastName"))
-                put(DBContract.Employees.photoLink, getStringDef(employeesList, i, "photoLink"))
-                put(DBContract.Employees.degree, getStringDef(employeesList, i, "degree"))
-                put(
-                    DBContract.Employees.degreeAbbrev,
-                    getStringDef(employeesList, i, "degreeAbbrev")
-                )
-                put(DBContract.Employees.rank, getStringDef(employeesList, i, "rank"))
-                put(DBContract.Employees.department, dep)
-                put(DBContract.Employees.fio, getStringDef(employeesList, i, "fio"))
-            }
-
-            val newRowId = db.insert(DBContract.Employees.TABLE_NAME, null, values)
-            if (newRowId.toInt() == -1) {
-                //db.execSQL("DELETE FROM ${DBContract.Employees.TABLE_NAME}")
-                return 1
-            }
-
-            i++
-        }
-
-        val values = ContentValues().apply {
-            put(DBContract.Employees.employeeID, 0)
-            put(DBContract.Employees.firstName, "")
-            put(DBContract.Employees.middleName, "")
-            put(DBContract.Employees.lastName, "")
-            put(DBContract.Employees.photoLink, "")
-            put(DBContract.Employees.degree, "")
-            put(DBContract.Employees.degreeAbbrev, "")
-            put(DBContract.Employees.rank, "")
-            put(DBContract.Employees.department, "")
-            put(DBContract.Employees.fio, "")
-
-        }
-        val newRowId = db.insert(DBContract.Employees.TABLE_NAME, null, values)
-        return if (newRowId.toInt() == -1) {
-            db.execSQL("DELETE FROM ${DBContract.Employees.TABLE_NAME}")
-            1
-        } else 0
-
-    }
-
-    fun makeEmployeesList(context: Context): Int {
-
-        val dbHelper = DbHelper(context)
-        val db = dbHelper.writableDatabase
-
-        val exist: Cursor =
-            db.rawQuery("SELECT COUNT(*) as cnt FROM ${DBContract.Employees.TABLE_NAME}", null)
-        exist.moveToFirst()
-
-
-
-        if (exist.getInt(0) == 0) {
-            db.execSQL("DELETE FROM ${DBContract.Schedule.TABLE_NAME}")
-            db.execSQL("DELETE FROM ${DBContract.Employees.TABLE_NAME}")
-
-            val err = fillEmployeesTable(db)
-            if (err != 0)
-                return 1
-        }
-
-        exist.close()
-
-        return 0
-    }
 
     fun add_removeFavGroup(context: Context, mode: Int, grID: Int) {
 
@@ -1478,6 +1404,8 @@ object StudentData {
 
             val values = ContentValues().apply {
                 put(DBContract.Favorites.groupID, grID)
+                put(DBContract.Favorites.type, 0)
+
             }
 
             val newRowId = db.insert(DBContract.Favorites.TABLE_NAME, null, values)
@@ -1487,39 +1415,60 @@ object StudentData {
 
 
     private fun fillFavoritesList(db: SQLiteDatabase) {
-        val c: Cursor = db.rawQuery(
+
+        var c: Cursor = db.rawQuery(
             "SELECT * FROM ${DBContract.Favorites.TABLE_NAME} " +
                     "INNER JOIN ${DBContract.Groups.TABLE_NAME} ON (${DBContract.Groups.TABLE_NAME}.${DBContract.Groups.groupID} = ${DBContract.Favorites.TABLE_NAME}.${DBContract.Favorites.groupID}) " +
-                    " ORDER BY " + DBContract.Groups.name,
+                    "WHERE ${DBContract.Favorites.type} = 0 "+
+                    "ORDER BY " + DBContract.Groups.name,
             null
         )
 
         with(c) {
             while (moveToNext()) {
-                listOfFavorites.add(
+                if(getInt(getColumnIndexOrThrow(DBContract.Favorites.type)) == 0)
+                listOfFavoriteGroups.add(
                     Group(
                         0,
                         getString(getColumnIndexOrThrow(DBContract.Groups.name)),
-                        "",
                         getString(getColumnIndexOrThrow(DBContract.Groups.facultyAbbrev)),
-                        0,
                         getString(getColumnIndexOrThrow(DBContract.Groups.specialityName)),
                         getString(getColumnIndexOrThrow(DBContract.Groups.specialityAbbrev)),
-                        getLong(getColumnIndexOrThrow(DBContract.Groups.course)).toInt(),
-                        getLong(getColumnIndexOrThrow(DBContract.Favorites.groupID)).toInt(),
-                        "",
-                        0
+                        getInt(getColumnIndexOrThrow(DBContract.Groups.course)),
+                        getInt(getColumnIndexOrThrow(DBContract.Favorites.groupID)),
                     )
                 )
             }
         }
         c.close()
 
-        val gr = listOfFavorites[0].copy()
+        c = db.rawQuery(
+            "SELECT * FROM ${DBContract.Favorites.TABLE_NAME} " +
+                    "INNER JOIN ${DBContract.Employees.TABLE_NAME} ON (${DBContract.Employees.TABLE_NAME}.${DBContract.Employees.employeeID} = ${DBContract.Favorites.TABLE_NAME}.${DBContract.Favorites.groupID}) " +
+                    "WHERE ${DBContract.Favorites.type} = 1 "+
+                    "ORDER BY " + DBContract.Employees.lastName,
+            null
+        )
 
-        gr.type = 3
+        with(c) {
+            while (moveToNext()) {
+                if(getInt(getColumnIndexOrThrow(DBContract.Favorites.type)) == 1)
+                    listOfFavoriteEmployees.add(
+                        Employees(
+                            1,
+                            getInt(getColumnIndexOrThrow(DBContract.Employees.employeeID)),
+                            getString(getColumnIndexOrThrow(DBContract.Employees.firstName)),
+                            getString(getColumnIndexOrThrow(DBContract.Employees.middleName)),
+                            getString(getColumnIndexOrThrow(DBContract.Employees.lastName)),
+                            getString(getColumnIndexOrThrow(DBContract.Employees.photoLink)),
+                            getBlob(getColumnIndexOrThrow(DBContract.Employees.photo)),
+                            getString(getColumnIndexOrThrow(DBContract.Employees.urlId))
+                        )
+                    )
+            }
+        }
+        c.close()
 
-        listOfFavorites.add(gr)
     }
 
     fun makeFavoritesList(context: Context): Int {
@@ -1536,48 +1485,91 @@ object StudentData {
 
         exist.close()
 
-        listOfFavorites.clear()
+        listOfFavoriteGroups.clear()
+        listOfFavoriteEmployees.clear()
         FavoritesList.clear()
         fillFavoritesList(db)
 
-        val gr = listOfFavorites[0].copy()
 
-        try {
+        if(listOfFavoriteGroups.size != 0) {
+            var gr = listOfFavoriteGroups[0].copy()
+            gr.type = 5
+            listOfFavoriteGroups.add(gr)
 
-            gr.name = gr.name!!.substring(0, 3)
-            gr.type = 1
-            FavoritesList.add(gr)
+            gr = listOfFavoriteGroups[0].copy()
 
-        } catch (e: Exception) {
-            "Ошибка"
-        }
+            try {
 
+                gr.name = gr.name!!.substring(0, 3)
+                gr.type = 1
+                FavoritesList.add(Pair(gr,null))
 
-        var i = 0
-
-        while (i < listOfFavorites.size - 1) {
-
-
-            FavoritesList.add(
-                listOfFavorites[i].copy()
-            )
-
-            if (listOfFavorites[i].name!!.substring(
-                    0,
-                    3
-                ) != listOfFavorites[i + 1].name!!.substring(
-                    0,
-                    3
-                ) && listOfFavorites[i + 1].type != 3
-            ) {
-                val group = listOfFavorites[i + 1].copy()
-                group.name = group.name!!.substring(0, 3)
-                group.type = 1
-                FavoritesList.add(group)
+            } catch (e: Exception) {
+                "Ошибка"
             }
 
-            i++
+
+            var i = 0
+
+            while (i < listOfFavoriteGroups.size - 1) {
+
+
+                FavoritesList.add(Pair(listOfFavoriteGroups[i].copy(), null))
+
+                if (listOfFavoriteGroups[i].name!!.substring(
+                        0,
+                        3
+                    ) != listOfFavoriteGroups[i + 1].name!!.substring(
+                        0,
+                        3
+                    ) && listOfFavoriteGroups[i + 1].type != 5
+                ) {
+                    val group = listOfFavoriteGroups[i + 1].copy()
+                    group.name = group.name!!.substring(0, 3)
+                    group.type = 1
+                    FavoritesList.add(Pair(group, null))
+                }
+
+                i++
+            }
         }
+
+        if(listOfFavoriteEmployees.size != 0) {
+            var emp = listOfFavoriteEmployees[0].copy()
+            emp.type = 5
+            listOfFavoriteEmployees.add(emp)
+
+            emp = listOfFavoriteEmployees[0].copy()
+            try {
+
+                emp.lastName = emp.lastName[0].toString()
+                emp.type = 3
+                FavoritesList.add(Pair(null, emp))
+
+            } catch (e: Exception) {
+                "Ошибка"
+            }
+
+
+            var i = 0
+
+            while (i < listOfFavoriteEmployees.size - 1) {
+
+
+                FavoritesList.add(Pair(null, listOfFavoriteEmployees[i].copy()))
+
+                if (listOfFavoriteEmployees[i].lastName[0] != listOfFavoriteEmployees[i + 1].lastName[0] && listOfFavoriteEmployees[i + 1].type != 5) {
+                    val group = listOfFavoriteEmployees[i + 1].copy()
+                    group.lastName = group.lastName[0].toString()
+                    group.type = 3
+                    FavoritesList.add(Pair(null,group))
+                }
+
+                i++
+            }
+
+        }
+
         return 0
     }
 }

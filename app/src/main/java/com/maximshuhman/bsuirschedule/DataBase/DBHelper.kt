@@ -88,12 +88,14 @@ class DbHelper(context: Context) :
                 "${DBContract.Employees.rank} TEXT," +
                 "${DBContract.Employees.department} TEXT," +
                 "${DBContract.Employees.fio} TEXT," +
-                "${DBContract.Employees.photo} TEXT )"
+                "${DBContract.Employees.urlId} TEXT," +
+                "${DBContract.Employees.photo} BLOB )"
 
 
     private val SQL_CREATE_FAVORITES =
         "CREATE TABLE ${DBContract.Favorites.TABLE_NAME} (" +
                 "${DBContract.Favorites.groupID} INTEGER PRIMARY KEY," +
+                "${DBContract.Favorites.type} INTEGER ," +
                 "FOREIGN KEY (${DBContract.Favorites.groupID}) REFERENCES ${DBContract.Groups.TABLE_NAME}(${DBContract.Groups.groupID}))"
 
     private val SQL_CREATE_EXAMS =
@@ -129,6 +131,100 @@ class DbHelper(context: Context) :
     private val SQL_CREATE_SCHEDULE_INDEX =
         "CREATE INDEX lessonID ON ${DBContract.Schedule.TABLE_NAME} (${DBContract.Schedule.groupID})"
 
+
+
+    private val SQL_CREATE_COMMONEMPLOYEE =
+        "CREATE TABLE ${DBContract.CommonEmployee.TABLE_NAME} (" +
+                "${DBContract.CommonEmployee.commonEmployeeID} INTEGER PRIMARY KEY," +
+                "${DBContract.CommonEmployee.startExamsDate} TEXT," +
+                "${DBContract.CommonEmployee.endExamsDate} TEXT," +
+                "${DBContract.CommonEmployee.startDate} TEXT," +
+                "${DBContract.CommonEmployee.endDate} TEXT," +
+                "${DBContract.CommonEmployee.lastUpdate} TEXT," +
+                "${DBContract.CommonEmployee.lastBuild} TEXT," +
+                "FOREIGN KEY (${DBContract.CommonEmployee.commonEmployeeID}) REFERENCES ${DBContract.Employees.TABLE_NAME}(${DBContract.Employees.employeeID}));"
+
+    private val SQL_CREATE_EMPLOYEESCHEDULE =
+        "CREATE TABLE ${DBContract.EmployeeSchedule.TABLE_NAME} (" +
+                "${DBContract.EmployeeSchedule.scheduleID} INTEGER PRIMARY KEY," +
+                "${DBContract.EmployeeSchedule.inScheduleID} INTEGER," +
+                "${DBContract.EmployeeSchedule.day_of_week} INTEGER," +
+                "${DBContract.EmployeeSchedule.auditories} TEXT," +
+                "${DBContract.EmployeeSchedule.endLessonTime} TEXT," +
+                "${DBContract.EmployeeSchedule.lessonTypeAbbrev} TEXT," +
+                "${DBContract.EmployeeSchedule.note} TEXT," +
+                "${DBContract.EmployeeSchedule.numSubgroup} INTEGER," +
+                "${DBContract.EmployeeSchedule.startLessonTime} TEXT," +
+                "${DBContract.EmployeeSchedule.studentGroups} TEXT," +
+                "${DBContract.EmployeeSchedule.subject} TEXT," +
+                "${DBContract.EmployeeSchedule.subjectFullName} TEXT," +
+                "${DBContract.EmployeeSchedule.weekNumber} INTEGER," +
+                "${DBContract.EmployeeSchedule.employeeID} INTEGER," +
+                "${DBContract.EmployeeSchedule.startLessonDate} TEXT," +
+                "${DBContract.EmployeeSchedule.endLessonDate} TEXT," +
+                "FOREIGN KEY (${DBContract.EmployeeSchedule.employeeID}) REFERENCES ${DBContract.CommonEmployee.TABLE_NAME}(${DBContract.CommonEmployee.commonEmployeeID}))"
+
+
+    private val SQL_CREATE_FINALEMPLOYEESCHEDULE =
+        "CREATE TABLE IF NOT EXISTS ${DBContract.finalEmployeeSchedule.TABLE_NAME} (" +
+                "${DBContract.finalEmployeeSchedule.scheduleID} INTEGER PRIMARY KEY," +
+                "${DBContract.finalEmployeeSchedule.inScheduleID} INTEGER," +
+                "${DBContract.finalEmployeeSchedule.dayIndex} INTEGER," +
+                "${DBContract.finalEmployeeSchedule.day_of_week} INTEGER," +
+                "${DBContract.finalEmployeeSchedule.auditories} TEXT," +
+                "${DBContract.finalEmployeeSchedule.endLessonTime} TEXT," +
+                "${DBContract.finalEmployeeSchedule.lessonTypeAbbrev} TEXT," +
+                "${DBContract.finalEmployeeSchedule.note} TEXT," +
+                "${DBContract.finalEmployeeSchedule.numSubgroup} INTEGER," +
+                "${DBContract.finalEmployeeSchedule.startLessonTime} TEXT," +
+                "${DBContract.finalEmployeeSchedule.studentGroups} TEXT," +
+                "${DBContract.finalEmployeeSchedule.subject} TEXT," +
+                "${DBContract.finalEmployeeSchedule.subjectFullName} TEXT," +
+                "${DBContract.finalEmployeeSchedule.weekNumber} INTEGER," +
+                "${DBContract.finalEmployeeSchedule.employeeID} INTEGER," +
+                "${DBContract.finalEmployeeSchedule.startLessonDate} TEXT," +
+                "${DBContract.finalEmployeeSchedule.endLessonDate} TEXT," +
+                "FOREIGN KEY (${DBContract.finalEmployeeSchedule.employeeID}) REFERENCES ${DBContract.CommonEmployee.TABLE_NAME}(${DBContract.CommonEmployee.commonEmployeeID}))"
+    // "FOREIGN KEY (${DBContract.finalSchedule.employeeID}) REFERENCES ${DBContract.Employees.TABLE_NAME}(${DBContract.Employees.employeeID}))"
+
+
+    private val SQL_CREATE_EMPLOYEETOPAIR =
+        "CREATE TABLE IF NOT EXISTS ${DBContract.EmployeeToPair.TABLE_NAME} (" +
+                "${DBContract.EmployeeToPair.lessonID} INTEGER," +
+                "${DBContract.EmployeeToPair.employeeID} INTEGER," +
+                "${DBContract.EmployeeToPair.groupName} INTEGER," +
+                //   "FOREIGN KEY (${DBContract.PairToEmployers.lessonID}) REFERENCES ${DBContract.Schedule.TABLE_NAME}(${DBContract.Schedule.scheduleID})," +
+                "FOREIGN KEY (${DBContract.EmployeeToPair.groupName}) REFERENCES ${DBContract.Groups.TABLE_NAME}(${DBContract.Groups.name}))"
+    /*fun createGroupScheduleIndex(db:SQLiteDatabase){
+        db.execSQL(SQL_CREATE_SCHEDULE_INDEX)
+    }
+*/
+    private val SQL_CREATE_EMPLOYEEEXAMS =
+        "CREATE TABLE IF NOT EXISTS ${DBContract.EmployeeExams.TABLE_NAME} (" +
+                "${DBContract.EmployeeSchedule.scheduleID} INTEGER PRIMARY KEY," +
+                "${DBContract.EmployeeSchedule.inScheduleID} INTEGER," +
+                "${DBContract.EmployeeSchedule.day_of_week} INTEGER," +
+                "${DBContract.EmployeeSchedule.auditories} TEXT," +
+                "${DBContract.EmployeeSchedule.endLessonTime} TEXT," +
+                "${DBContract.EmployeeSchedule.lessonTypeAbbrev} TEXT," +
+                "${DBContract.EmployeeSchedule.note} TEXT," +
+                "${DBContract.EmployeeSchedule.numSubgroup} INTEGER," +
+                "${DBContract.EmployeeSchedule.startLessonTime} TEXT," +
+                "${DBContract.EmployeeSchedule.studentGroups} TEXT," +
+                "${DBContract.EmployeeSchedule.subject} TEXT," +
+                "${DBContract.EmployeeSchedule.subjectFullName} TEXT," +
+                "${DBContract.EmployeeSchedule.weekNumber} INTEGER," +
+                "${DBContract.EmployeeSchedule.employeeID} INTEGER," +
+                "${DBContract.EmployeeExams.dateLesson} TEXT," +
+                "FOREIGN KEY (${DBContract.EmployeeSchedule.employeeID}) REFERENCES ${DBContract.CommonEmployee.TABLE_NAME}(${DBContract.CommonEmployee.commonEmployeeID}))"
+
+    private val SQL_CREATE_EMPLOYEETOEXAM =
+        "CREATE TABLE IF NOT EXISTS ${DBContract.EmployeeToExam.TABLE_NAME} (" +
+                "${DBContract.EmployeeToExam.lessonID} INTEGER," +
+                "${DBContract.EmployeeToExam.employeeID} INTEGER," +
+                "${DBContract.EmployeeToExam.groupName} INTEGER," +
+                //   "FOREIGN KEY (${DBContract.PairToEmployers.lessonID}) REFERENCES ${DBContract.Schedule.TABLE_NAME}(${DBContract.Schedule.scheduleID})," +
+                "FOREIGN KEY (${DBContract.EmployeeToExam.groupName}) REFERENCES ${DBContract.Groups.TABLE_NAME}(${DBContract.Groups.name}))"
     override fun onCreate(p0: SQLiteDatabase?) {
         Log.v("DBDD", "p0 override fun onCreate(db: SQLiteDatabase?) {")
         p0?.let {
@@ -175,6 +271,41 @@ class DbHelper(context: Context) :
                 val a8 = it.execSQL(SQL_CREATE_PAIRTOEMPLOYER)
             } catch (e: Exception) {
                 Log.v("DBDD", "SQL_CREATE_PAIRTOEMPLOYER ERROR")
+            }
+
+            try {
+                val a8 = it.execSQL(SQL_CREATE_COMMONEMPLOYEE)
+            } catch (e: Exception) {
+                Log.v("DBDD", "SQL_CREATE_COMMONEMPLOYEE ERROR")
+            }
+
+            try {
+                val a8 = it.execSQL(SQL_CREATE_EMPLOYEESCHEDULE)
+            } catch (e: Exception) {
+                Log.v("DBDD", "SQL_CREATE_EMPLOYEESCHEDULE ERROR")
+            }
+
+            try {
+                val a9 = it.execSQL(SQL_CREATE_EMPLOYEETOPAIR)
+            } catch (e: Exception) {
+                Log.v("DBDD", "SQL_CREATE_EMPLOYEETOPAIR ERROR")
+            }
+
+            try {
+                val a10 = it.execSQL(SQL_CREATE_EMPLOYEEEXAMS)
+            } catch (e: Exception) {
+                Log.v("DBDD", "SQL_CREATE_EMPLOYEEEXAMS ERROR")
+            }
+            try {
+                val a10 = it.execSQL(SQL_CREATE_FINALEMPLOYEESCHEDULE)
+            } catch (e: Exception) {
+                Log.v("DBDD", "SQL_CREATE_FINALEMPLOYEESCHEDULE ERROR")
+            }
+
+            try {
+                val a10 = it.execSQL(SQL_CREATE_EMPLOYEETOEXAM)
+            } catch (e: Exception) {
+                Log.v("DBDD", "SQL_CREATE_EMPLOYEETOEXAM ERROR")
             }
         }
     }
@@ -302,22 +433,77 @@ class DbHelper(context: Context) :
             val a2 = db.execSQL("DROP TABLE IF EXISTS ${DBContract.Schedule.TABLE_NAME}")
 
             try {
-                val a3 = db.execSQL(SQL_CREATE_SCHEDULE)
+                val a8 = db.execSQL(SQL_CREATE_SCHEDULE)
             } catch (e: Exception) {
                 Log.v("DBDD", "SQL_CREATE_SCHEDULE ERROR")
             }
 
             try {
-                val a7 = db.execSQL(SQL_CREATE_FINALSCHEDULE)
+                val a9 = db.execSQL(SQL_CREATE_FINALSCHEDULE)
             } catch (e: Exception) {
                 Log.v("DBDD", "SQL_CREATE_FINALSCHEDULE ERROR")
             }
 
             try {
-                val a8 = db.execSQL(SQL_CREATE_PAIRTOEMPLOYER)
+                val a10 = db.execSQL(SQL_CREATE_PAIRTOEMPLOYER)
             } catch (e: Exception) {
                 Log.v("DBDD", "SQL_CREATE_PAIRTOEMPLOYER ERROR")
             }
+        }
+
+        if(oldVersion < 12){
+            try {
+                db.execSQL("DELETE FROM ${DBContract.Schedule.TABLE_NAME}")
+                db.execSQL("DELETE FROM ${DBContract.PairToEmployers.TABLE_NAME}")
+                db.execSQL("DELETE FROM ${DBContract.Employees.TABLE_NAME}")
+                db.execSQL("ALTER TABLE ${DBContract.Employees.TABLE_NAME} ADD COLUMN ${DBContract.Employees.urlId} TEXT")
+            } catch (e: Exception) {
+
+            }
+
+            try {
+                val a11 = db.execSQL(SQL_CREATE_COMMONEMPLOYEE)
+            } catch (e: Exception) {
+                Log.v("DBDD", "SQL_CREATE_PAIRTOEMPLOYER ERROR")
+            }
+
+            try {
+                val a12 = db.execSQL(SQL_CREATE_EMPLOYEESCHEDULE)
+            } catch (e: Exception) {
+                Log.v("DBDD", "SQL_CREATE_PAIRTOEMPLOYER ERROR")
+            }
+
+            try {
+                val a13 = db.execSQL(SQL_CREATE_EMPLOYEETOPAIR)
+            } catch (e: Exception) {
+                Log.v("DBDD", "SQL_CREATE_EMPLOYEETOPAIR ERROR")
+            }
+
+            try {
+                val a14 = db.execSQL(SQL_CREATE_EMPLOYEEEXAMS)
+            } catch (e: Exception) {
+                Log.v("DBDD", "SQL_CREATE_EMPLOYEEEXAMS ERROR")
+            }
+
+            try {
+                val a15 = db.execSQL(SQL_CREATE_FINALEMPLOYEESCHEDULE)
+            } catch (e: Exception) {
+                Log.v("DBDD", "SQL_CREATE_FINALEMPLOYEESCHEDULE ERROR")
+            }
+
+            try {
+                val a16 = db.execSQL(SQL_CREATE_EMPLOYEETOEXAM)
+            } catch (e: Exception) {
+                Log.v("DBDD", "SQL_CREATE_EMPLOYEETOEXAM ERROR")
+            }
+
+            try{
+                db.execSQL("ALTER TABLE ${DBContract.Favorites.TABLE_NAME} ADD COLUMN ${DBContract.Favorites.type} INTEGER")
+            }catch(e: java.lang.Exception){
+
+            }
+
+            db.rawQuery("UPDATE ${DBContract.Favorites.TABLE_NAME} SET ${DBContract.Favorites.type} = 0", null)
         }
 
 
@@ -329,7 +515,7 @@ class DbHelper(context: Context) :
 
     companion object {
         // If you change the database schema, you must increment the database version.
-        const val DATABASE_VERSION = 11
+        const val DATABASE_VERSION = 12
         const val DATABASE_NAME = "Schedule"
     }
 }

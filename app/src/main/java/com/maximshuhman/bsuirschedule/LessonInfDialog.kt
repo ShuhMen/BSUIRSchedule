@@ -74,7 +74,7 @@ class LessonInfDialog : DialogFragment() {
                 if (arguments?.getString(FIO).toString() != "  ") arguments?.getString(FIO)
                     .toString() else "Информация отсутствует"
 
-            if (arguments?.getByteArray(PHOTO) != null) {
+            if (arguments?.getByteArray(PHOTO) != null && arguments?.getByteArray(PHOTO)!!.isNotEmpty()) {
                 val imageBytes = arguments?.getByteArray(PHOTO)
 
                 var decodedImage =
