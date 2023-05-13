@@ -75,4 +75,25 @@
     <style name="Alert.Button.Negative" parent="Widget.MaterialComponents.Button.TextButton">
         <item name="android:textSize">14sp</item>
     </style>
+
+    <style name="Theme.BSUIRSchedule.AppWidgetContainerParent" parent="@android:style/Theme.DeviceDefault">
+        <!-- Radius of the outer bound of widgets to make the rounded corners -->
+        <item name="appWidgetRadius">16dp</item>
+        <!--
+        Radius of the inner view's bound of widgets to make the rounded corners.
+        It needs to be 8dp or less than the value of appWidgetRadius
+        -->
+        <item name="appWidgetInnerRadius">8dp</item>
+    </style>
+
+    <style name="Theme.BSUIRSchedule.AppWidgetContainer" parent="Theme.BSUIRSchedule.AppWidgetContainerParent">
+        <!-- Apply padding to avoid the content of the widget colliding with the rounded corners -->
+        <item name="appWidgetPadding">16dp</item>
+    </style>
+
+    <style name="WidgetTheme" parent="Theme.Material3.DayNight">
+        <item name="appWidgetRadius">@dimen/widget_corners</item>
+        <item name="appWidgetInnerRadius">@dimen/widget_corners</item>
+        <item name="appWidgetPadding">0dp</item>
+    </style>
 </resources>

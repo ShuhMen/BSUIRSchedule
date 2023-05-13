@@ -175,7 +175,7 @@ class TeachersFragment : Fragment() {
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-            if(viewType == 1){
+            if (viewType == 1) {
                 val header = LayoutInflater.from(parent.context)
                     .inflate(R.layout.item_speciality_name, parent, false)
                 return LastNameViewHolder(header)
@@ -186,10 +186,10 @@ class TeachersFragment : Fragment() {
         }
 
         override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-            if(dataFilter[position].type == 1) {
+            if (dataFilter[position].type == 1) {
                 (holder as LastNameViewHolder).bind(dataFilter[position])
-            }else
-            (holder as EmployeeViewHolder).bind(dataFilter[position])
+            } else
+                (holder as EmployeeViewHolder).bind(dataFilter[position])
 
         }
 
@@ -209,7 +209,7 @@ class TeachersFragment : Fragment() {
             @SuppressLint("SetTextI18n")
             fun bind(employee: Employees) {
                 GroupNumber.text =
-                        "${employee.lastName} ${employee.firstName} ${employee.middleName}"
+                    "${employee.lastName} ${employee.firstName} ${employee.middleName}"
             }
 
             override fun onClick(p0: View?) {
@@ -235,6 +235,7 @@ class TeachersFragment : Fragment() {
 
 
         }
+
         override fun getFilter(): Filter {
             return object : Filter() {
                 override fun performFiltering(constraint: CharSequence?): FilterResults {
@@ -250,7 +251,8 @@ class TeachersFragment : Fragment() {
                             for (row in EmployeeData.employeesList) {
                                 if (("${row.lastName} ${row.firstName} ${row.middleName}").contains(
                                         charSearch,
-                                        true)
+                                        true
+                                    )
                                 // ||row.name.toString() == charSearch
                                 ) {
                                     resultList.add(row)
@@ -289,7 +291,6 @@ class TeachersFragment : Fragment() {
             }
         }
     }
-
 
 
 }

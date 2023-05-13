@@ -95,12 +95,12 @@ class EmployeeSchedule : Fragment() {
             EmployeeData.curEmployeeName = ""
 
         val fio = if (arguments?.getString("FIO") != null) {
-          arguments?.getString("FIO").toString()
+            arguments?.getString("FIO").toString()
             //prefs.openedGroup = arguments?.getInt("id")!!
         } else
             ""
         if (arguments?.getString("urlId") != null) {
-            EmployeeData.curEmployeeUrlId =  arguments?.getString("urlId").toString()
+            EmployeeData.curEmployeeUrlId = arguments?.getString("urlId").toString()
             //prefs.openedGroup = arguments?.getInt("id")!!
         } else
             EmployeeData.curEmployeeUrlId = ""
@@ -312,11 +312,19 @@ class EmployeeSchedule : Fragment() {
 
                 if (item.isChecked) {
                     item.setIcon(R.drawable.ic_baseline_favorite_border_24)
-                    EmployeeData.add_removeFavGroup(requireContext(), 1, EmployeeData.curEmployeeID!!)
+                    EmployeeData.add_removeFavGroup(
+                        requireContext(),
+                        1,
+                        EmployeeData.curEmployeeID!!
+                    )
 
                 } else {
                     item.setIcon(R.drawable.ic_baseline_favorite_24)
-                    EmployeeData.add_removeFavGroup(requireContext(), 0, EmployeeData.curEmployeeID!!)
+                    EmployeeData.add_removeFavGroup(
+                        requireContext(),
+                        0,
+                        EmployeeData.curEmployeeID!!
+                    )
                 }
                 item.isChecked = !item.isChecked
 
@@ -375,9 +383,11 @@ class EmployeeSchedule : Fragment() {
                             ScheduleRecycler.visibility = View.VISIBLE
                         }
                     }
+
                     4 -> {
                         endOfSchedule.visibility = View.VISIBLE
                     }
+
                     5 -> try {
                         Toast.makeText(
                             context,
@@ -387,6 +397,7 @@ class EmployeeSchedule : Fragment() {
                     } catch (e: java.lang.NullPointerException) {
                         Firebase.crashlytics.log("SсheduleFragmentToast5")
                     }
+
                     6 -> try {
                         Toast.makeText(
                             context,
@@ -396,6 +407,7 @@ class EmployeeSchedule : Fragment() {
                     } catch (e: java.lang.NullPointerException) {
                         Firebase.crashlytics.log("SсheduleFragmentToast6")
                     }
+
                     else -> try {
                         Toast.makeText(
                             context,
@@ -508,11 +520,13 @@ class EmployeeSchedule : Fragment() {
                         R.drawable.divder_practical,
                         null
                     )
+
                     "ЛК" -> Dividerindex.foreground = ResourcesCompat.getDrawable(
                         itemView.resources,
                         R.drawable.divder_lectures,
                         null
                     )
+
                     "ЛР" -> Dividerindex.foreground =
                         ResourcesCompat.getDrawable(
                             itemView.resources,
@@ -524,9 +538,9 @@ class EmployeeSchedule : Fragment() {
                 try {
                     var emp: String = ""
                     for (i in 0 until pair.groups.size) {
-                        if(i%2 != 0)
+                        if (i % 2 != 0)
                             emp += ", "
-                        if (i != 0 && i%2 == 0)
+                        if (i != 0 && i % 2 == 0)
                             emp += "\n"
                         emp += "${pair.groups[i].name}"
 
@@ -556,15 +570,15 @@ class EmployeeSchedule : Fragment() {
                     groups += "${pairs[layoutPosition].groups[i].name}"
 
                 }
-                  val args = EmployeeLessonInf.getBundle(
-                      StartTimeText.text.toString(),
-                      EndTimeText.text.toString(),
-                      pairs[layoutPosition].auditories,
-                      groups,
+                val args = EmployeeLessonInf.getBundle(
+                    StartTimeText.text.toString(),
+                    EndTimeText.text.toString(),
+                    pairs[layoutPosition].auditories,
+                    groups,
 
-                      pairs[layoutPosition].subjectFullName.toString() + '(' + pairs[layoutPosition].lessonTypeAbbrev + ')',
-                      pairs[layoutPosition].note
-                  )
+                    pairs[layoutPosition].subjectFullName.toString() + '(' + pairs[layoutPosition].lessonTypeAbbrev + ')',
+                    pairs[layoutPosition].note
+                )
                 val navController = findNavController()
                 try {
                     navController.navigate(R.id.action_employeeSchedule_to_employeeLessonInf, args)
@@ -575,14 +589,14 @@ class EmployeeSchedule : Fragment() {
             }
 
 
-            }
+        }
 
-            inner class DayViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-                val DayNumberText: TextView = itemView.findViewById(R.id.day_number_text)
-                fun bind(pair: EmployeeLesson) {
-                    DayNumberText.text = pair.note
-                }
+        inner class DayViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+            val DayNumberText: TextView = itemView.findViewById(R.id.day_number_text)
+            fun bind(pair: EmployeeLesson) {
+                DayNumberText.text = pair.note
             }
         }
+    }
 
 }

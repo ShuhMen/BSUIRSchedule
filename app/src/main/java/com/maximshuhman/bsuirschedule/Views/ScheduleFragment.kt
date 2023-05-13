@@ -2,6 +2,8 @@ package com.maximshuhman.bsuirschedule.Views
 
 import Lesson
 import android.annotation.SuppressLint
+import android.appwidget.AppWidgetManager
+import android.content.ComponentName
 import android.content.ContentValues
 import android.database.Cursor
 import android.os.Bundle
@@ -32,6 +34,7 @@ import com.maximshuhman.bsuirschedule.PreferenceHelper.openedGroup
 import com.maximshuhman.bsuirschedule.PreferenceHelper.openedType
 import com.maximshuhman.bsuirschedule.R
 import com.maximshuhman.bsuirschedule.RecyclerLinearManager
+import com.maximshuhman.bsuirschedule.widget.ScheduleWidget
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.ExecutorService
@@ -57,7 +60,7 @@ class ScheduleFragment : Fragment() {
                 val prefs = PreferenceHelper.defaultPreference(requireContext())
                 prefs.openedGroup = 0
                 prefs.openedType = 0
-               // (requireActivity() as MainActivity).bottomNavigationView.visibility = View.VISIBLE
+                // (requireActivity() as MainActivity).bottomNavigationView.visibility = View.VISIBLE
                 findNavController().popBackStack()
             }
         })
@@ -96,7 +99,48 @@ class ScheduleFragment : Fragment() {
             StudentData.curGroupCourse = arguments?.getInt("course")
         else
             StudentData.curGroupCourse = 0
+        /*
+                val intent = Intent(requireContext(), ScheduleWidget::class.java)
+                intent.action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
+        // Use an array and EXTRA_APPWIDGET_IDS instead of AppWidgetManager.EXTRA_APPWIDGET_ID,
+        // since it seems the onUpdate() is only fired on that:
+                // Use an array and EXTRA_APPWIDGET_IDS instead of AppWidgetManager.EXTRA_APPWIDGET_ID,
+        // since it seems the onUpdate() is only fired on that:
+                val ids: IntArray = AppWidgetManager.getInstance(requireContext())
+                    .getAppWidgetIds(ComponentName(requireContext(), ScheduleWidget::class.java))
+                intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
+                sendBroadcast(intent)*/
+        val appWidgetIds: IntArray = AppWidgetManager.getInstance(requireContext())
+            .getAppWidgetIds(ComponentName(requireContext(), ScheduleWidget::class.java))
+        appWidgetIds.forEach { appWidgetId ->
+            val appWidgetManager = AppWidgetManager.getInstance(context)
+            val dbHelper = DbHelper(requireContext())
+            val db = dbHelper.writableDatabase
+            val views = RemoteViews(requireContext().packageName, R.layout.schedule_widget)
+            val c = db.rawQuery(
+                "SELECT COUNT(*) as cnt FROM " +
+                        "${DBContract.Groups.TABLE_NAME} WHERE ${DBContract.Groups.groupID} = ${StudentData.curGroupID}",
+                null
+            )
+            c.moveToFirst()
+            if (c.getInt(0) != 0) {
+                c.close()
+                val cursor = db.rawQuery(
+                    "SELECT * FROM " +
+                            "${DBContract.Groups.TABLE_NAME} WHERE ${DBContract.Groups.groupID} = ${StudentData.curGroupID}",
+                    null
+                )
 
+                cursor.moveToFirst()
+
+                val name = cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Groups.name))
+
+                views.setTextViewText(R.id.name_text, "Группа $name")
+            }
+            appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetId, R.id.list_view)
+
+            appWidgetManager.updateAppWidget(appWidgetIds, views)
+        }
         ToolBar.title = "Группа ${StudentData.curGroupName} " //+
         // "${Data.curGroupCourse} курс"
 
@@ -169,22 +213,21 @@ class ScheduleFragment : Fragment() {
 
             } else
                 updateUI(0)
-        } else
-        {
+        } else {
             exist.close()
             updateUI(1)
         }
 
 
-      /*  try {
-            (requireActivity() as MainActivity).bottomNavigationView.visibility =
-                    //.menu.findItem(R.id.favoritesFragment).isChecked =
-                    //true
-                View.GONE
-        } catch (_: UninitializedPropertyAccessException) {
-            //do nothing
-        }
-*/
+        /*  try {
+              (requireActivity() as MainActivity).bottomNavigationView.visibility =
+                      //.menu.findItem(R.id.favoritesFragment).isChecked =
+                      //true
+                  View.GONE
+          } catch (_: UninitializedPropertyAccessException) {
+              //do nothing
+          }
+  */
         ScheduleRecycler.layoutManager = RecyclerLinearManager(requireContext())
 
         ScheduleRecycler.addOnScrollListener(object : RecyclerView.OnScrollListener() {
@@ -230,6 +273,8 @@ class ScheduleFragment : Fragment() {
         swipeRefreshLayout.setOnRefreshListener {
             updateUI(1)
         }
+
+       // ScheduleRecyclerAdapter(null).fil
 
         return view
     }
@@ -368,9 +413,11 @@ class ScheduleFragment : Fragment() {
                             ScheduleRecycler.visibility = View.VISIBLE
                         }
                     }
+
                     4 -> {
                         endOfSchedule.visibility = View.VISIBLE
                     }
+
                     5 -> try {
                         Toast.makeText(
                             context,
@@ -380,6 +427,7 @@ class ScheduleFragment : Fragment() {
                     } catch (e: java.lang.NullPointerException) {
                         Firebase.crashlytics.log("SсheduleFragmentToast5")
                     }
+
                     6 -> try {
                         Toast.makeText(
                             context,
@@ -389,6 +437,7 @@ class ScheduleFragment : Fragment() {
                     } catch (e: java.lang.NullPointerException) {
                         Firebase.crashlytics.log("SсheduleFragmentToast6")
                     }
+
                     else -> try {
                         Toast.makeText(
                             context,
@@ -501,11 +550,13 @@ class ScheduleFragment : Fragment() {
                         R.drawable.divder_practical,
                         null
                     )
+
                     "ЛК" -> Dividerindex.foreground = ResourcesCompat.getDrawable(
                         itemView.resources,
                         R.drawable.divder_lectures,
                         null
                     )
+
                     "ЛР" -> Dividerindex.foreground =
                         ResourcesCompat.getDrawable(
                             itemView.resources,

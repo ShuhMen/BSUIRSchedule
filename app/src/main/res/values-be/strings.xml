@@ -16,4 +16,26 @@
     <string name="no">Не</string>
     <string name="up_button">Вверх</string>
     <string name="groups">Групы</string>
+    <string name="appwidget_text">EXAMPLE</string>
+    <string name="add_widget">Add widget</string>
+    <string name="app_widget_description">This is an app widget description</string>
+    <string name="monday">Панядзелак</string>
+    <string name="tuesday">Аўторак</string>
+    <string name="wednesday">Серада</string>
+    <string name="thursday">Чацверг</string>
+    <string name="friday">Пятнiца</string>
+    <string name="saturday">Субота</string>
+    <string name="sunday">Нядзеля</string>
+    <string name="yanuary">Студзеня</string>
+    <string name="february">Лютага</string>
+    <string name="march">Сакавiка</string>
+    <string name="april">Красавiка</string>
+    <string name="may">Мая</string>
+    <string name="june">Чэрвеня</string>
+    <string name="july">Лiпеня</string>
+    <string name="august">Жнiвеня</string>
+    <string name="september">Верасня</string>
+    <string name="october">Кастрычнiка</string>
+    <string name="november">Лiстапада</string>
+    <string name="december">Снежня</string>
 </resources>

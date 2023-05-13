@@ -31,19 +31,19 @@ object PreferenceHelper {
             }
         }
 
-      var SharedPreferences.openedType
-          get() = getInt(TYPE, 0)
-          set(value) {
-              editMe {
-                  it.putInt(TYPE, value)
-              }
-          }
+    var SharedPreferences.openedType
+        get() = getInt(TYPE, 0)
+        set(value) {
+            editMe {
+                it.putInt(TYPE, value)
+            }
+        }
 
-     /* var SharedPreferences.clearValues
-          get() = { }
-          set(value) {
-              editMe {
-                  it.clear()
-              }
-          }*/
+    /* var SharedPreferences.clearValues
+         get() = { }
+         set(value) {
+             editMe {
+                 it.clear()
+             }
+         }*/
 }

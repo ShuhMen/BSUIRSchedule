@@ -16,4 +16,26 @@
     <string name="up_button">Вверх</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="groups">Группы</string>
+    <string name="appwidget_text">EXAMPLE</string>
+    <string name="add_widget">Add widget</string>
+    <string name="app_widget_description">This is an app widget description</string>
+    <string name="monday">Понедельник</string>
+    <string name="tuesday">Вторник</string>
+    <string name="wednesday">Среда</string>
+    <string name="thursday">Четверг</string>
+    <string name="friday">Пятница</string>
+    <string name="saturday">Суббота</string>
+    <string name="sunday">Воскресенье</string>
+    <string name="yanuary">Января</string>
+    <string name="february">Февраля</string>
+    <string name="march">Марта</string>
+    <string name="april">Апреля</string>
+    <string name="may">Мая</string>
+    <string name="june">Июня</string>
+    <string name="july">Июля</string>
+    <string name="august">Августа</string>
+    <string name="september">Сентября</string>
+    <string name="october">Октября</string>
+    <string name="november">Ноября</string>
+    <string name="december">Декабря</string>
 </resources>

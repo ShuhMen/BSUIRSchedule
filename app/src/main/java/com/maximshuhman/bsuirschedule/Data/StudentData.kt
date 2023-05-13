@@ -14,13 +14,16 @@ import com.maximshuhman.bsuirschedule.DataBase.DBContract
 import com.maximshuhman.bsuirschedule.DataBase.DbHelper
 import com.maximshuhman.bsuirschedule.DataClasses.Exam
 import com.maximshuhman.bsuirschedule.DataClasses.Group
+import com.maximshuhman.bsuirschedule.R
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
 import java.text.ParseException
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 
 object StudentData {
@@ -32,7 +35,7 @@ object StudentData {
     val ExamsList = mutableListOf<Exam>()
     var GroupsList = mutableListOf<Group>()
     var listOfGroups = mutableListOf<Group>()
-    var FavoritesList = mutableListOf<Pair<Group?,Employees?>>()
+    var FavoritesList = mutableListOf<Pair<Group?, Employees?>>()
     private var listOfFavoriteGroups = mutableListOf<Group>()
     private var listOfFavoriteEmployees = mutableListOf<Employees>()
     var curGroupID: Int? = 0
@@ -74,7 +77,6 @@ object StudentData {
         grID: Int,
         dayOfWeek: Int
     ): Int {
-        try {
             val js: JSONArray = json.getJSONArray(arrayName)
 
             for (i in 0 until js.length()) {
@@ -92,10 +94,7 @@ object StudentData {
 
                 //listOfPairs.add(addPairToList(1, monday.getJSONObject(i), grID))
             }
-        } catch (e: Exception) {
-            Log.v("SCHP", e.toString())
 
-        }
         return 0
     }
 
@@ -164,7 +163,7 @@ object StudentData {
                     )
 
                 }
-            }else
+            } else
                 count.close()
 
         }
@@ -252,10 +251,10 @@ object StudentData {
         db: SQLiteDatabase,
         grID: Int
     ): Int {
-        try {
 
 
-            for (i in 0 until json.length()) {
+
+        for (i in 0 until json.length()) {
                 val newRowId = db.insert(
                     DBContract.Exams.TABLE_NAME,
                     null,
@@ -263,10 +262,7 @@ object StudentData {
                 )
 
             }
-        } catch (e: Exception) {
-            Log.v("SCHP", e.toString())
 
-        }
         return 0
     }
 
@@ -334,7 +330,7 @@ object StudentData {
                     )
 
                 }
-            }else
+            } else
                 count.close()
 
         }
@@ -437,7 +433,8 @@ object StudentData {
                             "INNER JOIN ${DBContract.CommonSchedule.TABLE_NAME} ON (${DBContract.Exams.TABLE_NAME}.${DBContract.Schedule.groupID} = ${DBContract.CommonSchedule.TABLE_NAME}.${DBContract.CommonSchedule.commonScheduleID}) " +
                             "INNER JOIN ${DBContract.Groups.TABLE_NAME} ON (${DBContract.Groups.TABLE_NAME}.${DBContract.Groups.groupID} = ${DBContract.CommonSchedule.TABLE_NAME}.${DBContract.CommonSchedule.commonScheduleID}) " +
                             "INNER JOIN ${DBContract.Employees.TABLE_NAME} ON (${DBContract.Exams.TABLE_NAME}.${DBContract.Schedule.employeeID} = ${DBContract.Employees.TABLE_NAME}.${DBContract.Employees.employeeID}) " +
-                            "WHERE ${DBContract.Groups.TABLE_NAME}.${DBContract.Groups.groupID} = $groupID ",
+                            "WHERE ${DBContract.Groups.TABLE_NAME}.${DBContract.Groups.groupID} = $groupID " +
+                            "ORDER BY ${DBContract.Exams.dateLesson}",
 
                     null
                 )
@@ -458,44 +455,20 @@ object StudentData {
                                 getString(getColumnIndexOrThrow(DBContract.Schedule.subject)),
                                 getString(getColumnIndexOrThrow(DBContract.Schedule.subjectFullName)),
                                 getString(getColumnIndexOrThrow(DBContract.Schedule.weekNumber)),
-                                Employees(
-                                    0,
-                                    try {
-                                        getInt(getColumnIndexOrThrow(DBContract.Employees.employeeID))
-                                    } catch (e: Exception) {
-                                        0
-                                    },
-                                    try {
-                                        getString(getColumnIndexOrThrow(DBContract.Employees.firstName))
-                                    } catch (e: Exception) {
-                                        ""
-                                    } as String,
-                                    try {
-                                        getString(getColumnIndexOrThrow(DBContract.Employees.middleName))
-                                    } catch (e: Exception) {
-                                        ""
-                                    } as String,
-                                    try {
-                                        getString(getColumnIndexOrThrow(DBContract.Employees.lastName))
-                                    } catch (e: Exception) {
-                                        ""
-                                    } as String,
-                                    try {
-                                        getString(getColumnIndexOrThrow(DBContract.Employees.photoLink))
-                                    } catch (e: Exception) {
-                                        ""
-                                    } as String,
-                                    try {
-                                        getBlob(getColumnIndexOrThrow(DBContract.Employees.photo))
-                                    } catch (e: Exception) {
-                                        ByteArray(0)
-                                    },
-                                    try {
+                                try {
+                                    Employees(
+                                        0,
+                                        getInt(getColumnIndexOrThrow(DBContract.Employees.employeeID)),
+                                        getString(getColumnIndexOrThrow(DBContract.Employees.firstName)),
+                                        getString(getColumnIndexOrThrow(DBContract.Employees.middleName)),
+                                        getString(getColumnIndexOrThrow(DBContract.Employees.lastName)),
+                                        getString(getColumnIndexOrThrow(DBContract.Employees.photoLink)),
+                                        getBlob(getColumnIndexOrThrow(DBContract.Employees.photo)),
                                         getString(getColumnIndexOrThrow(DBContract.Employees.urlId))
-                                    } catch (e: Exception) {
-                                        ""
-                                    }
-                                ), "",
+                                    )
+                                } catch (e: Exception) {
+
+                                } as Employees, "",
                                 "",
                                 try {
                                     getString(getColumnIndexOrThrow(DBContract.Exams.dateLesson))
@@ -521,7 +494,7 @@ object StudentData {
         return 0
     }
 
-    private fun fillListOfPairs(db: SQLiteDatabase, grID: Int): Int {
+    fun fillListOfPairs(db: SQLiteDatabase, grID: Int): Int {
 
 
         val c: Cursor = db.rawQuery(
@@ -566,44 +539,28 @@ object StudentData {
 
                 do {
                     list.add(
-                        Employees(
-                            0,
-                            try {
-                                cursor.getInt(cursor.getColumnIndexOrThrow(DBContract.Employees.employeeID))
-                            } catch (e: Exception) {
-                                0
-                            },
-                            try {
-                                cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Employees.firstName))
-                            } catch (e: Exception) {
-                                ""
-                            } as String,
-                            try {
-                                cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Employees.middleName))
-                            } catch (e: Exception) {
-                                ""
-                            } as String,
-                            try {
-                                cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Employees.lastName))
-                            } catch (e: Exception) {
-                                ""
-                            } as String,
-                            try {
-                                cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Employees.photoLink))
-                            } catch (e: Exception) {
-                                ""
-                            } as String,
-                            try {
-                                cursor.getBlob(cursor.getColumnIndexOrThrow(DBContract.Employees.photo))
-                            } catch (e: Exception) {
-                                ByteArray(0)
-                            },
-                            try {
-                                cursor.getString(getColumnIndexOrThrow(DBContract.Employees.urlId))
-                            } catch (e: Exception) {
-                                ""
-                            }
-                        )
+                        try {
+                            Employees(
+                                0,
+                                cursor.getInt(cursor.getColumnIndexOrThrow(DBContract.Employees.employeeID)),
+                                cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Employees.firstName)),
+                                cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Employees.middleName)),
+                                cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Employees.lastName)),
+                                cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Employees.photoLink)),
+                                try {
+                                    cursor.getBlob(cursor.getColumnIndexOrThrow(DBContract.Employees.photo))
+                                } catch (e: Exception) {
+                                    ByteArray(0)
+                                },
+                                try {
+                                    cursor.getString(getColumnIndexOrThrow(DBContract.Employees.urlId))
+                                } catch (e: Exception) {
+                                    ""
+                                }
+                            )
+                        } catch (e: Exception) {
+                            Employees(0, 0, "", "", "", "", ByteArray(0), "")
+                        }
                     )
                 } while (cursor.moveToNext())
 
@@ -708,7 +665,7 @@ object StudentData {
         return 0
     }
 
-    private fun fillScheduleList(calendar: Calendar, formatter: SimpleDateFormat) {
+    fun fillScheduleList(calendar: Calendar, formatter: SimpleDateFormat, context: Context) {
         var week: Int
 
         var ind: Int
@@ -725,7 +682,9 @@ object StudentData {
 
         curday = if (day == 1) 7 else day - 1
 
-        ind = listOfPairs.indexOf(listOfPairs.firstOrNull { (it.day_of_week == curday && it.weekNumber.contains(week.toString()))})
+        ind = listOfPairs.indexOf(listOfPairs.firstOrNull {
+            (it.day_of_week == curday && it.weekNumber.contains(week.toString()))
+        })
 
         if (ind == -1) {
             while (ind == -1) {
@@ -735,7 +694,9 @@ object StudentData {
                 curday = curday % 7 + 1
                 calendar.add(Calendar.DATE, 1)
 
-                ind = listOfPairs.indexOf(listOfPairs.firstOrNull { (it.day_of_week == curday  && it.weekNumber.contains(week.toString()))})
+                ind = listOfPairs.indexOf(listOfPairs.firstOrNull {
+                    (it.day_of_week == curday && it.weekNumber.contains(week.toString()))
+                })
             }
 
         }
@@ -766,32 +727,33 @@ object StudentData {
 
         val l = ScheduleList[0].copy()
 
+        val system = context
         l.day_of_week = 9
         l.note = "${
             when (calendar.get(Calendar.DAY_OF_WEEK)) {
-                2 -> "Понедельник"
-                3 -> "Вторник"
-                4 -> "Среда"
-                5 -> "Четверг"
-                6 -> "Пятница"
-                7 -> "Суббота"
-                1 -> "Воскресенье"
+                2 -> system.getString(R.string.monday)
+                3 -> system.getString(R.string.tuesday)
+                4 -> system.getString(R.string.wednesday)
+                5 -> system.getString(R.string.thursday)
+                6 -> system.getString(R.string.friday)
+                7 -> system.getString(R.string.saturday)
+                1 -> system.getString(R.string.sunday)
                 else -> "Ошибка"
             }
         }, " + calendar.get(Calendar.DAY_OF_MONTH) + " " +
                 when (calendar.get(Calendar.MONTH)) {
-                    0 -> "Января"
-                    1 -> "Февраля"
-                    2 -> "Марта"
-                    3 -> "Апреля"
-                    4 -> "Мая"
-                    5 -> "Июня"
-                    6 -> "Июля"
-                    7 -> "Августа"
-                    8 -> "Сентября"
-                    9 -> "Октября"
-                    10 -> "Ноября"
-                    11 -> "Декабря"
+                    0 -> system.getString(R.string.yanuary)
+                    1 -> system.getString(R.string.february)
+                    2 -> system.getString(R.string.march)
+                    3 -> system.getString(R.string.april)
+                    4 -> system.getString(R.string.may)
+                    5 -> system.getString(R.string.june)
+                    6 -> system.getString(R.string.july)
+                    7 -> system.getString(R.string.august)
+                    8 -> system.getString(R.string.september)
+                    9 -> system.getString(R.string.october)
+                    10 -> system.getString(R.string.november)
+                    11 -> system.getString(R.string.december)
                     else -> "Ошибка"
                 }
 
@@ -799,7 +761,7 @@ object StudentData {
 
         while (i < ScheduleList.size) {
 
-            if (ScheduleList[i - 1].day_of_week != ScheduleList[i].day_of_week || (ScheduleList[i-1].startLessonTime!! > ScheduleList[i].startLessonTime!! || ScheduleList[i-1].inLessonID == ScheduleList[i].inLessonID)) {
+            if (ScheduleList[i - 1].day_of_week != ScheduleList[i].day_of_week || (ScheduleList[i - 1].startLessonTime!! > ScheduleList[i].startLessonTime!! || ScheduleList[i - 1].inLessonID == ScheduleList[i].inLessonID)) {
 
                 var k: Int = i - 1
                 //i--
@@ -808,7 +770,7 @@ object StudentData {
 
                 var delta = ScheduleList[i].day_of_week - ScheduleList[i - 1].day_of_week
 
-                if(delta == 0)
+                if (delta == 0)
                     delta = 7
 
                 while (ScheduleList[k].day_of_week != 9) {
@@ -860,29 +822,29 @@ object StudentData {
                 les.day_of_week = 9
                 les.note = "${
                     when (ScheduleList[i].day_of_week) {
-                        1 -> "Понедельник"
-                        2 -> "Вторник"
-                        3 -> "Среда"
-                        4 -> "Четверг"
-                        5 -> "Пятница"
-                        6 -> "Суббота"
-                        7 -> "Воскресенье"
+                        1 -> system.getString(R.string.monday)
+                        2 -> system.getString(R.string.tuesday)
+                        3 -> system.getString(R.string.wednesday)
+                        4 -> system.getString(R.string.thursday)
+                        5 -> system.getString(R.string.friday)
+                        6 -> system.getString(R.string.saturday)
+                        7 -> system.getString(R.string.sunday)
                         else -> "Ошибка"
                     }
                 }, " + calendar.get(Calendar.DAY_OF_MONTH) + " " +
                         when (calendar.get(Calendar.MONTH)) {
-                            0 -> "Января"
-                            1 -> "Февраля"
-                            2 -> "Марта"
-                            3 -> "Апреля"
-                            4 -> "Мая"
-                            5 -> "Июня"
-                            6 -> "Июля"
-                            7 -> "Августа"
-                            8 -> "Сентября"
-                            9 -> "Октября"
-                            10 -> "Ноября"
-                            11 -> "Декабря"
+                            0 -> system.getString(R.string.yanuary)
+                            1 -> system.getString(R.string.february)
+                            2 -> system.getString(R.string.march)
+                            3 -> system.getString(R.string.april)
+                            4 -> system.getString(R.string.may)
+                            5 -> system.getString(R.string.june)
+                            6 -> system.getString(R.string.july)
+                            7 -> system.getString(R.string.august)
+                            8 -> system.getString(R.string.september)
+                            9 -> system.getString(R.string.october)
+                            10 -> system.getString(R.string.november)
+                            11 -> system.getString(R.string.december)
                             else -> "Ошибка"
                         }
 
@@ -969,7 +931,8 @@ object StudentData {
         groupID: Int,
         formatter: SimpleDateFormat,
         curent: Date,
-        db: SQLiteDatabase
+        db: SQLiteDatabase,
+        context: Context
     ): Int {
 
 
@@ -997,7 +960,7 @@ object StudentData {
             if (formatter.parse(commonSchedule.lastBuild).before(curent)) {
                 if (fillListOfPairs(db, groupID) == 1)
                     return 1
-                fillScheduleList(calendar, formatter)
+                fillScheduleList(calendar, formatter, context)
                 finalBuild(db, groupID)
 
                 calendar = Calendar.getInstance()
@@ -1034,7 +997,7 @@ object StudentData {
                             getInt(getColumnIndexOrThrow(DBContract.Schedule.inScheduleID))
 
                         var list = ArrayList<Employees>()
-                       val cursor: Cursor = db.rawQuery(
+                        val cursor: Cursor = db.rawQuery(
                             "SELECT * FROM ${DBContract.PairToEmployers.TABLE_NAME} " +
                                     "INNER JOIN ${DBContract.Employees.TABLE_NAME} ON " +
                                     "(${DBContract.PairToEmployers.TABLE_NAME}.${DBContract.PairToEmployers.employeeID} = ${DBContract.Employees.TABLE_NAME}.${DBContract.Employees.employeeID})" +
@@ -1048,44 +1011,28 @@ object StudentData {
 
                         do {
                             list.add(
-                                Employees(
-                                    0,
-                                    try {
-                                        cursor.getInt(cursor.getColumnIndexOrThrow(DBContract.Employees.employeeID))
-                                    } catch (e: Exception) {
-                                        0
-                                    },
-                                    try {
-                                        cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Employees.firstName))
-                                    } catch (e: Exception) {
-                                        ""
-                                    } as String,
-                                    try {
-                                        cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Employees.middleName))
-                                    } catch (e: Exception) {
-                                        ""
-                                    } as String,
-                                    try {
-                                        cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Employees.lastName))
-                                    } catch (e: Exception) {
-                                        ""
-                                    } as String,
-                                    try {
-                                        cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Employees.photoLink))
-                                    } catch (e: Exception) {
-                                        ""
-                                    } as String,
-                                    try {
-                                        cursor.getBlob(cursor.getColumnIndexOrThrow(DBContract.Employees.photo))
-                                    } catch (e: Exception) {
-                                        ByteArray(0)
-                                    },
-                                    try {
-                                        cursor.getString(getColumnIndexOrThrow(DBContract.Employees.urlId))
-                                    } catch (e: Exception) {
-                                        ""
-                                    }
-                                )
+                                try {
+                                    Employees(
+                                        0,
+                                        cursor.getInt(cursor.getColumnIndexOrThrow(DBContract.Employees.employeeID)),
+                                        cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Employees.firstName)),
+                                        cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Employees.middleName)),
+                                        cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Employees.lastName)),
+                                        cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Employees.photoLink)),
+                                        try {
+                                            cursor.getBlob(cursor.getColumnIndexOrThrow(DBContract.Employees.photo))
+                                        } catch (e: Exception) {
+                                            ByteArray(0)
+                                        },
+                                        try {
+                                            cursor.getString(getColumnIndexOrThrow(DBContract.Employees.urlId))
+                                        } catch (e: Exception) {
+                                            ""
+                                        }
+                                    )
+                                } catch (e: Exception) {
+                                    Employees(0, 0, "", "", "", "", ByteArray(0), "")
+                                }
                             )
                         } while (cursor.moveToNext())
 
@@ -1145,7 +1092,7 @@ object StudentData {
             if (fillListOfPairs(db, groupID) == 1)
                 return 1
 
-            fillScheduleList(calendar, formatter)
+            fillScheduleList(calendar, formatter, context)
             finalBuild(db, groupID)
             return 0
         }
@@ -1202,7 +1149,7 @@ object StudentData {
                     if (fillListOfPairs(db, groupID) == 1)
                         return 1
 
-                    fillScheduleList(calendar, formatter)
+                    fillScheduleList(calendar, formatter, context)
 
                     finalBuild(db, groupID)
 
@@ -1222,13 +1169,13 @@ object StudentData {
                 } else
                     if (c.getInt(0) != 0) {
                         c.close()
-                        if (loadFromFinal(groupID, formatter, curent, db) == 1)
+                        if (loadFromFinal(groupID, formatter, curent, db, context) == 1)
                             return 1
                     } else
                         return 1
             } else {
                 c.close()
-                if (loadFromFinal(groupID, formatter, curent, db) == 1)
+                if (loadFromFinal(groupID, formatter, curent, db, context) == 1)
                     return 1
             }
 
@@ -1419,25 +1366,25 @@ object StudentData {
         var c: Cursor = db.rawQuery(
             "SELECT * FROM ${DBContract.Favorites.TABLE_NAME} " +
                     "INNER JOIN ${DBContract.Groups.TABLE_NAME} ON (${DBContract.Groups.TABLE_NAME}.${DBContract.Groups.groupID} = ${DBContract.Favorites.TABLE_NAME}.${DBContract.Favorites.groupID}) " +
-                    "WHERE ${DBContract.Favorites.type} = 0 "+
+                    "WHERE ${DBContract.Favorites.type} = 0 " +
                     "ORDER BY " + DBContract.Groups.name,
             null
         )
 
         with(c) {
             while (moveToNext()) {
-                if(getInt(getColumnIndexOrThrow(DBContract.Favorites.type)) == 0)
-                listOfFavoriteGroups.add(
-                    Group(
-                        0,
-                        getString(getColumnIndexOrThrow(DBContract.Groups.name)),
-                        getString(getColumnIndexOrThrow(DBContract.Groups.facultyAbbrev)),
-                        getString(getColumnIndexOrThrow(DBContract.Groups.specialityName)),
-                        getString(getColumnIndexOrThrow(DBContract.Groups.specialityAbbrev)),
-                        getInt(getColumnIndexOrThrow(DBContract.Groups.course)),
-                        getInt(getColumnIndexOrThrow(DBContract.Favorites.groupID)),
+                if (getInt(getColumnIndexOrThrow(DBContract.Favorites.type)) == 0)
+                    listOfFavoriteGroups.add(
+                        Group(
+                            0,
+                            getString(getColumnIndexOrThrow(DBContract.Groups.name)),
+                            getString(getColumnIndexOrThrow(DBContract.Groups.facultyAbbrev)),
+                            getString(getColumnIndexOrThrow(DBContract.Groups.specialityName)),
+                            getString(getColumnIndexOrThrow(DBContract.Groups.specialityAbbrev)),
+                            getInt(getColumnIndexOrThrow(DBContract.Groups.course)),
+                            getInt(getColumnIndexOrThrow(DBContract.Favorites.groupID)),
+                        )
                     )
-                )
             }
         }
         c.close()
@@ -1445,14 +1392,14 @@ object StudentData {
         c = db.rawQuery(
             "SELECT * FROM ${DBContract.Favorites.TABLE_NAME} " +
                     "INNER JOIN ${DBContract.Employees.TABLE_NAME} ON (${DBContract.Employees.TABLE_NAME}.${DBContract.Employees.employeeID} = ${DBContract.Favorites.TABLE_NAME}.${DBContract.Favorites.groupID}) " +
-                    "WHERE ${DBContract.Favorites.type} = 1 "+
+                    "WHERE ${DBContract.Favorites.type} = 1 " +
                     "ORDER BY " + DBContract.Employees.lastName,
             null
         )
 
         with(c) {
             while (moveToNext()) {
-                if(getInt(getColumnIndexOrThrow(DBContract.Favorites.type)) == 1)
+                if (getInt(getColumnIndexOrThrow(DBContract.Favorites.type)) == 1)
                     listOfFavoriteEmployees.add(
                         Employees(
                             1,
@@ -1491,7 +1438,7 @@ object StudentData {
         fillFavoritesList(db)
 
 
-        if(listOfFavoriteGroups.size != 0) {
+        if (listOfFavoriteGroups.size != 0) {
             var gr = listOfFavoriteGroups[0].copy()
             gr.type = 5
             listOfFavoriteGroups.add(gr)
@@ -1502,7 +1449,7 @@ object StudentData {
 
                 gr.name = gr.name!!.substring(0, 3)
                 gr.type = 1
-                FavoritesList.add(Pair(gr,null))
+                FavoritesList.add(Pair(gr, null))
 
             } catch (e: Exception) {
                 "Ошибка"
@@ -1534,7 +1481,7 @@ object StudentData {
             }
         }
 
-        if(listOfFavoriteEmployees.size != 0) {
+        if (listOfFavoriteEmployees.size != 0) {
             var emp = listOfFavoriteEmployees[0].copy()
             emp.type = 5
             listOfFavoriteEmployees.add(emp)
@@ -1562,7 +1509,7 @@ object StudentData {
                     val group = listOfFavoriteEmployees[i + 1].copy()
                     group.lastName = group.lastName[0].toString()
                     group.type = 3
-                    FavoritesList.add(Pair(null,group))
+                    FavoritesList.add(Pair(null, group))
                 }
 
                 i++

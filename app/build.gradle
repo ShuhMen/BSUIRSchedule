@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId "com.maximshuhman.bsuirschedule"
-        minSdk 26
+        minSdk 28
         targetSdk 33
         versionCode 38
         versionName "1.0.1.36"
@@ -49,6 +49,9 @@ android {
         jvmTarget = '1.8'
     }
     namespace 'com.maximshuhman.bsuirschedule'
+    buildFeatures {
+        viewBinding true
+    }
 
 
 }

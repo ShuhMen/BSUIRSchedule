@@ -46,7 +46,7 @@ class MainActivity : AppCompatActivity() {
                 bottomNavigationView.visibility = View.GONE
 
             } else {
-              //  bottomNavigationView.animate().translationY(0f)
+                //  bottomNavigationView.animate().translationY(0f)
 
                 bottomNavigationView.visibility = View.VISIBLE
             }

@@ -71,7 +71,7 @@ class EmployeeExamsFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        val v = inflater.inflate(R.layout.fragment_exams, container, false)
+        val v = inflater.inflate(R.layout.fragment_employee_exams, container, false)
 
         ExamsRecyclerView = v.findViewById(R.id.exams_recycler_view)
         toolbarExams = v.findViewById(R.id.exams_toolbar)
@@ -174,11 +174,13 @@ class EmployeeExamsFragment : Fragment() {
                         R.drawable.divder_practical,
                         null
                     )
+
                     "ЛК" -> Dividerindex.foreground = ResourcesCompat.getDrawable(
                         itemView.resources,
                         R.drawable.divder_lectures,
                         null
                     )
+
                     "ЛР" -> Dividerindex.foreground =
                         ResourcesCompat.getDrawable(
                             itemView.resources,

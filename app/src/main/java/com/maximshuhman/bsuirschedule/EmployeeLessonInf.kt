@@ -64,7 +64,9 @@ class EmployeeLessonInf : DialogFragment() {
         arguments?.let {
 
             fioText.text =
-                if (arguments?.getString(LessonInfDialog.FIO).toString() != "  ") arguments?.getString(
+                if (arguments?.getString(LessonInfDialog.FIO)
+                        .toString() != "  "
+                ) arguments?.getString(
                     LessonInfDialog.FIO
                 )
                     .toString() else "Информация отсутствует"
@@ -75,10 +77,11 @@ class EmployeeLessonInf : DialogFragment() {
                 LessonInfDialog.END
             )
             auditory.text = arguments?.getString(LessonInfDialog.AUDITORY)
-            note.text = if (arguments?.getString(LessonInfDialog.COMMENT) != null) arguments?.getString(
-                LessonInfDialog.COMMENT
-            )
-                .toString() else ""
+            note.text =
+                if (arguments?.getString(LessonInfDialog.COMMENT) != null) arguments?.getString(
+                    LessonInfDialog.COMMENT
+                )
+                    .toString() else ""
             subjectName.text = arguments?.getString(LessonInfDialog.NAME)
         }
 

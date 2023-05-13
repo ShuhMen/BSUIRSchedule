@@ -12,6 +12,7 @@ class RecyclerLinearManager : LinearLayoutManager {
     constructor(context: Context?, scrollSpeed: Float) : super(context) {
         MILLISECONDS_PER_INCH = scrollSpeed
     }
+
     constructor(context: Context?) : super(context)
     constructor(context: Context?, orientation: Int, reverseLayout: Boolean) : super(
         context,

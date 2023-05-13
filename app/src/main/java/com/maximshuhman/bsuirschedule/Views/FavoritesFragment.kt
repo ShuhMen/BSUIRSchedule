@@ -98,17 +98,27 @@ class FavoritesFragment : Fragment() {
                 )
                 c.moveToFirst()
                 with(c) {
-                bundle.putString(
-                    "employeeName",
-                    getString(getColumnIndexOrThrow(DBContract.Employees.urlId))
-                )
-                bundle.putString(
-                    "FIO",
-                    "${getString(getColumnIndexOrThrow(DBContract.Employees.lastName))} ${getString(getColumnIndexOrThrow(DBContract.Employees.firstName))} ${getString(getColumnIndexOrThrow(DBContract.Employees.middleName))}"
+                    bundle.putString(
+                        "employeeName",
+                        getString(getColumnIndexOrThrow(DBContract.Employees.urlId))
+                    )
+                    bundle.putString(
+                        "FIO",
+                        "${getString(getColumnIndexOrThrow(DBContract.Employees.lastName))} ${
+                            getString(
+                                getColumnIndexOrThrow(DBContract.Employees.firstName)
+                            )
+                        } ${getString(getColumnIndexOrThrow(DBContract.Employees.middleName))}"
 
-                )
-                bundle.putInt("id", getInt(getColumnIndexOrThrow(DBContract.Employees.employeeID)))
-                bundle.putString("urlId", getString(getColumnIndexOrThrow(DBContract.Employees.urlId)))
+                    )
+                    bundle.putInt(
+                        "id",
+                        getInt(getColumnIndexOrThrow(DBContract.Employees.employeeID))
+                    )
+                    bundle.putString(
+                        "urlId",
+                        getString(getColumnIndexOrThrow(DBContract.Employees.urlId))
+                    )
                 }
 
                 navController.navigate(R.id.employeeSchedule, bundle)
@@ -155,7 +165,7 @@ class FavoritesFragment : Fragment() {
 
         private val TYPE_HEADER_GROUP = 1
         private val TYPE_LIST = 0
-        private val TYPE_EMPLOYEE  = 2
+        private val TYPE_EMPLOYEE = 2
         private val TYPE_HEADER_EMPLOYEE = 3
 
         override fun getItemViewType(position: Int): Int {
@@ -175,17 +185,19 @@ class FavoritesFragment : Fragment() {
 
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-            when(viewType){
+            when (viewType) {
                 TYPE_HEADER_GROUP -> {
                     val header = LayoutInflater.from(parent.context)
                         .inflate(R.layout.item_speciality_name, parent, false)
                     return SpecialityViewHolder(header)
                 }
+
                 TYPE_HEADER_EMPLOYEE -> {
                     val header = LayoutInflater.from(parent.context)
                         .inflate(R.layout.item_speciality_name, parent, false)
                     return LastNameViewHolder(header)
                 }
+
                 TYPE_EMPLOYEE -> {
                     val header = LayoutInflater.from(parent.context)
                         .inflate(R.layout.item_group_view, parent, false)
@@ -194,7 +206,8 @@ class FavoritesFragment : Fragment() {
 
                 else -> {
                     val itemView =
-                        LayoutInflater.from(parent.context).inflate(R.layout.item_group_view, parent, false)
+                        LayoutInflater.from(parent.context)
+                            .inflate(R.layout.item_group_view, parent, false)
                     //  itemView.setOnClickListener(myOn)
                     return GroupViewHolder(itemView)
                 }
@@ -218,6 +231,7 @@ class FavoritesFragment : Fragment() {
 
 
         }
+
         override fun getItemCount(): Int = dataFilter.size
 
 
@@ -284,7 +298,10 @@ class FavoritesFragment : Fragment() {
 
                 val bundle = Bundle()
 
-                bundle.putString("employeeName", dataFilter[layoutPosition].second!!.urlId.toString())
+                bundle.putString(
+                    "employeeName",
+                    dataFilter[layoutPosition].second!!.urlId.toString()
+                )
                 bundle.putString(
                     "FIO",
                     GroupNumber.text.toString()

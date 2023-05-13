@@ -7,12 +7,12 @@ data class Employees(
     var lastName: String,
     var photoLink: String,
     var photo: ByteArray?,
-    var urlId        : String?
-/*	val degree       : String?,
-	val degreeAbbrev : String?,
-	val rank         : String?,
-	val email        : String?,
-	val department   : String?,
-	val calendarId   : String?,
-	val jobPositions : String?*/
+    var urlId: String?
+    /*	val degree       : String?,
+        val degreeAbbrev : String?,
+        val rank         : String?,
+        val email        : String?,
+        val department   : String?,
+        val calendarId   : String?,
+        val jobPositions : String?*/
 )

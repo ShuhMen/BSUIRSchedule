@@ -16,7 +16,7 @@ interface IISApi {
     ): Response<ResponseBody>
 
     @GET("current-week")
-    suspend fun getCurWeek(): Response<ResponseBody>
+    suspend fun getCurWeek(): Int?
 
     @GET("student-groups")
     suspend fun getGroupsList(): Response<ResponseBody>
@@ -45,5 +45,5 @@ interface IISApi {
         @Query("id") employeeID: Int
     ): Response<ResponseBody>
 
-   // https://iis.bsuir.by/api/v1/last-update-date/employee?id={empId}
+    // https://iis.bsuir.by/api/v1/last-update-date/employee?id={empId}
 }

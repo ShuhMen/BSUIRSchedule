@@ -7,7 +7,8 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.util.Log
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Locale
 
 
 class DbHelper(context: Context) :
@@ -132,7 +133,6 @@ class DbHelper(context: Context) :
         "CREATE INDEX lessonID ON ${DBContract.Schedule.TABLE_NAME} (${DBContract.Schedule.groupID})"
 
 
-
     private val SQL_CREATE_COMMONEMPLOYEE =
         "CREATE TABLE ${DBContract.CommonEmployee.TABLE_NAME} (" +
                 "${DBContract.CommonEmployee.commonEmployeeID} INTEGER PRIMARY KEY," +
@@ -195,6 +195,7 @@ class DbHelper(context: Context) :
                 "${DBContract.EmployeeToPair.groupName} INTEGER," +
                 //   "FOREIGN KEY (${DBContract.PairToEmployers.lessonID}) REFERENCES ${DBContract.Schedule.TABLE_NAME}(${DBContract.Schedule.scheduleID})," +
                 "FOREIGN KEY (${DBContract.EmployeeToPair.groupName}) REFERENCES ${DBContract.Groups.TABLE_NAME}(${DBContract.Groups.name}))"
+
     /*fun createGroupScheduleIndex(db:SQLiteDatabase){
         db.execSQL(SQL_CREATE_SCHEDULE_INDEX)
     }
@@ -225,6 +226,7 @@ class DbHelper(context: Context) :
                 "${DBContract.EmployeeToExam.groupName} INTEGER," +
                 //   "FOREIGN KEY (${DBContract.PairToEmployers.lessonID}) REFERENCES ${DBContract.Schedule.TABLE_NAME}(${DBContract.Schedule.scheduleID})," +
                 "FOREIGN KEY (${DBContract.EmployeeToExam.groupName}) REFERENCES ${DBContract.Groups.TABLE_NAME}(${DBContract.Groups.name}))"
+
     override fun onCreate(p0: SQLiteDatabase?) {
         Log.v("DBDD", "p0 override fun onCreate(db: SQLiteDatabase?) {")
         p0?.let {
@@ -451,7 +453,7 @@ class DbHelper(context: Context) :
             }
         }
 
-        if(oldVersion < 12){
+        if (oldVersion < 12) {
             try {
                 db.execSQL("DELETE FROM ${DBContract.Schedule.TABLE_NAME}")
                 db.execSQL("DELETE FROM ${DBContract.PairToEmployers.TABLE_NAME}")
@@ -497,13 +499,16 @@ class DbHelper(context: Context) :
                 Log.v("DBDD", "SQL_CREATE_EMPLOYEETOEXAM ERROR")
             }
 
-            try{
+            try {
                 db.execSQL("ALTER TABLE ${DBContract.Favorites.TABLE_NAME} ADD COLUMN ${DBContract.Favorites.type} INTEGER")
-            }catch(e: java.lang.Exception){
+            } catch (e: java.lang.Exception) {
 
             }
 
-            db.rawQuery("UPDATE ${DBContract.Favorites.TABLE_NAME} SET ${DBContract.Favorites.type} = 0", null)
+            db.rawQuery(
+                "UPDATE ${DBContract.Favorites.TABLE_NAME} SET ${DBContract.Favorites.type} = 0",
+                null
+            )
         }
 
 
