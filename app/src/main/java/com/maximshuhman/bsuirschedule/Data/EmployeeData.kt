@@ -74,23 +74,24 @@ object EmployeeData {
         dayOfWeek: Int
     ): Int {
 
-        val js: JSONArray = json.getJSONArray(arrayName)
+        val js: JSONArray? = json.optJSONArray(arrayName)
 
-        for (i in 0 until js.length()) {
-            if (getStringDef(js.getJSONObject(i), "lessonTypeAbbrev") != "Консультация" &&
-                getStringDef(js.getJSONObject(i), "lessonTypeAbbrev") != "Экзамен"
-            ) {
-                val newRowId = db.insert(
-                    DBContract.EmployeeSchedule.TABLE_NAME,
-                    null,
-                    addPairToList(dayOfWeek, js.getJSONObject(i), grID, db)
-                )
-                inScheduleID++
+        if(js != null) {
+            for (i in 0 until js.length()) {
+                if (getStringDef(js.getJSONObject(i), "lessonTypeAbbrev") != "Консультация" &&
+                    getStringDef(js.getJSONObject(i), "lessonTypeAbbrev") != "Экзамен"
+                ) {
+                    val newRowId = db.insert(
+                        DBContract.EmployeeSchedule.TABLE_NAME,
+                        null,
+                        addPairToList(dayOfWeek, js.getJSONObject(i), grID, db)
+                    )
+                    inScheduleID++
+
+                }
 
             }
-
         }
-
         return 0
     }
 
@@ -330,8 +331,8 @@ object EmployeeData {
                     "SELECT * FROM ${DBContract.EmployeeExams.TABLE_NAME} " +
                             "INNER JOIN ${DBContract.CommonEmployee.TABLE_NAME} ON (${DBContract.EmployeeExams.TABLE_NAME}.${DBContract.EmployeeSchedule.employeeID} = ${DBContract.CommonEmployee.TABLE_NAME}.${DBContract.CommonEmployee.commonEmployeeID}) " +
                             "INNER JOIN ${DBContract.Employees.TABLE_NAME} ON (${DBContract.Employees.TABLE_NAME}.${DBContract.Employees.employeeID} = ${DBContract.CommonEmployee.TABLE_NAME}.${DBContract.CommonEmployee.commonEmployeeID}) " +
-                            "WHERE ${DBContract.Employees.TABLE_NAME}.${DBContract.Employees.employeeID} = $employeeID " +
-                            "ORDER BY ${DBContract.EmployeeExams.dateLesson}",
+                            "WHERE ${DBContract.Employees.TABLE_NAME}.${DBContract.Employees.employeeID} = $employeeID " //+
+                            /*"ORDER BY ${DBContract.EmployeeExams.dateLesson}"*/,
 
                     null
                 )
@@ -415,9 +416,26 @@ object EmployeeData {
 
         } else
             return 1
+        val calendar = Calendar.getInstance()
+        val formatter = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault(Locale.Category.FORMAT))
+
+        ExamsList.sortWith(DateComparator)
         return 0
     }
 
+    class DateComparator {
+
+        companion object : Comparator<EmployeeExam> {
+
+            override fun compare(a: EmployeeExam, b: EmployeeExam): Int  {
+                val formatter = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault(Locale.Category.FORMAT))
+                if(formatter.parse(a.dateLesson)!!.after(formatter.parse(b.dateLesson)))
+                    return 0
+                else
+                    return 1
+            }
+        }
+    }
     private fun fillListOfPairs(db: SQLiteDatabase, employeeID: Int): Int {
 
 

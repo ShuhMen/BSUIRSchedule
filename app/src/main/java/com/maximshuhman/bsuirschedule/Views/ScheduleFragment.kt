@@ -15,6 +15,7 @@ import android.widget.*
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.res.ResourcesCompat
+import androidx.core.database.getIntOrNull
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -43,14 +44,17 @@ import java.util.concurrent.Executors
 
 class ScheduleFragment : Fragment() {
 
-    lateinit var ScheduleRecycler: RecyclerView
-    lateinit var ProgressBar: ProgressBar
-    lateinit var scheduleSituated: TextView
-    private lateinit var ToolBar: androidx.appcompat.widget.Toolbar
-    lateinit var swipeRefreshLayout: SwipeRefreshLayout
-    lateinit var executors: ExecutorService
-    lateinit var endOfSchedule: TextView
+    private lateinit var scheduleRecycler: RecyclerView
+    private lateinit var progressBar: ProgressBar
+    private lateinit var scheduleSituated: TextView
+    private lateinit var toolBar: androidx.appcompat.widget.Toolbar
+    private lateinit var swipeRefreshLayout: SwipeRefreshLayout
+    private lateinit var executors: ExecutorService
+    private lateinit var endOfSchedule: TextView
     lateinit var floatingButton: FloatingActionButton
+
+    private var mRecyclerViewAdapter: ScheduleRecyclerAdapter? = null
+    private var recyclerViewLinearManager: LinearLayoutManager? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,16 +70,18 @@ class ScheduleFragment : Fragment() {
         })
     }
 
+    private var dataFilter = StudentData.ScheduleList
+    private lateinit var rawData: MutableList<Lesson>
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_schedule, container, false)
 
-        ScheduleRecycler = view.findViewById(R.id.schedule_recycler_view)
-        ProgressBar = view.findViewById(R.id.progressBar)
+        scheduleRecycler = view.findViewById(R.id.schedule_recycler_view)
+        progressBar = view.findViewById(R.id.progressBar)
         scheduleSituated = view.findViewById(R.id.schedule_situating_text)
-        ToolBar = view.findViewById(R.id.toolbar)
+        toolBar = view.findViewById(R.id.toolbar)
         swipeRefreshLayout = view.findViewById(R.id.swipe_refresh)
         endOfSchedule = view.findViewById(R.id.endOfSchedule)
         floatingButton = view.findViewById(R.id.floatingActionButton)
@@ -141,7 +147,7 @@ class ScheduleFragment : Fragment() {
 
             appWidgetManager.updateAppWidget(appWidgetIds, views)
         }
-        ToolBar.title = "Группа ${StudentData.curGroupName} " //+
+        toolBar.title = "Группа ${StudentData.curGroupName} " //+
         // "${Data.curGroupCourse} курс"
 
 
@@ -157,9 +163,12 @@ class ScheduleFragment : Fragment() {
             exist.close()
             //ToolBar.setSubtitleTextColor(R.color.white)
             //ToolBar.setTitleTextColor(R.color.white)
-            ScheduleRecycler.layoutManager = LinearLayoutManager(requireContext())
+
+            recyclerViewLinearManager = LinearLayoutManager(requireContext())
+            scheduleRecycler.layoutManager = recyclerViewLinearManager
+
             val lastUpdateResponse = Requests.getGroupScheduleLastUpdate(StudentData.curGroupName)
-            var lastUpdate = ""
+            val lastUpdate: String
 
             if (lastUpdateResponse.errorCode == 0) {
                 lastUpdate = lastUpdateResponse.res
@@ -176,7 +185,7 @@ class ScheduleFragment : Fragment() {
                     null
                 )
 
-                var curLastUpdate = ""
+                var curLastUpdate: String
                 c.moveToFirst()
 
                 with(c) {
@@ -185,12 +194,12 @@ class ScheduleFragment : Fragment() {
                 }
                 c.close()
                 if (curLastUpdate != "") {
-                    if (formatter.parse(curLastUpdate).before(lastUpdateDate)) {
+                    if (formatter.parse(curLastUpdate)!!.before(lastUpdateDate)) {
 
                         MaterialAlertDialogBuilder(requireContext(), R.style.RoundShapeTheme)
                             .setTitle(resources.getString(R.string.update))
                             .setMessage(resources.getString(R.string.update_schedule))
-                            .setPositiveButton(resources.getString(R.string.yes)) { dialogInterface, i ->
+                            .setPositiveButton(resources.getString(R.string.yes)) { _, _ ->
                                 updateUI(1)
                                 val values = ContentValues().apply {
                                     put(DBContract.CommonSchedule.lastUpdate, lastUpdate)
@@ -202,7 +211,7 @@ class ScheduleFragment : Fragment() {
                                     null
                                 )
                             }
-                            .setNegativeButton(resources.getString(R.string.no)) { dialogInterface, i ->
+                            .setNegativeButton(resources.getString(R.string.no)) { _, _ ->
                                 updateUI(0)
                             }
                             .show()
@@ -228,9 +237,9 @@ class ScheduleFragment : Fragment() {
               //do nothing
           }
   */
-        ScheduleRecycler.layoutManager = RecyclerLinearManager(requireContext())
+        scheduleRecycler.layoutManager = RecyclerLinearManager(requireContext())
 
-        ScheduleRecycler.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+        scheduleRecycler.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
                 /*  if ((recyclerView?.layoutManager as LinearLayoutManager)
@@ -257,13 +266,13 @@ class ScheduleFragment : Fragment() {
         })
 
         floatingButton.setOnClickListener {
-            ScheduleRecycler.smoothScrollToPosition(0)
+            scheduleRecycler.smoothScrollToPosition(0)
         }
 
-        (activity as AppCompatActivity?)!!.setSupportActionBar(ToolBar)
+        (activity as AppCompatActivity?)!!.setSupportActionBar(toolBar)
 
-        ToolBar.setNavigationIcon(R.drawable.ic_baseline_arrow_back_24)
-        ToolBar.setNavigationOnClickListener {
+        toolBar.setNavigationIcon(R.drawable.ic_baseline_arrow_back_24)
+        toolBar.setNavigationOnClickListener {
             prefs.openedGroup = 0
             prefs.openedType = 0
             //(requireActivity() as MainActivity).bottomNavigationView.visibility = View.VISIBLE
@@ -274,11 +283,128 @@ class ScheduleFragment : Fragment() {
             updateUI(1)
         }
 
-       // ScheduleRecyclerAdapter(null).fil
+
 
         return view
     }
 
+    private fun filter(subGroup: Int) {
+        rawData = StudentData.ScheduleList.map { it.copy() } as MutableList<Lesson>
+        //   dataFilter = StudentData.ScheduleList//.map { it.copy() } as MutableList<Lesson>
+
+
+        //val pos = ScheduleRecycler.layoutManager.findFirstVisibleItemPosition()
+
+        when (subGroup) {
+            0 -> {
+                var i = 0
+                var j = 0
+                while (i < dataFilter.size && j < rawData.size) {
+
+                    if (dataFilter[i] != rawData[j]) {
+                        scheduleRecycler.adapter!!.notifyItemInserted(i)
+                        dataFilter.add(i, rawData[j])
+                    }
+
+                    i++
+                    j++
+                }
+                if (j < rawData.size) {
+                    while (j < rawData.size) {
+                        scheduleRecycler.adapter!!.notifyItemInserted(i)
+                        dataFilter.add(i, rawData[j])
+
+                        i++
+                        j++
+                    }
+                }
+            }
+
+            1 -> {
+                var i = 0
+                while (i < dataFilter.size) {
+
+                    if (dataFilter[i].numSubgroup == 2) {
+                        scheduleRecycler.adapter!!.notifyItemRemoved(i)
+                        dataFilter.removeAt(i)
+                        i--
+                    }
+                    i++
+                }
+            }
+
+            2 -> {
+                var i = 0
+                var j = 0
+                while (i < dataFilter.size) {
+                    if (dataFilter[i].numSubgroup == 1) {
+                        dataFilter.removeAt(i)
+                        scheduleRecycler.adapter!!.notifyItemRemoved(i)
+                        i--
+                    }
+                    i++
+                }
+
+                i = 0
+                j = 0
+                while (i < dataFilter.size && j < rawData.size) {
+                    while (rawData[j].numSubgroup == 1)
+                        j++
+                    if (dataFilter[i] != rawData[j] && rawData[j].numSubgroup == 2) {
+                        dataFilter.add(i, rawData[j])
+                        scheduleRecycler.adapter!!.notifyItemInserted(i)
+                    }
+
+
+
+                    i++
+                    j++
+                }
+
+
+                if (j < rawData.size) {
+                    while (j < rawData.size) {
+                        while (rawData[j].numSubgroup == 1)
+                            j++
+                        if (rawData[j].numSubgroup == 2) {
+                            scheduleRecycler.adapter!!.notifyItemInserted(i)
+                            dataFilter.add(i, rawData[j])
+                        }
+
+                        i++
+                        j++
+                    }
+                }
+
+            }
+
+            else -> {
+                var i = 0
+                var j = 0
+                while (i < dataFilter.size && j < rawData.size) {
+
+                    if (dataFilter[i] != rawData[j]) {
+                        scheduleRecycler.adapter!!.notifyItemInserted(i)
+                        dataFilter.add(i, rawData[j])
+                    }
+
+                    i++
+                    j++
+                }
+                if (j < rawData.size) {
+                    while (j < rawData.size) {
+                        scheduleRecycler.adapter!!.notifyItemInserted(i)
+                        dataFilter.add(i, rawData[j])
+
+                        i++
+                        j++
+                    }
+                }
+            }
+        }
+
+
+    }
 
     @Deprecated("Deprecated in Java")
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -308,14 +434,14 @@ class ScheduleFragment : Fragment() {
             val endString =
                 exams.getString(exams.getColumnIndexOrThrow(DBContract.CommonSchedule.endExamsDate))
             if (endString != null) {
-                var calendar: Calendar = Calendar.getInstance()
+                val calendar: Calendar = Calendar.getInstance()
                 val formatter =
                     SimpleDateFormat("dd.MM.yyyy", Locale.getDefault(Locale.Category.FORMAT))
-                var curent = formatter.parse(formatter.format(calendar.time))
+                val curent = formatter.parse(formatter.format(calendar.time))
                 val end = formatter.parse(endString)
 
 
-                if (curent.after(end))
+                if (curent!!.after(end))
                     menu.findItem(R.id.exams).isVisible = false
             }
             exams.close()
@@ -323,7 +449,7 @@ class ScheduleFragment : Fragment() {
         exams.close()
 
 
-        val exist: Cursor =
+        var exist: Cursor =
             db.rawQuery(
                 "SELECT COUNT(*) as cnt FROM ${DBContract.Favorites.TABLE_NAME} " +
                         "WHERE ${DBContract.Favorites.TABLE_NAME}.${DBContract.Favorites.groupID} = ${StudentData.curGroupID}",
@@ -340,6 +466,60 @@ class ScheduleFragment : Fragment() {
         }
         exist.close()
 
+
+        exist =
+            db.rawQuery(
+                "SELECT COUNT(*) as cnt FROM ${DBContract.SubgroupSettings.TABLE_NAME} " +
+                        "WHERE ${DBContract.SubgroupSettings.TABLE_NAME}.${DBContract.SubgroupSettings.groupID} = ${StudentData.curGroupID}",
+                null
+            )
+        exist.moveToFirst()
+        var subgroup = 0
+
+        if (exist.getIntOrNull(exist.getColumnIndexOrThrow("cnt")) != 0) {
+
+            exist.close()
+            exist =
+                db.rawQuery(
+                    "SELECT * FROM ${DBContract.SubgroupSettings.TABLE_NAME} " +
+                            "WHERE ${DBContract.SubgroupSettings.TABLE_NAME}.${DBContract.SubgroupSettings.groupID} = ${StudentData.curGroupID}",
+                    null
+                )
+            exist.moveToFirst()
+
+
+
+            subgroup =
+                exist.getIntOrNull(exist.getColumnIndexOrThrow(DBContract.SubgroupSettings.subGroup))!!
+            exist.close()
+        } else {
+            exist.close()
+            val values = ContentValues().apply {
+                put(DBContract.SubgroupSettings.groupID, StudentData.curGroupID)
+                put(DBContract.SubgroupSettings.subGroup, 0)
+            }
+            db.insert(DBContract.SubgroupSettings.TABLE_NAME, null, values)
+        }
+
+
+        when (subgroup) {
+            1 -> {
+                //filter(1)
+                menu.findItem(R.id.subgroup).setIcon(R.drawable.subgroup1_white)
+            }
+
+            2 -> {
+                // filter(2)
+                menu.findItem(R.id.subgroup).setIcon(R.drawable.subgroup2_white)
+
+            }
+
+            else -> {
+                menu.findItem(R.id.subgroup).setIcon(R.drawable.group_svgrepo_com)
+            }
+        }
+
+
     }
 
     @Deprecated("Deprecated in Java")
@@ -347,6 +527,7 @@ class ScheduleFragment : Fragment() {
 
         when (item.itemId) {
             R.id.favorites -> {
+
 
                 if (item.isChecked) {
                     item.setIcon(R.drawable.ic_baseline_favorite_border_24)
@@ -358,8 +539,6 @@ class ScheduleFragment : Fragment() {
                 }
                 item.isChecked = !item.isChecked
 
-
-
                 return true
             }
 
@@ -367,11 +546,51 @@ class ScheduleFragment : Fragment() {
                 val args = StudentData.curGroupID?.let {
                     ExamsFragment.getBundle(
                         it,
-                        ToolBar.title.toString()
+                        toolBar.title.toString()
                     )
                 }
                 val navController = findNavController()
                 navController.navigate(R.id.action_scheduleFragment_to_examsFragment, args)
+
+                return true
+            }
+
+            R.id.subgroup -> {
+
+                val db = DbHelper(requireContext()).writableDatabase
+
+                val exist =
+                    db.rawQuery(
+                        "SELECT * FROM ${DBContract.SubgroupSettings.TABLE_NAME} " +
+                                "WHERE ${DBContract.SubgroupSettings.TABLE_NAME}.${DBContract.SubgroupSettings.groupID} = ${StudentData.curGroupID}",
+                        null
+                    )
+                exist.moveToFirst()
+
+                val subgroup =
+                    exist.getIntOrNull(exist.getColumnIndexOrThrow(DBContract.SubgroupSettings.subGroup))
+                exist.close()
+                if (subgroup != null) {
+                    when (subgroup) {
+                        1 -> {
+                            filter(2)
+                            StudentData.setSubGroup(requireContext(), 2, StudentData.curGroupID!!)
+                            item.setIcon(R.drawable.subgroup2_white)
+                        }
+
+                        2 -> {
+                            filter(0)
+                            StudentData.setSubGroup(requireContext(), 0, StudentData.curGroupID!!)
+                            item.setIcon(R.drawable.group_svgrepo_com)
+                        }
+
+                        else -> {
+                            filter(1)
+                            StudentData.setSubGroup(requireContext(), 1, StudentData.curGroupID!!)
+                            item.setIcon(R.drawable.subgroup1_white)
+                        }
+                    }
+                }
 
                 return true
             }
@@ -382,15 +601,17 @@ class ScheduleFragment : Fragment() {
 
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     fun updateUI(mode: Int) {
 
         if (mode == 0) {
-            ProgressBar.visibility = View.VISIBLE
-            ProgressBar.isIndeterminate = true
+            progressBar.visibility = View.VISIBLE
+            progressBar.isIndeterminate = true
         }
-        ScheduleRecycler.adapter = null
+        // ScheduleRecycler.adapter = null
 
-        var err = 0
+
+        var err: Int
 
         executors = Executors.newSingleThreadExecutor()
         executors.execute {
@@ -405,12 +626,15 @@ class ScheduleFragment : Fragment() {
             Handler(Looper.getMainLooper()).post {
                 when (err) {
                     0 -> {
-                        if (StudentData.ScheduleList.size == 0) {
+                        dataFilter =
+                            StudentData.ScheduleList.map { it.copy() } as MutableList<Lesson>
+
+                        if (dataFilter.size == 0) {
                             scheduleSituated.visibility = View.VISIBLE
-                            ScheduleRecycler.visibility = View.INVISIBLE
+                            scheduleRecycler.visibility = View.INVISIBLE
                         } else {
                             scheduleSituated.visibility = View.GONE
-                            ScheduleRecycler.visibility = View.VISIBLE
+                            scheduleRecycler.visibility = View.VISIBLE
                         }
                     }
 
@@ -449,10 +673,56 @@ class ScheduleFragment : Fragment() {
                     }
                 }
 
-                ProgressBar.visibility = View.INVISIBLE
+                progressBar.visibility = View.INVISIBLE
                 swipeRefreshLayout.isRefreshing = false
-                ScheduleRecycler.adapter = ScheduleRecyclerAdapter(StudentData.ScheduleList)
-                ScheduleRecycler.adapter!!.notifyDataSetChanged()
+
+                val db = DbHelper(requireContext()).writableDatabase
+
+
+                var exist: Cursor =
+                    db.rawQuery(
+                        "SELECT COUNT(*) as cnt FROM ${DBContract.SubgroupSettings.TABLE_NAME} " +
+                                "WHERE ${DBContract.SubgroupSettings.TABLE_NAME}.${DBContract.SubgroupSettings.groupID} = ${StudentData.curGroupID}",
+                        null
+                    )
+                exist.moveToFirst()
+
+                var subgroup = 0
+
+                if (exist.getIntOrNull(exist.getColumnIndexOrThrow("cnt")) != 0) {
+
+                    exist.close()
+                    exist =
+                        db.rawQuery(
+                            "SELECT * FROM ${DBContract.SubgroupSettings.TABLE_NAME} " +
+                                    "WHERE ${DBContract.SubgroupSettings.TABLE_NAME}.${DBContract.SubgroupSettings.groupID} = ${StudentData.curGroupID}",
+                            null
+                        )
+                    exist.moveToFirst()
+
+
+
+                    subgroup =
+                        exist.getIntOrNull(exist.getColumnIndexOrThrow(DBContract.SubgroupSettings.subGroup))!!
+                    exist.close()
+                }
+
+
+                //filter(0)
+                mRecyclerViewAdapter = ScheduleRecyclerAdapter(dataFilter)
+                scheduleRecycler.adapter = mRecyclerViewAdapter
+                scheduleRecycler.adapter!!.notifyDataSetChanged()
+
+
+                when (subgroup) {
+                    1 -> {
+                        filter(1)
+                    }
+
+                    2 -> {
+                        filter(2)
+                    }
+                }
                 setHasOptionsMenu(true)
             }
         }
@@ -463,6 +733,7 @@ class ScheduleFragment : Fragment() {
 
         StudentData.ScheduleList.clear()
         StudentData.listOfGroups.clear()
+        dataFilter.clear()
         executors.shutdown()
 
     }
@@ -513,51 +784,51 @@ class ScheduleFragment : Fragment() {
                 itemView.setOnClickListener(this)
             }
 
-            val PairNameText: TextView = itemView.findViewById(R.id.pair_name_text)
-            val StartTimeText: TextView = itemView.findViewById(R.id.start_time_text)
-            val EndTimeText: TextView = itemView.findViewById(R.id.end_time_text)
-            val AuditoryText: TextView = itemView.findViewById(R.id.auditory_text)
-            val SubGroupNumber: TextView = itemView.findViewById(R.id.subgroup_text)
-            val SubGroupImage: ImageView = itemView.findViewById(R.id.subgroup_image)
-            val Dividerindex: View = itemView.findViewById(R.id.divider)
-            val EmployeesText: TextView = itemView.findViewById(R.id.employees_text)
-            val NoteText: TextView = itemView.findViewById(R.id.note_text)
+            private val pairNameText: TextView = itemView.findViewById(R.id.pair_name_text)
+            private val startTimeText: TextView = itemView.findViewById(R.id.start_time_text)
+            private val endTimeText: TextView = itemView.findViewById(R.id.end_time_text)
+            private val auditoryText: TextView = itemView.findViewById(R.id.auditory_text)
+            private val subGroupNumber: TextView = itemView.findViewById(R.id.subgroup_text)
+            private val subGroupImage: ImageView = itemView.findViewById(R.id.subgroup_image)
+            private val dividerIndex: View = itemView.findViewById(R.id.divider)
+            private val employeesText: TextView = itemView.findViewById(R.id.employees_text)
+            private val noteText: TextView = itemView.findViewById(R.id.note_text)
 
 
             @SuppressLint("SetTextI18n")
             fun bind(pair: Lesson) {
-                PairNameText.text = "${pair.subject} (${pair.lessonTypeAbbrev})"
-                StartTimeText.text = pair.startLessonTime
-                EndTimeText.text = pair.endLessonTime
+                pairNameText.text = "${pair.subject} (${pair.lessonTypeAbbrev})"
+                startTimeText.text = pair.startLessonTime
+                endTimeText.text = pair.endLessonTime
                 try {
                     if (pair.auditories.isEmpty())
-                        AuditoryText.text = ""
+                        auditoryText.text = ""
                     else
-                        AuditoryText.text = pair.auditories
+                        auditoryText.text = pair.auditories
                 } catch (e: Exception) {
                 }
                 if (pair.numSubgroup != 0) {
-                    SubGroupNumber.visibility = View.VISIBLE
-                    SubGroupImage.visibility = View.VISIBLE
-                    SubGroupNumber.text = pair.numSubgroup.toString()
+                    subGroupNumber.visibility = View.VISIBLE
+                    subGroupImage.visibility = View.VISIBLE
+                    subGroupNumber.text = pair.numSubgroup.toString()
                 } else {
-                    SubGroupNumber.visibility = View.INVISIBLE
-                    SubGroupImage.visibility = View.INVISIBLE
+                    subGroupNumber.visibility = View.INVISIBLE
+                    subGroupImage.visibility = View.INVISIBLE
                 }
                 when (pair.lessonTypeAbbrev) {
-                    "ПЗ" -> Dividerindex.foreground = ResourcesCompat.getDrawable(
+                    "ПЗ" -> dividerIndex.foreground = ResourcesCompat.getDrawable(
                         itemView.resources,
                         R.drawable.divder_practical,
                         null
                     )
 
-                    "ЛК" -> Dividerindex.foreground = ResourcesCompat.getDrawable(
+                    "ЛК" -> dividerIndex.foreground = ResourcesCompat.getDrawable(
                         itemView.resources,
                         R.drawable.divder_lectures,
                         null
                     )
 
-                    "ЛР" -> Dividerindex.foreground =
+                    "ЛР" -> dividerIndex.foreground =
                         ResourcesCompat.getDrawable(
                             itemView.resources,
                             R.drawable.divder_labs,
@@ -577,36 +848,36 @@ class ScheduleFragment : Fragment() {
                                         pair.employees[i].middleName.substring(0, 1)
                                     }."
                     }
-                    EmployeesText.text = emp
+                    employeesText.text = emp
                 } catch (e: Exception) {
-                    EmployeesText.text = ""
+                    employeesText.text = ""
                 }
 
                 try {
                     if (pair.note == "" || pair.note == null)
-                        NoteText.visibility = View.GONE
+                        noteText.visibility = View.GONE
                     else {
-                        NoteText.visibility = View.VISIBLE
-                        NoteText.text = pair.note
+                        noteText.visibility = View.VISIBLE
+                        noteText.text = pair.note
                     }
                 } catch (e: Exception) {
-                    NoteText.visibility = View.GONE
+                    noteText.visibility = View.GONE
                 }
             }
 
             override fun onClick(p0: View?) {
                 val args = LessonInfDialog.getBundle(
-                    pairs[position].employees[0].photo,
-                    StartTimeText.text.toString(),
-                    EndTimeText.text.toString(),
-                    pairs[position].auditories,
+                    pairs[adapterPosition].employees[0].photo,
+                    startTimeText.text.toString(),
+                    endTimeText.text.toString(),
+                    pairs[adapterPosition].auditories,
 
-                    pairs[position].employees[0].lastName.toString() + ' ' +
-                            pairs[position].employees[0].firstName.toString() + ' ' +
-                            pairs[position].employees[0].middleName.toString(),
+                    pairs[adapterPosition].employees[0].lastName.toString() + ' ' +
+                            pairs[adapterPosition].employees[0].firstName.toString() + ' ' +
+                            pairs[adapterPosition].employees[0].middleName.toString(),
 
-                    pairs[position].subjectFullName.toString() + '(' + pairs[position].lessonTypeAbbrev + ')',
-                    pairs[position].note
+                    pairs[adapterPosition].subjectFullName.toString() + '(' + pairs[adapterPosition].lessonTypeAbbrev + ')',
+                    pairs[adapterPosition].note
                 )
                 val navController = findNavController()
                 try {
@@ -621,10 +892,11 @@ class ScheduleFragment : Fragment() {
         }
 
         inner class DayViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-            val DayNumberText: TextView = itemView.findViewById(R.id.day_number_text)
+            private val dayNumberText: TextView = itemView.findViewById(R.id.day_number_text)
             fun bind(pair: Lesson) {
-                DayNumberText.text = pair.note
+                dayNumberText.text = pair.note
             }
         }
+
     }
 }

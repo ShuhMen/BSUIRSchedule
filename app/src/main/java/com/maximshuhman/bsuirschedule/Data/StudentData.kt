@@ -29,7 +29,7 @@ import java.util.Locale
 object StudentData {
 
     private val listOfPairs = mutableListOf<Lesson>()
-    val ScheduleList = mutableListOf<Lesson>()
+    var ScheduleList = mutableListOf<Lesson>()
 
     // private val listOfExams = mutableListOf<Lesson>()
     val ExamsList = mutableListOf<Exam>()
@@ -77,13 +77,14 @@ object StudentData {
         grID: Int,
         dayOfWeek: Int
     ): Int {
-            val js: JSONArray = json.getJSONArray(arrayName)
 
+        val js: JSONArray? = json.optJSONArray(arrayName)
+        if (js != null) {
             for (i in 0 until js.length()) {
                 if (getStringDef(js.getJSONObject(i), "lessonTypeAbbrev") != "Консультация" &&
                     getStringDef(js.getJSONObject(i), "lessonTypeAbbrev") != "Экзамен"
                 ) {
-                    val newRowId = db.insert(
+                    db.insert(
                         DBContract.Schedule.TABLE_NAME,
                         null,
                         addPairToList(dayOfWeek, js.getJSONObject(i), grID, db)
@@ -94,7 +95,7 @@ object StudentData {
 
                 //listOfPairs.add(addPairToList(1, monday.getJSONObject(i), grID))
             }
-
+        }
         return 0
     }
 
@@ -224,7 +225,7 @@ object StudentData {
         }
 
 
-        var employeeIDs = ""
+
         for (i in 0 until startPair.getJSONArray("employees").length()) {
             val connect = ContentValues().apply {
                 put(DBContract.PairToEmployers.lessonID, inScheduleID)
@@ -236,7 +237,7 @@ object StudentData {
             }
 
             val a1 = db.insert(DBContract.PairToEmployers.TABLE_NAME, null, connect)
-            a1
+
         }
 
 
@@ -253,15 +254,14 @@ object StudentData {
     ): Int {
 
 
-
         for (i in 0 until json.length()) {
-                val newRowId = db.insert(
-                    DBContract.Exams.TABLE_NAME,
-                    null,
-                    addExamToList(json.getJSONObject(i), grID, db)
-                )
+            val newRowId = db.insert(
+                DBContract.Exams.TABLE_NAME,
+                null,
+                addExamToList(json.getJSONObject(i), grID, db)
+            )
 
-            }
+        }
 
         return 0
     }
@@ -466,7 +466,7 @@ object StudentData {
                                         getBlob(getColumnIndexOrThrow(DBContract.Employees.photo)),
                                         getString(getColumnIndexOrThrow(DBContract.Employees.urlId))
                                     )
-                                } catch (e: Exception) {
+                                } catch (_: Exception) {
 
                                 } as Employees, "",
                                 "",
@@ -491,7 +491,24 @@ object StudentData {
 
         } else
             return 1
+
+        ExamsList.sortWith(DateComparator1)
         return 0
+    }
+
+    class DateComparator1 {
+
+        companion object : Comparator<Exam> {
+
+            override fun compare(a: Exam, b: Exam): Int {
+                val formatter =
+                    SimpleDateFormat("dd.MM.yyyy", Locale.getDefault(Locale.Category.FORMAT))
+                if (formatter.parse(a.dateLesson!!)!!.after(formatter.parse(b.dateLesson!!)))
+                    return 0
+                else
+                    return 1
+            }
+        }
     }
 
     fun fillListOfPairs(db: SQLiteDatabase, grID: Int): Int {
@@ -521,7 +538,7 @@ object StudentData {
 
             do {
 
-                var inScheduleIDLocal =
+                val inScheduleIDLocal =
                     getInt(getColumnIndexOrThrow(DBContract.Schedule.inScheduleID))
 
 
@@ -535,7 +552,7 @@ object StudentData {
                 )
                 cursor.moveToFirst()
 
-                var list = ArrayList<Employees>()
+                val list = ArrayList<Employees>()
 
                 do {
                     list.add(
@@ -568,6 +585,7 @@ object StudentData {
 
                 listOfPairs.add(
                     Lesson(
+                        getInt(getColumnIndexOrThrow("_id")),
                         getInt(getColumnIndexOrThrow(DBContract.Schedule.inScheduleID)),
                         getInt(getColumnIndexOrThrow(DBContract.Schedule.day_of_week)),
                         getString(getColumnIndexOrThrow(DBContract.Schedule.auditories)),
@@ -670,11 +688,11 @@ object StudentData {
 
         var ind: Int
         week = Requests.getCurrent().res
-        val wk = week
+
 
         var day: Int = calendar.get(Calendar.DAY_OF_WEEK)
 
-        val startLessonsDate = formatter.parse(commonSchedule.startDate)
+        //val startLessonsDate = formatter.parse(commonSchedule.startDate)
         val endLessonsDate = formatter.parse(commonSchedule.endDate)
 
         var curday: Int
@@ -758,7 +776,7 @@ object StudentData {
                 }
 
         ScheduleList.add(0, l)
-
+        var delta = 0
         while (i < ScheduleList.size) {
 
             if (ScheduleList[i - 1].day_of_week != ScheduleList[i].day_of_week || (ScheduleList[i - 1].startLessonTime!! > ScheduleList[i].startLessonTime!! || ScheduleList[i - 1].inLessonID == ScheduleList[i].inLessonID)) {
@@ -768,7 +786,7 @@ object StudentData {
                 var curent = formatter.parse(formatter.format(calendar.time))
 
 
-                var delta = ScheduleList[i].day_of_week - ScheduleList[i - 1].day_of_week
+                delta = ScheduleList[i].day_of_week - ScheduleList[i - 1].day_of_week
 
                 if (delta == 0)
                     delta = 7
@@ -799,6 +817,7 @@ object StudentData {
                     k--
                 }
 
+                if(i <= ScheduleList.size)
                 if (delta < 0)
                     calendar.add(
                         Calendar.DATE,
@@ -855,7 +874,16 @@ object StudentData {
         }
 
         var k: Int = i - 1
-
+        if (delta < 0)
+            calendar.add(
+                Calendar.DATE,
+                -(delta + 7)
+            )
+        else
+            calendar.add(
+                Calendar.DATE,
+                -delta
+            )
         val curent = formatter.parse(formatter.format(calendar.time))
         while (ScheduleList[k].day_of_week != 9) {
 
@@ -957,7 +985,7 @@ object StudentData {
         common.close()
 
         if (commonSchedule.lastBuild != null && commonSchedule.lastBuild != "") {
-            if (formatter.parse(commonSchedule.lastBuild).before(curent)) {
+            if (formatter.parse(commonSchedule.lastBuild!!)!!.before(curent)) {
                 if (fillListOfPairs(db, groupID) == 1)
                     return 1
                 fillScheduleList(calendar, formatter, context)
@@ -993,10 +1021,10 @@ object StudentData {
                     moveToFirst()
                     do {
 
-                        var inScheduleIDLocal =
+                        val inScheduleIDLocal =
                             getInt(getColumnIndexOrThrow(DBContract.Schedule.inScheduleID))
 
-                        var list = ArrayList<Employees>()
+                        val list = ArrayList<Employees>()
                         val cursor: Cursor = db.rawQuery(
                             "SELECT * FROM ${DBContract.PairToEmployers.TABLE_NAME} " +
                                     "INNER JOIN ${DBContract.Employees.TABLE_NAME} ON " +
@@ -1041,6 +1069,7 @@ object StudentData {
 
                         ScheduleList.add(
                             Lesson(
+                                getInt(getColumnIndexOrThrow("_id")),
                                 getInt(getColumnIndexOrThrow(DBContract.Schedule.inScheduleID)),
                                 getInt(getColumnIndexOrThrow(DBContract.Schedule.day_of_week)),
                                 getString(getColumnIndexOrThrow(DBContract.Schedule.auditories)),
@@ -1493,8 +1522,7 @@ object StudentData {
                 emp.type = 3
                 FavoritesList.add(Pair(null, emp))
 
-            } catch (e: Exception) {
-                "Ошибка"
+            } catch (_: Exception) {
             }
 
 
@@ -1519,4 +1547,18 @@ object StudentData {
 
         return 0
     }
+
+    fun setSubGroup(context: Context, subgroup: Int, grID: Int) {
+
+        val dbHelper = DbHelper(context)
+
+        val db = dbHelper.writableDatabase
+        val row = db.execSQL(
+            "UPDATE ${DBContract.SubgroupSettings.TABLE_NAME} SET ${DBContract.SubgroupSettings.subGroup} = $subgroup " +
+                    "WHERE ${DBContract.SubgroupSettings.groupID} = $grID"
+        )
+
+        row
+    }
+
 }

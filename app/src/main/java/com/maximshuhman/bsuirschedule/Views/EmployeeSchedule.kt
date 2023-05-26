@@ -244,7 +244,7 @@ class EmployeeSchedule : Fragment() {
 
     @Deprecated("Deprecated in Java")
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.group_schedule_menu, menu)
+        inflater.inflate(R.menu.employee_schedule_menu, menu)
 
         val favIndicator: MenuItem = menu.findItem(R.id.favorites)
 

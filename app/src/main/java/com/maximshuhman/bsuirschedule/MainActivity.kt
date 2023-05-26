@@ -36,7 +36,8 @@ class MainActivity : AppCompatActivity() {
             R.id.examsFragment,
             R.id.lessonInfDialog,
             R.id.employeeSchedule,
-            R.id.employeeLessonInf
+            R.id.employeeLessonInf,
+            R.id.employeeExamsFragment
         )
 
         navController.addOnDestinationChangedListener { _, destination, _ ->

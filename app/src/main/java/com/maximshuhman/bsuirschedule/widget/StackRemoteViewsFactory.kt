@@ -481,6 +481,7 @@ class ListWidgetService : RemoteViewsService() {
 
                     widgetItems.add(
                         Lesson(
+                            getInt(getColumnIndexOrThrow("_id")),
                             getInt(getColumnIndexOrThrow(DBContract.Schedule.inScheduleID)),
                             getInt(getColumnIndexOrThrow(DBContract.Schedule.day_of_week)),
                             getString(getColumnIndexOrThrow(DBContract.Schedule.auditories)),

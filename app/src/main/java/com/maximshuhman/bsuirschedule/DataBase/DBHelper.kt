@@ -227,97 +227,50 @@ class DbHelper(context: Context) :
                 //   "FOREIGN KEY (${DBContract.PairToEmployers.lessonID}) REFERENCES ${DBContract.Schedule.TABLE_NAME}(${DBContract.Schedule.scheduleID})," +
                 "FOREIGN KEY (${DBContract.EmployeeToExam.groupName}) REFERENCES ${DBContract.Groups.TABLE_NAME}(${DBContract.Groups.name}))"
 
-    override fun onCreate(p0: SQLiteDatabase?) {
+    private val SQL_CREATE_SUBGROUPSETTINGS =
+        "CREATE TABLE IF NOT EXISTS ${DBContract.SubgroupSettings.TABLE_NAME} (" +
+                "${DBContract.SubgroupSettings.groupID} INTEGER," +
+                "${DBContract.SubgroupSettings.subGroup} INTEGER )"
+
+    private val SQL_CREATE_SETTINGS =
+        "CREATE TABLE IF NOT EXISTS ${DBContract.Settings.TABLE_NAME} (" +
+                "${DBContract.Settings.openedType} INTEGER," +
+                "${DBContract.Settings.openedID} INTEGER, " +
+                "${DBContract.Settings.lastWeekUpdate} INTEGER, " +
+                "${DBContract.Settings.week} INTEGER )"
+
+                override fun onCreate(p0: SQLiteDatabase?) {
         Log.v("DBDD", "p0 override fun onCreate(db: SQLiteDatabase?) {")
-        p0?.let {
-
-            try {
-                val a1 = it.execSQL(SQL_CREATE_GROUPS)
+        with(p0!!){
+            try{
+                /*val a1  = */execSQL(SQL_CREATE_GROUPS)
+                /*val a2  = */execSQL(SQL_CREATE_COMMONSCHEDULE)
+                /*val a3  = */execSQL(SQL_CREATE_SCHEDULE)
+                /*val a4  = */execSQL(SQL_CREATE_EMPlOYEES)
+                /*val a5  = */execSQL(SQL_CREATE_FAVORITES)
+                /*val a6  = */execSQL(SQL_CREATE_EXAMS)
+                /*val a7  = */execSQL(SQL_CREATE_FINALSCHEDULE)
+                /*val a8  = */execSQL(SQL_CREATE_PAIRTOEMPLOYER)
+                /*val a9  = */execSQL(SQL_CREATE_COMMONEMPLOYEE)
+                /*val a10 = */execSQL(SQL_CREATE_EMPLOYEESCHEDULE)
+                /*val a11 = */execSQL(SQL_CREATE_EMPLOYEETOPAIR)
+                /*val a12 = */execSQL(SQL_CREATE_EMPLOYEEEXAMS)
+                /*val a13 = */execSQL(SQL_CREATE_FINALEMPLOYEESCHEDULE)
+                /*val a14 = */execSQL(SQL_CREATE_EMPLOYEETOEXAM)
+                /*val a15 = */execSQL(SQL_CREATE_SUBGROUPSETTINGS)
+                /*val a16 = */execSQL(SQL_CREATE_SETTINGS)
             } catch (e: Exception) {
-                Log.v("DBDD", "SQL_CREATE_GROUPS ERROR")
-            }
-            try {
-                val a2 = it.execSQL(SQL_CREATE_COMMONSCHEDULE)
-            } catch (e: Exception) {
-                Log.v("DBDD", "SQL_CREATE_COMMONSCHEDULE ERROR")
-            }
-            try {
-                val a3 = it.execSQL(SQL_CREATE_SCHEDULE)
-            } catch (e: Exception) {
-                Log.v("DBDD", "SQL_CREATE_SCHEDULE ERROR")
-            }
-            try {
-                val a4 = it.execSQL(SQL_CREATE_EMPlOYEES)
-            } catch (e: Exception) {
-                Log.v("DBDD", "SQL_CREATE_EMPlOYEES ERROR")
-            }
-            try {
-                val a5 = it.execSQL(SQL_CREATE_FAVORITES)
-            } catch (e: Exception) {
-                Log.v("DBDD", "SQL_CREATE_FAVORITES ERROR")
-            }
-
-            try {
-                val a6 = it.execSQL(SQL_CREATE_EXAMS)
-            } catch (e: Exception) {
-                Log.v("DBDD", "SQL_CREATE_EXAMS ERROR")
-            }
-
-            try {
-                val a7 = it.execSQL(SQL_CREATE_FINALSCHEDULE)
-            } catch (e: Exception) {
-                Log.v("DBDD", "SQL_CREATE_FINALSCHEDULE ERROR")
-            }
-
-            try {
-                val a8 = it.execSQL(SQL_CREATE_PAIRTOEMPLOYER)
-            } catch (e: Exception) {
-                Log.v("DBDD", "SQL_CREATE_PAIRTOEMPLOYER ERROR")
-            }
-
-            try {
-                val a8 = it.execSQL(SQL_CREATE_COMMONEMPLOYEE)
-            } catch (e: Exception) {
-                Log.v("DBDD", "SQL_CREATE_COMMONEMPLOYEE ERROR")
-            }
-
-            try {
-                val a8 = it.execSQL(SQL_CREATE_EMPLOYEESCHEDULE)
-            } catch (e: Exception) {
-                Log.v("DBDD", "SQL_CREATE_EMPLOYEESCHEDULE ERROR")
-            }
-
-            try {
-                val a9 = it.execSQL(SQL_CREATE_EMPLOYEETOPAIR)
-            } catch (e: Exception) {
-                Log.v("DBDD", "SQL_CREATE_EMPLOYEETOPAIR ERROR")
-            }
-
-            try {
-                val a10 = it.execSQL(SQL_CREATE_EMPLOYEEEXAMS)
-            } catch (e: Exception) {
-                Log.v("DBDD", "SQL_CREATE_EMPLOYEEEXAMS ERROR")
-            }
-            try {
-                val a10 = it.execSQL(SQL_CREATE_FINALEMPLOYEESCHEDULE)
-            } catch (e: Exception) {
-                Log.v("DBDD", "SQL_CREATE_FINALEMPLOYEESCHEDULE ERROR")
-            }
-
-            try {
-                val a10 = it.execSQL(SQL_CREATE_EMPLOYEETOEXAM)
-            } catch (e: Exception) {
-                Log.v("DBDD", "SQL_CREATE_EMPLOYEETOEXAM ERROR")
+                Log.v("DBDD", "SQL_ONCREATE_ERROR")
             }
         }
     }
 
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        Log.v(
+     /*   Log.v(
             "DBDD",
             "override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {"
-        )
+        )*/
 
         if (oldVersion < 3)
             db.execSQL("ALTER TABLE ${DBContract.Employees.TABLE_NAME} ADD COLUMN ${DBContract.Employees.photo} BLOB")
@@ -455,11 +408,13 @@ class DbHelper(context: Context) :
 
         if (oldVersion < 12) {
             try {
-                db.execSQL("DELETE FROM ${DBContract.Schedule.TABLE_NAME}")
-                db.execSQL("DELETE FROM ${DBContract.PairToEmployers.TABLE_NAME}")
-                db.execSQL("DELETE FROM ${DBContract.Employees.TABLE_NAME}")
-                db.execSQL("ALTER TABLE ${DBContract.Employees.TABLE_NAME} ADD COLUMN ${DBContract.Employees.urlId} TEXT")
-            } catch (e: Exception) {
+                with(db) {
+                    execSQL("DELETE FROM ${DBContract.Schedule.TABLE_NAME}")
+                    execSQL("DELETE FROM ${DBContract.PairToEmployers.TABLE_NAME}")
+                    execSQL("DELETE FROM ${DBContract.Employees.TABLE_NAME}")
+                    execSQL("ALTER TABLE ${DBContract.Employees.TABLE_NAME} ADD COLUMN ${DBContract.Employees.urlId} TEXT")
+                }
+            } catch (_: Exception) {
 
             }
 
@@ -508,7 +463,33 @@ class DbHelper(context: Context) :
             db.rawQuery(
                 "UPDATE ${DBContract.Favorites.TABLE_NAME} SET ${DBContract.Favorites.type} = 0",
                 null
-            )
+            ).close()
+        }
+
+        if(oldVersion < 13){
+            val a1 = db.execSQL(SQL_CREATE_SUBGROUPSETTINGS)
+
+            val c: Cursor = db.rawQuery(
+                "SELECT ${DBContract.CommonSchedule.commonScheduleID} " +
+                        "FROM ${DBContract.CommonSchedule.TABLE_NAME}"
+                ,null)
+
+            with(c) {
+                while (moveToNext()) {
+                    val group = getInt(getColumnIndexOrThrow(DBContract.CommonSchedule.commonScheduleID))
+
+
+                    val values = ContentValues().apply {
+                        put(DBContract.SubgroupSettings.groupID, group)
+                        put(DBContract.SubgroupSettings.subGroup, 0)
+                    }
+
+                    val newRowId = db.insert(DBContract.SubgroupSettings.TABLE_NAME, null, values)
+
+                }
+            }
+
+            c.close()
         }
 
 
@@ -520,7 +501,7 @@ class DbHelper(context: Context) :
 
     companion object {
         // If you change the database schema, you must increment the database version.
-        const val DATABASE_VERSION = 12
+        const val DATABASE_VERSION = 13
         const val DATABASE_NAME = "Schedule"
     }
 }

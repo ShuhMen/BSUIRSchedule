@@ -180,5 +180,19 @@ object DBContract {
         const val lessonID = "lessonID"
         const val groupName = "groupName"
     }
+    
+    object SubgroupSettings {
+        const val TABLE_NAME = "SubgroupSettings"
+        const val groupID = "groupID"
+        const val subGroup = "subGroup"
+    }
+
+    object Settings {
+        const val TABLE_NAME = "Settings"
+        const val openedID = "openedID"
+        const val openedType = "openedType"
+        const val lastWeekUpdate = "lastWeekUpdate"
+        const val week = "week"
+    }
 
 }

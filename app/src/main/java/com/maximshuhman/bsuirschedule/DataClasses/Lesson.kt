@@ -1,4 +1,5 @@
 data class Lesson(
+    var id: Int,
     var inLessonID: Int,
     var day_of_week: Int,
     var auditories: String,
