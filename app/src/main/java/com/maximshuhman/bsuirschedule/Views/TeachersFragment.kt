@@ -142,14 +142,12 @@ class TeachersFragment : Fragment() {
             emError = EmployeeData.makeEmployeesList(requireContext(), mode)
 
             Handler(Looper.getMainLooper()).post {
+                dataFilter = EmployeeData.employeesList
+                employeesResyclerView.adapter = GroupsRecyclerAdapter()
+
                 if (emError != 0 || grError != 0) {
                     Toast.makeText(context, "Ошибка получения данных", Toast.LENGTH_SHORT)
                         .show()
-                } else {
-                    dataFilter = EmployeeData.employeesList
-                    employeesResyclerView.adapter = GroupsRecyclerAdapter()
-//                    employeesResyclerView.recycledViewPool.clear()
-                    employeesResyclerView.adapter!!.notifyDataSetChanged()
                 }
                 progressBar.visibility = View.INVISIBLE
                 swipeRefreshLayout.isRefreshing = false

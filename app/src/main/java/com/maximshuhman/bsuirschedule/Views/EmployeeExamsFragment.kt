@@ -30,7 +30,7 @@ class EmployeeExamsFragment : Fragment() {
 
     companion object {
 
-        const val ID = "ID"
+        const val id = "ID"
 
         const val NAME = "ID"
         const val INF = "INF"
@@ -44,7 +44,7 @@ class EmployeeExamsFragment : Fragment() {
             return Bundle().apply {
                 putString(INF, inf)
                 // putString(NAME, name)
-                putInt(ID, id)
+                putInt(this@Companion.id, id)
             }
         }
 
@@ -187,6 +187,19 @@ class EmployeeExamsFragment : Fragment() {
                             R.drawable.divder_labs,
                             null
                         )
+
+                    "Консультация" -> Dividerindex.foreground = ResourcesCompat.getDrawable(
+                        itemView.resources,
+                        R.drawable.divder_lectures,
+                        null
+                    )
+
+                    "Экзамен" -> Dividerindex.foreground =
+                        ResourcesCompat.getDrawable(
+                            itemView.resources,
+                            R.drawable.divder_labs,
+                            null
+                        )
                 }
 
                 try {
@@ -216,7 +229,13 @@ class EmployeeExamsFragment : Fragment() {
 
                     // val dayOfWeek :String = formatter.parse(date)
                     val dayOfMonth = pair.dateLesson!!.substring(0, 3)
-
+                    if(adapterPosition != 0 )
+                        if( exams[layoutPosition-1].dateLesson == exams[layoutPosition].dateLesson){
+                            DateView.visibility = View.GONE
+                        }else
+                            DateView.visibility = View.VISIBLE
+                    else
+                        DateView.visibility = View.VISIBLE
                     DateView.text = /*"${
                         when (dayOfWeek) {
                             1 -> "Понедельник"

@@ -144,17 +144,27 @@ class ListOfGroupsFragment : Fragment() {
             grError = StudentData.makeGroupsList(context, mode)
 
             Handler(Looper.getMainLooper()).post {
+
+                dataFilter = StudentData.GroupsList
+                GroupsResyclerView.adapter = GroupsRecyclerAdapter()
                 if (emError != 0 || grError != 0) {
-                    Toast.makeText(context, "Ошибка получения данных", Toast.LENGTH_SHORT)
-                        .show()
+                    try {
+                        Toast.makeText(
+                            context,
+                            "Ошибка получения данных $emError $grError",
+                            Toast.LENGTH_SHORT
+                        )
+                            .show()
+                    }catch (_:Exception){}
                 } else {
-                    dataFilter = StudentData.GroupsList
-                    GroupsResyclerView.adapter = GroupsRecyclerAdapter()
+                    /*dataFilter = StudentData.GroupsList
+                    GroupsResyclerView.adapter = GroupsRecyclerAdapter()*/
 //                    GroupsResyclerView.recycledViewPool.clear()
-                    GroupsResyclerView.adapter!!.notifyDataSetChanged()
+                    // GroupsResyclerView.adapter!!.notifyDataSetChanged()
                 }
                 progressBar.visibility = View.INVISIBLE
                 swipeRefreshLayout.isRefreshing = false
+
 
             }
         }

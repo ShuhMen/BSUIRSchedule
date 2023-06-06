@@ -1,11 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <solid
-        android:color="@color/BSUIR_blue">
-    </solid>
+    <solid android:color="@color/BSUIR_blue"></solid>
     <corners
         android:topLeftRadius="@dimen/widget_corners"
-        android:topRightRadius="@dimen/widget_corners">
-    </corners>
+        android:topRightRadius="@dimen/widget_corners"></corners>
 </shape>

@@ -38,4 +38,5 @@
     <string name="october">Октября</string>
     <string name="november">Ноября</string>
     <string name="december">Декабря</string>
+    <string name="widget_choose_schedule">Выберите расписание</string>
 </resources>

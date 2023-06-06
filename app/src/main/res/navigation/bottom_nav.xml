@@ -34,7 +34,7 @@
         android:id="@+id/teachersFragment"
         android:name="com.maximshuhman.bsuirschedule.Views.TeachersFragment"
         android:label="fragment_teachers"
-        tools:layout="@layout/fragment_teachers" >
+        tools:layout="@layout/fragment_teachers">
         <action
             android:id="@+id/action_teachersFragment_to_employeeSchedule"
             app:destination="@id/employeeSchedule" />
@@ -53,7 +53,7 @@
         android:id="@+id/listOfGroupsFragment"
         android:name="com.maximshuhman.bsuirschedule.Views.ListOfGroupsFragment"
         android:label="fragment_list_of_groups"
-        tools:layout="@layout/fragment_list_of_groups" >
+        tools:layout="@layout/fragment_list_of_groups">
         <action
             android:id="@+id/action_listOfGroupsFragment_to_scheduleFragment"
             app:destination="@id/scheduleFragment">
@@ -68,7 +68,7 @@
         android:id="@+id/examsFragment"
         android:name="com.maximshuhman.bsuirschedule.Views.ExamsFragment"
         android:label="fragment_exams"
-        tools:layout="@layout/fragment_exams" >
+        tools:layout="@layout/fragment_exams">
         <action
             android:id="@+id/action_examsFragment_to_lessonInfDialog"
             app:destination="@id/lessonInfDialog" />
@@ -77,7 +77,7 @@
         android:id="@+id/employeeSchedule"
         android:name="com.maximshuhman.bsuirschedule.Views.EmployeeSchedule"
         android:label="fragment_employee_schedule"
-        tools:layout="@layout/fragment_employee_schedule" >
+        tools:layout="@layout/fragment_employee_schedule">
         <action
             android:id="@+id/action_employeeSchedule_to_teachersFragment"
             app:destination="@id/teachersFragment" />
@@ -92,7 +92,7 @@
         android:id="@+id/employeeExamsFragment"
         android:name="com.maximshuhman.bsuirschedule.Views.EmployeeExamsFragment"
         android:label="fragment_employee_exams"
-        tools:layout="@layout/fragment_employee_exams" >
+        tools:layout="@layout/fragment_employee_exams">
         <action
             android:id="@+id/action_employeeExamsFragment_to_employeeLessonInf"
             app:destination="@id/employeeLessonInf" />

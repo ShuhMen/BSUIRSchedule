@@ -11,6 +11,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.maximshuhman.bsuirschedule.DataBase.DBContract
 import com.maximshuhman.bsuirschedule.DataBase.DbHelper
 
+
 class MainActivity : AppCompatActivity() {
 
     lateinit var bottomNavigationView: BottomNavigationView
@@ -18,6 +19,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
         try {
             bottomNavigationView = findViewById(R.id.bottom_navigating_view)
         } catch (e: Exception) {

@@ -3,6 +3,7 @@ package com.maximshuhman.bsuirschedule.widget
 import CommonSchedule
 import Employees
 import Lesson
+import android.annotation.SuppressLint
 import android.appwidget.AppWidgetManager
 import android.content.ContentValues
 import android.content.Context
@@ -13,12 +14,12 @@ import android.util.Log
 import android.view.View
 import android.widget.RemoteViews
 import android.widget.RemoteViewsService
+import com.maximshuhman.bsuirschedule.Data.EmployeeData
 import com.maximshuhman.bsuirschedule.Data.StudentData
 import com.maximshuhman.bsuirschedule.DataBase.DBContract
 import com.maximshuhman.bsuirschedule.DataBase.DbHelper
-import com.maximshuhman.bsuirschedule.PreferenceHelper
-import com.maximshuhman.bsuirschedule.PreferenceHelper.openedGroup
-import com.maximshuhman.bsuirschedule.PreferenceHelper.openedType
+import com.maximshuhman.bsuirschedule.DataClasses.EmployeeLesson
+import com.maximshuhman.bsuirschedule.DataClasses.Group
 import com.maximshuhman.bsuirschedule.R
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -36,7 +37,7 @@ class ListWidgetService : RemoteViewsService() {
         intent: Intent
     ) : RemoteViewsFactory {
 
-        private var widgetItems: ArrayList<Lesson> = ArrayList<Lesson>()
+        private var widgetItems: ArrayList<Pair<Lesson?, EmployeeLesson?>> = ArrayList()
         private val appWidgetId: Int = intent.getIntExtra(
             AppWidgetManager.EXTRA_APPWIDGET_ID,
             AppWidgetManager.INVALID_APPWIDGET_ID
@@ -48,33 +49,48 @@ class ListWidgetService : RemoteViewsService() {
             Log.d("WIDGET", "onCreate")
         }
 
+        @SuppressLint("Recycle")
         override fun onDataSetChanged() {
 
-            val prefs = PreferenceHelper.defaultPreference(context)
-            val ID = prefs.openedGroup
-            val type = prefs.openedType
-            Log.d("WIDGET", " onDataSetChanged() ${prefs.openedGroup}")
+            val db = DbHelper(context).writableDatabase
 
-            if (ID != 0) {
+            // widgetItems.clear()
+            val settings = db.rawQuery(
+                "SELECT ${DBContract.Settings.widgetID}, ${DBContract.Settings.widgetOpened} FROM ${DBContract.Settings.TABLE_NAME}",
+                null
+            )
+
+            settings.moveToFirst()
+
+            val id =
+                settings.getInt(settings.getColumnIndexOrThrow(DBContract.Settings.widgetID))  //prefs.openedGroup
+            val type =
+                settings.getInt(settings.getColumnIndexOrThrow(DBContract.Settings.widgetOpened))  //prefs.openedType
+            settings.close()
+
+
+            Log.d("WIDGET", " onDataSetChanged() $id")
+
+            if (id != 0) {
                 val dbHelper = DbHelper(context)
                 val db = dbHelper.writableDatabase
 
                 if (type == 1) {
                     val c = db.rawQuery(
                         "SELECT COUNT(*) as cnt FROM " +
-                                "${DBContract.CommonEmployee.TABLE_NAME} WHERE ${DBContract.CommonEmployee.commonEmployeeID} = $ID",
+                                "${DBContract.CommonEmployee.TABLE_NAME} WHERE ${DBContract.CommonEmployee.commonEmployeeID} = ${id}",
                         null
                     )
                     c.moveToFirst()
                     if (c.getInt(0) != 0) {
                         c.close()
-                        val cursor = db.rawQuery(
+                        /*val cursor = db.rawQuery(
                             "SELECT ${DBContract.CommonEmployee.lastBuild} FROM " +
-                                    "${DBContract.CommonEmployee.TABLE_NAME} WHERE ${DBContract.CommonEmployee.commonEmployeeID} = $ID",
+                                    "${DBContract.CommonEmployee.TABLE_NAME} WHERE ${DBContract.CommonEmployee.commonEmployeeID} = ${id}",
                             null
                         )
 
-                        cursor.moveToFirst()
+                        cursor.moveToFirst()*/
 
                         /* val lastBuild =
                              cursor.getString(cursor.getColumnIndexOrThrow(DBContract.CommonSchedule.lastBuild))
@@ -142,26 +158,26 @@ class ListWidgetService : RemoteViewsService() {
 
                              }
                          }*/
-                        // fill(ID, db)
+                        fillEmployee(id, db)
 
                     } else
                         c.close()
                 } else {
                     val c = db.rawQuery(
                         "SELECT COUNT(*) as cnt FROM " +
-                                "${DBContract.CommonSchedule.TABLE_NAME} WHERE ${DBContract.CommonSchedule.commonScheduleID} = $ID",
+                                "${DBContract.CommonSchedule.TABLE_NAME} WHERE ${DBContract.CommonSchedule.commonScheduleID} = ${id}",
                         null
                     )
                     c.moveToFirst()
                     if (c.getInt(0) != 0) {
                         c.close()
-                        val cursor = db.rawQuery(
+                        /*val cursor = db.rawQuery(
                             "SELECT ${DBContract.CommonSchedule.lastBuild} FROM " +
-                                    "${DBContract.CommonSchedule.TABLE_NAME} WHERE ${DBContract.CommonSchedule.commonScheduleID} = $ID",
+                                    "${DBContract.CommonSchedule.TABLE_NAME} WHERE ${DBContract.CommonSchedule.commonScheduleID} = ${id}",
                             null
                         )
 
-                        cursor.moveToFirst()
+                        cursor.moveToFirst()*/
 
                         /* val lastBuild =
                              cursor.getString(cursor.getColumnIndexOrThrow(DBContract.CommonSchedule.lastBuild))
@@ -229,7 +245,7 @@ class ListWidgetService : RemoteViewsService() {
 
                              }
                          }*/
-                        fillGroup(ID, db)
+                        fillGroup(id, db)
 
                     } else
                         c.close()
@@ -239,6 +255,7 @@ class ListWidgetService : RemoteViewsService() {
 
         override fun onDestroy() {
             widgetItems.clear()
+
         }
 
         override fun getCount(): Int {
@@ -246,80 +263,184 @@ class ListWidgetService : RemoteViewsService() {
         }
 
         override fun getViewAt(position: Int): RemoteViews {
-            var remoteViews = RemoteViews(RemoteViews(context.packageName, R.layout.widget_item))
-            remoteViews.removeAllViews(R.id.outer)
-            val time = RemoteViews(RemoteViews(context.packageName, R.layout.time_widget))
-            var calendar: Calendar = Calendar.getInstance()
-            val formatter =
-                SimpleDateFormat("dd HH:mm", Locale.getDefault(Locale.Category.FORMAT))
+            val remoteViews =
+                RemoteViews(RemoteViews(context.packageName, R.layout.widget_item))
+            if (widgetItems[position].second == null) {
 
-            val curent = formatter.parse(formatter.format(calendar.time))
-            time.setTextViewText(R.id.start_time_text, formatter.format(calendar.time).toString())
-            time.setTextViewText(R.id.end_time_text, widgetItems[position].endLessonTime)
-            remoteViews.addView(R.id.outer, time)
+                remoteViews.removeAllViews(R.id.outer)
+                val time = RemoteViews(RemoteViews(context.packageName, R.layout.time_widget))
+                var calendar: Calendar = Calendar.getInstance()
+                val formatter =
+                    SimpleDateFormat("dd HH:mm", Locale.getDefault(Locale.Category.FORMAT))
 
-            when (widgetItems[position].lessonTypeAbbrev) {
-                "ПЗ" -> remoteViews.addView(
-                    R.id.outer, RemoteViews(
-                        RemoteViews(
-                            context.packageName,
-                            R.layout.divider_praktikal
+                //val curent = formatter.parse(formatter.format(calendar.time))
+                time.setTextViewText(
+                    R.id.start_time_text,
+                    widgetItems[position].first!!.startLessonTime/*formatter.format(calendar.time).toString()*/
+                )
+                time.setTextViewText(
+                    R.id.end_time_text,
+                    widgetItems[position].first!!.endLessonTime
+                )
+                remoteViews.addView(R.id.outer, time)
+
+                when (widgetItems[position].first!!.lessonTypeAbbrev) {
+                    "ПЗ" -> remoteViews.addView(
+                        R.id.outer, RemoteViews(
+                            RemoteViews(
+                                context.packageName,
+                                R.layout.divider_praktikal
+                            )
                         )
                     )
-                )
 
-                "ЛК" -> remoteViews.addView(
-                    R.id.outer, RemoteViews(
-                        RemoteViews(
-                            context.packageName,
-                            R.layout.divider_lectures
+                    "ЛК" -> remoteViews.addView(
+                        R.id.outer, RemoteViews(
+                            RemoteViews(
+                                context.packageName,
+                                R.layout.divider_lectures
+                            )
                         )
                     )
-                )
 
-                "ЛР" -> remoteViews.addView(
-                    R.id.outer, RemoteViews(
-                        RemoteViews(
-                            context.packageName,
-                            R.layout.divider_labs
+                    "ЛР" -> remoteViews.addView(
+                        R.id.outer, RemoteViews(
+                            RemoteViews(
+                                context.packageName,
+                                R.layout.divider_labs
+                            )
                         )
                     )
-                )
-            }
-
-            val additionalInf = RemoteViews(
-                RemoteViews(
-                    context.packageName,
-                    R.layout.additional_information_widget
-                )
-            )
-            additionalInf.setTextViewText(R.id.pair_name_text, widgetItems[position].subject)
-            if (widgetItems[position].note == null) {
-                additionalInf.setViewVisibility(R.id.note_text, View.GONE)
-            } else
-                additionalInf.setTextViewText(R.id.note_text, widgetItems[position].note)
-            additionalInf.setTextViewText(R.id.note, widgetItems[position].note)
-            var emp: String = ""
-            for (i in 0 until widgetItems[position].employees.size) {
-                if (widgetItems[position].employees[i].firstName != "") {
-                    if (i != 0)
-                        emp += "\n"
-                    emp +=
-                        "${widgetItems[position].employees[i].lastName} " +
-                                "${
-                                    widgetItems[position].employees[i].firstName.substring(
-                                        0,
-                                        1
-                                    )
-                                }. " +
-                                "${
-                                    widgetItems[position].employees[i].middleName.substring(0, 1)
-                                }."
                 }
+
+                val additionalInf = RemoteViews(
+                    RemoteViews(
+                        context.packageName,
+                        R.layout.additional_information_widget
+                    )
+                )
+                additionalInf.setTextViewText(
+                    R.id.pair_name_text,
+                    widgetItems[position].first!!.subject
+                )
+                if (widgetItems[position].first!!.note == null) {
+                    additionalInf.setViewVisibility(R.id.note_text, View.GONE)
+                } else
+                    additionalInf.setTextViewText(
+                        R.id.note_text,
+                        widgetItems[position].first!!.note
+                    )
+
+                additionalInf.setTextViewText(R.id.note, widgetItems[position].first!!.note)
+                var emp: String = ""
+                for (i in 0 until widgetItems[position].first!!.employees.size) {
+                    if (widgetItems[position].first!!.employees[i].firstName != "") {
+                        if (i != 0)
+                            emp += "\n"
+                        emp +=
+                            "${widgetItems[position].first!!.employees[i].lastName} " +
+                                    "${
+                                        widgetItems[position].first!!.employees[i].firstName.substring(
+                                            0,
+                                            1
+                                        )
+                                    }. " +
+                                    "${
+                                        widgetItems[position].first!!.employees[i].middleName.substring(
+                                            0,
+                                            1
+                                        )
+                                    }."
+                    }
+                }
+                additionalInf.setTextViewText(R.id.employees_text, emp)
+                additionalInf.setTextViewText(
+                    R.id.auditory_text,
+                    widgetItems[position].first!!.auditories
+                )
+                remoteViews.addView(R.id.outer, additionalInf)
+
+            } else {
+
+                remoteViews.removeAllViews(R.id.outer)
+                val time = RemoteViews(RemoteViews(context.packageName, R.layout.time_widget))
+                var calendar: Calendar = Calendar.getInstance()
+                val formatter =
+                    SimpleDateFormat("dd HH:mm", Locale.getDefault(Locale.Category.FORMAT))
+
+                //val curent = formatter.parse(formatter.format(calendar.time))
+                time.setTextViewText(
+                    R.id.start_time_text,
+                    widgetItems[position].second!!.startLessonTime/*formatter.format(calendar.time).toString()*/
+                )
+                time.setTextViewText(
+                    R.id.end_time_text,
+                    widgetItems[position].second!!.endLessonTime
+                )
+                remoteViews.addView(R.id.outer, time)
+
+                when (widgetItems[position].second!!.lessonTypeAbbrev) {
+                    "ПЗ" -> remoteViews.addView(
+                        R.id.outer, RemoteViews(
+                            RemoteViews(
+                                context.packageName,
+                                R.layout.divider_praktikal
+                            )
+                        )
+                    )
+
+                    "ЛК" -> remoteViews.addView(
+                        R.id.outer, RemoteViews(
+                            RemoteViews(
+                                context.packageName,
+                                R.layout.divider_lectures
+                            )
+                        )
+                    )
+
+                    "ЛР" -> remoteViews.addView(
+                        R.id.outer, RemoteViews(
+                            RemoteViews(
+                                context.packageName,
+                                R.layout.divider_labs
+                            )
+                        )
+                    )
+                }
+
+                val additionalInf = RemoteViews(
+                    RemoteViews(
+                        context.packageName,
+                        R.layout.additional_information_widget
+                    )
+                )
+                additionalInf.setTextViewText(
+                    R.id.pair_name_text,
+                    widgetItems[position].second!!.subject
+                )
+                if (widgetItems[position].second!!.note == null) {
+                    additionalInf.setViewVisibility(R.id.note_text, View.GONE)
+                } else
+                    additionalInf.setTextViewText(
+                        R.id.note_text,
+                        widgetItems[position].second!!.note
+                    )
+                additionalInf.setTextViewText(R.id.note, widgetItems[position].second!!.note)
+                var emp: String = ""
+                for (i in 0 until widgetItems[position].second!!.groups.size) {
+                    if (i % 2 != 0)
+                        emp += ", "
+                    if (i != 0 && i % 2 == 0)
+                        emp += "\n"
+                    emp += "${widgetItems[position].second!!.groups[i].name}"
+                }
+                additionalInf.setTextViewText(R.id.employees_text, emp)
+                additionalInf.setTextViewText(
+                    R.id.auditory_text,
+                    widgetItems[position].second!!.auditories
+                )
+                remoteViews.addView(R.id.outer, additionalInf)
             }
-            additionalInf.setTextViewText(R.id.employees_text, emp)
-            additionalInf.setTextViewText(R.id.auditory_text, widgetItems[position].auditories)
-            remoteViews.addView(R.id.outer, additionalInf)
 
             return remoteViews
         }
@@ -412,7 +533,7 @@ class ListWidgetService : RemoteViewsService() {
             with(c) {
                 moveToFirst()
                 moveToNext()
-                do {
+                while (moveToNext()) {
 
                     if (getInt(getColumnIndexOrThrow(DBContract.Schedule.day_of_week)) == 9 && i != 0)
                         break
@@ -435,44 +556,28 @@ class ListWidgetService : RemoteViewsService() {
 
                     do {
                         list.add(
-                            Employees(
-                                0,
-                                try {
-                                    cursor.getInt(cursor.getColumnIndexOrThrow(DBContract.Employees.employeeID))
-                                } catch (e: Exception) {
-                                    0
-                                },
-                                try {
-                                    cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Employees.firstName))
-                                } catch (e: Exception) {
-                                    ""
-                                } as String,
-                                try {
-                                    cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Employees.middleName))
-                                } catch (e: Exception) {
-                                    ""
-                                } as String,
-                                try {
-                                    cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Employees.lastName))
-                                } catch (e: Exception) {
-                                    ""
-                                } as String,
-                                try {
-                                    cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Employees.photoLink))
-                                } catch (e: Exception) {
-                                    ""
-                                } as String,
-                                try {
-                                    cursor.getBlob(cursor.getColumnIndexOrThrow(DBContract.Employees.photo))
-                                } catch (e: Exception) {
-                                    ByteArray(0)
-                                },
-                                try {
-                                    cursor.getString(getColumnIndexOrThrow(DBContract.Employees.urlId))
-                                } catch (e: Exception) {
-                                    ""
-                                }
-                            )
+                            try {
+                                Employees(
+                                    0,
+                                    cursor.getInt(cursor.getColumnIndexOrThrow(DBContract.Employees.employeeID)),
+                                    cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Employees.firstName)),
+                                    cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Employees.middleName)),
+                                    cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Employees.lastName)),
+                                    cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Employees.photoLink)),
+                                    try {
+                                        cursor.getBlob(cursor.getColumnIndexOrThrow(DBContract.Employees.photo))
+                                    } catch (e: Exception) {
+                                        ByteArray(0)
+                                    },
+                                    try {
+                                        cursor.getString(getColumnIndexOrThrow(DBContract.Employees.urlId))
+                                    } catch (e: Exception) {
+                                        ""
+                                    }
+                                )
+                            } catch (e: Exception) {
+                                Employees(0, 0, "", "", "", "", ByteArray(0), "")
+                            }
                         )
                     } while (cursor.moveToNext())
 
@@ -480,35 +585,37 @@ class ListWidgetService : RemoteViewsService() {
                     cursor.close()
 
                     widgetItems.add(
-                        Lesson(
-                            getInt(getColumnIndexOrThrow("_id")),
-                            getInt(getColumnIndexOrThrow(DBContract.Schedule.inScheduleID)),
-                            getInt(getColumnIndexOrThrow(DBContract.Schedule.day_of_week)),
-                            getString(getColumnIndexOrThrow(DBContract.Schedule.auditories)),
-                            getString(getColumnIndexOrThrow(DBContract.Schedule.endLessonTime)),
-                            getString(getColumnIndexOrThrow(DBContract.Schedule.lessonTypeAbbrev)),
-                            getString(getColumnIndexOrThrow(DBContract.Schedule.note)),
-                            getInt(getColumnIndexOrThrow(DBContract.Schedule.numSubgroup)),
-                            getString(getColumnIndexOrThrow(DBContract.Schedule.startLessonTime)),
-                            getString(getColumnIndexOrThrow(DBContract.Schedule.subject)),
-                            getString(getColumnIndexOrThrow(DBContract.Schedule.subjectFullName)),
-                            getString(getColumnIndexOrThrow(DBContract.Schedule.weekNumber)),
-                            list,
-                            try {
-                                getString(getColumnIndexOrThrow(DBContract.Schedule.startLessonDate))
-                            } catch (e: Exception) {
-                                ""
-                            },
-                            try {
-                                getString(getColumnIndexOrThrow(DBContract.Schedule.endLessonDate))
-                            } catch (e: Exception) {
-                                ""
-                            }, null
+                        Pair(
+                            Lesson(
+                                getInt(getColumnIndexOrThrow("_id")),
+                                getInt(getColumnIndexOrThrow(DBContract.Schedule.inScheduleID)),
+                                getInt(getColumnIndexOrThrow(DBContract.Schedule.day_of_week)),
+                                getString(getColumnIndexOrThrow(DBContract.Schedule.auditories)),
+                                getString(getColumnIndexOrThrow(DBContract.Schedule.endLessonTime)),
+                                getString(getColumnIndexOrThrow(DBContract.Schedule.lessonTypeAbbrev)),
+                                getString(getColumnIndexOrThrow(DBContract.Schedule.note)),
+                                getInt(getColumnIndexOrThrow(DBContract.Schedule.numSubgroup)),
+                                getString(getColumnIndexOrThrow(DBContract.Schedule.startLessonTime)),
+                                getString(getColumnIndexOrThrow(DBContract.Schedule.subject)),
+                                getString(getColumnIndexOrThrow(DBContract.Schedule.subjectFullName)),
+                                getString(getColumnIndexOrThrow(DBContract.Schedule.weekNumber)),
+                                list,
+                                try {
+                                    getString(getColumnIndexOrThrow(DBContract.Schedule.startLessonDate))
+                                } catch (e: Exception) {
+                                    ""
+                                },
+                                try {
+                                    getString(getColumnIndexOrThrow(DBContract.Schedule.endLessonDate))
+                                } catch (e: Exception) {
+                                    ""
+                                }, null
+                            ), null
                         )
                     )
 
                     i++
-                } while (moveToNext())
+                }
             }
             c.close()
 
@@ -517,6 +624,173 @@ class ListWidgetService : RemoteViewsService() {
             } else
                 1
 
+
+        }
+
+        fun fillEmployee(employeeID: Int, db: SQLiteDatabase): Int {
+
+            widgetItems.clear()
+
+            var commonSchedule: CommonSchedule
+
+            var calendar = Calendar.getInstance()
+            val formatter =
+                SimpleDateFormat("dd.MM.yyyy", Locale.getDefault(Locale.Category.FORMAT))
+
+            val curent = formatter.parse(formatter.format(calendar.time))
+
+            val common: Cursor = db.rawQuery(
+                "SELECT * FROM ${DBContract.CommonEmployee.TABLE_NAME} " +
+                        "WHERE ${DBContract.CommonEmployee.commonEmployeeID} = $employeeID ",
+
+                null
+            )
+
+            with(common) {
+                moveToFirst()
+                commonSchedule = CommonSchedule(
+                    getString(getColumnIndexOrThrow(DBContract.CommonEmployee.startDate)),
+                    getString(getColumnIndexOrThrow(DBContract.CommonEmployee.endDate)),
+                    "", "",
+                    getString(getColumnIndexOrThrow(DBContract.CommonEmployee.lastBuild))
+                )
+            }
+
+            common.close()
+
+            if (commonSchedule.lastBuild != null && commonSchedule.lastBuild != "") {
+                if (formatter.parse(commonSchedule.lastBuild).before(curent)) {
+                    EmployeeData.fillScheduleList(calendar, formatter, context)
+                    EmployeeData.finalBuild(db, employeeID)
+
+                    calendar = Calendar.getInstance()
+
+                    val values = ContentValues().apply {
+                        put(DBContract.CommonEmployee.lastBuild, formatter.format(calendar.time))
+                    }
+
+                    db.update(
+                        DBContract.CommonEmployee.TABLE_NAME,
+                        values,
+                        "${DBContract.CommonEmployee.commonEmployeeID} = $employeeID",
+                        null
+                    )
+
+                }
+
+                val c: Cursor = db.rawQuery(
+                    "SELECT * FROM ${DBContract.finalEmployeeSchedule.TABLE_NAME} " +
+                            "INNER JOIN ${DBContract.CommonEmployee.TABLE_NAME} ON (${DBContract.finalEmployeeSchedule.TABLE_NAME}.${DBContract.finalEmployeeSchedule.employeeID} = ${DBContract.CommonEmployee.TABLE_NAME}.${DBContract.CommonEmployee.commonEmployeeID}) " +
+                            "INNER JOIN ${DBContract.Employees.TABLE_NAME} ON (${DBContract.Employees.TABLE_NAME}.${DBContract.Employees.employeeID} = ${DBContract.CommonEmployee.TABLE_NAME}.${DBContract.CommonEmployee.commonEmployeeID}) " +
+                            //  "INNER JOIN ${DBContract.Employees.TABLE_NAME} ON (${DBContract.finalEmployeeSchedule.TABLE_NAME}.${DBContract.EmployeeSchedule.employeeID} = ${DBContract.Employees.TABLE_NAME}.${DBContract.Employees.employeeID}) " +
+                            "WHERE ${DBContract.Employees.TABLE_NAME}.${DBContract.Employees.employeeID} = $employeeID " +
+                            "ORDER BY ${DBContract.finalEmployeeSchedule.TABLE_NAME}.${DBContract.finalEmployeeSchedule.dayIndex} ",
+
+                    null
+                )
+                var i = 0
+
+                with(c) {
+                    moveToFirst()
+                    while (moveToNext()) {
+                        if (getInt(getColumnIndexOrThrow(DBContract.EmployeeSchedule.day_of_week)) == 9 && i != 0)
+                            break
+
+                        var inScheduleIDLocal =
+                            getInt(getColumnIndexOrThrow(DBContract.EmployeeSchedule.inScheduleID))
+
+                        var list = ArrayList<Group>()
+                        val cursor: Cursor = db.rawQuery(
+                            "SELECT * FROM ${DBContract.EmployeeToPair.TABLE_NAME} " +
+                                    "INNER JOIN ${DBContract.Groups.TABLE_NAME} ON " +
+                                    "(${DBContract.EmployeeToPair.TABLE_NAME}.${DBContract.EmployeeToPair.groupName} = ${DBContract.Groups.TABLE_NAME}.${DBContract.Groups.name})" +
+                                    "WHERE ${DBContract.EmployeeToPair.lessonID} = $inScheduleIDLocal " +
+                                    "AND ${DBContract.EmployeeToPair.employeeID} = $employeeID",
+                            null
+                        )
+
+
+                        cursor.moveToFirst()
+
+                        do {
+                            list.add(
+                                try {
+                                    Group(
+                                        0,
+                                        cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Groups.name)),
+                                        cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Groups.facultyAbbrev)),
+                                        cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Groups.specialityName)),
+                                        cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Groups.specialityAbbrev)),
+                                        cursor.getInt(cursor.getColumnIndexOrThrow(DBContract.Groups.course)),
+                                        cursor.getInt(cursor.getColumnIndexOrThrow(DBContract.Groups.groupID))
+                                    )
+                                } catch (e: Exception) {
+                                    null
+                                } as Group
+                            )
+                        } while (cursor.moveToNext())
+
+
+                        cursor.close()
+
+                        widgetItems.add(
+                            Pair(
+                                null,
+                                EmployeeLesson(
+                                    getInt(getColumnIndexOrThrow(DBContract.EmployeeSchedule.inScheduleID)),
+                                    getInt(getColumnIndexOrThrow(DBContract.EmployeeSchedule.day_of_week)),
+                                    getString(getColumnIndexOrThrow(DBContract.EmployeeSchedule.auditories)),
+                                    getString(getColumnIndexOrThrow(DBContract.EmployeeSchedule.endLessonTime)),
+                                    getString(getColumnIndexOrThrow(DBContract.EmployeeSchedule.lessonTypeAbbrev)),
+                                    getString(getColumnIndexOrThrow(DBContract.EmployeeSchedule.note)),
+                                    getInt(getColumnIndexOrThrow(DBContract.EmployeeSchedule.numSubgroup)),
+                                    getString(getColumnIndexOrThrow(DBContract.EmployeeSchedule.startLessonTime)),
+                                    getString(getColumnIndexOrThrow(DBContract.EmployeeSchedule.subject)),
+                                    getString(getColumnIndexOrThrow(DBContract.EmployeeSchedule.subjectFullName)),
+                                    getString(getColumnIndexOrThrow(DBContract.EmployeeSchedule.weekNumber)),
+                                    list,
+                                    try {
+                                        getString(getColumnIndexOrThrow(DBContract.EmployeeSchedule.startLessonDate))
+                                    } catch (e: Exception) {
+                                        ""
+                                    },
+                                    try {
+                                        getString(getColumnIndexOrThrow(DBContract.EmployeeSchedule.endLessonDate))
+                                    } catch (e: Exception) {
+                                        ""
+                                    }, null
+                                )
+                            )
+                        )
+                        i++
+                    }
+                }
+                c.close()
+
+
+            } else {
+                val values = ContentValues().apply {
+                    put(DBContract.CommonEmployee.lastBuild, formatter.format(calendar.time))
+                }
+
+                db.update(
+                    DBContract.CommonEmployee.TABLE_NAME,
+                    values,
+                    "${DBContract.CommonEmployee.commonEmployeeID} = $employeeID",
+                    null
+                )
+
+                if (EmployeeData.fillListOfPairs(db, employeeID) == 1)
+                    return 1
+
+                EmployeeData.fillScheduleList(calendar, formatter, context)
+                EmployeeData.finalBuild(db, employeeID)
+                return 0
+            }
+            return if (widgetItems.size != 0) {
+                0
+            } else
+                1
 
         }
     }

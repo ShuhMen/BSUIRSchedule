@@ -188,6 +188,19 @@ class ExamsFragment : Fragment() {
                             R.drawable.divder_labs,
                             null
                         )
+                    "ЛР" -> Dividerindex.foreground =
+                        ResourcesCompat.getDrawable(
+                            itemView.resources,
+                            R.drawable.divder_labs,
+                            null
+                        )
+                    "ЛК" -> Dividerindex.foreground =
+                        ResourcesCompat.getDrawable(
+                            itemView.resources,
+                            R.drawable.divder_lectures,
+                            null
+                        )
+
                 }
 
                 try {
@@ -215,6 +228,15 @@ class ExamsFragment : Fragment() {
 
                     // val dayOfWeek :String = formatter.parse(date)
                     val dayOfMonth = pair.dateLesson!!.substring(0, 3)
+                    if(adapterPosition != 0 )
+                        if( exams[layoutPosition-1].dateLesson == exams[layoutPosition].dateLesson){
+                            DateView.visibility = View.GONE
+                        }else
+                            DateView.visibility = View.VISIBLE
+                    else
+                        DateView.visibility = View.VISIBLE
+
+
 
                     DateView.text = /*"${
                         when (dayOfWeek) {

@@ -19,9 +19,6 @@ import com.maximshuhman.bsuirschedule.Data.StudentData
 import com.maximshuhman.bsuirschedule.DataBase.DBContract
 import com.maximshuhman.bsuirschedule.DataBase.DbHelper
 import com.maximshuhman.bsuirschedule.DataClasses.Group
-import com.maximshuhman.bsuirschedule.PreferenceHelper.defaultPreference
-import com.maximshuhman.bsuirschedule.PreferenceHelper.openedGroup
-import com.maximshuhman.bsuirschedule.PreferenceHelper.openedType
 import com.maximshuhman.bsuirschedule.R
 import java.util.concurrent.Executors
 
@@ -52,10 +49,22 @@ class FavoritesFragment : Fragment() {
         toolbar = view.findViewById(R.id.toolbar_favorites)
         (activity as AppCompatActivity?)!!.setSupportActionBar(toolbar)
 
-        val prefs = defaultPreference(requireContext())
+        //val prefs = defaultPreference(requireContext())
+        val db = DbHelper(requireContext()).writableDatabase
+        val settings = db.rawQuery(
+            "SELECT ${DBContract.Settings.openedID}, ${DBContract.Settings.openedType} FROM ${DBContract.Settings.TABLE_NAME}",
+            null
+        )
 
-        val opened = prefs.openedGroup
-        val type = prefs.openedType
+        settings.moveToFirst()
+
+        val opened =
+            settings.getInt(settings.getColumnIndexOrThrow(DBContract.Settings.openedID))  //prefs.openedGroup
+        val type =
+            settings.getInt(settings.getColumnIndexOrThrow(DBContract.Settings.openedType))  //prefs.openedType
+        settings.close()
+        //val opened = prefs.openedGroup
+        //val type = prefs.openedType
         if (opened != 0) {
             val navController = findNavController()
 
@@ -64,64 +73,71 @@ class FavoritesFragment : Fragment() {
             val dbHelper = DbHelper(requireContext())
 
             val db = dbHelper.writableDatabase
-            if (type == 0) {
-                val c: Cursor = db.rawQuery(
-                    "SELECT * FROM ${DBContract.Groups.TABLE_NAME} " +
-                            "WHERE ${DBContract.Groups.TABLE_NAME}.${DBContract.Groups.groupID} = $opened ",
+            when (type) {
+                0 -> {
+                    val c: Cursor = db.rawQuery(
+                        "SELECT * FROM ${DBContract.Groups.TABLE_NAME} " +
+                                "WHERE ${DBContract.Groups.TABLE_NAME}.${DBContract.Groups.groupID} = $opened ",
 
-                    null
-                )
+                        null
+                    )
 
-                c.moveToFirst()
-                with(c) {
-                    bundle.putString(
-                        "groupNumber",
-                        getString(getColumnIndexOrThrow(DBContract.Groups.name))
-                    )
-                    bundle.putString(
-                        "specialityAbbrev",
-                        getString(getColumnIndexOrThrow(DBContract.Groups.specialityAbbrev))
-                    )
-                    bundle.putInt("course", getInt(getColumnIndexOrThrow(DBContract.Groups.course)))
-                    bundle.putInt("id", opened)
-                }
-                //navController?.navigate(R.id.action_listOfdataFilterFragment_to_scheduleFragment)
+                    c.moveToFirst()
+                    with(c) {
+                        bundle.putString(
+                            "groupNumber",
+                            getString(getColumnIndexOrThrow(DBContract.Groups.name))
+                        )
+                        bundle.putString(
+                            "specialityAbbrev",
+                            getString(getColumnIndexOrThrow(DBContract.Groups.specialityAbbrev))
+                        )
+                        bundle.putInt(
+                            "course",
+                            getInt(getColumnIndexOrThrow(DBContract.Groups.course))
+                        )
+                        bundle.putInt("id", opened)
+                    }
+                    //navController?.navigate(R.id.action_listOfdataFilterFragment_to_scheduleFragment)
 
-                //val action = ScheduleFragment().action
-                navController.navigate(R.id.scheduleFragment, bundle)
-            } else {
-                val c: Cursor = db.rawQuery(
-                    "SELECT * FROM ${DBContract.Employees.TABLE_NAME} " +
-                            "WHERE ${DBContract.Employees.TABLE_NAME}.${DBContract.Employees.employeeID} = $opened ",
-
-                    null
-                )
-                c.moveToFirst()
-                with(c) {
-                    bundle.putString(
-                        "employeeName",
-                        getString(getColumnIndexOrThrow(DBContract.Employees.urlId))
-                    )
-                    bundle.putString(
-                        "FIO",
-                        "${getString(getColumnIndexOrThrow(DBContract.Employees.lastName))} ${
-                            getString(
-                                getColumnIndexOrThrow(DBContract.Employees.firstName)
-                            )
-                        } ${getString(getColumnIndexOrThrow(DBContract.Employees.middleName))}"
-
-                    )
-                    bundle.putInt(
-                        "id",
-                        getInt(getColumnIndexOrThrow(DBContract.Employees.employeeID))
-                    )
-                    bundle.putString(
-                        "urlId",
-                        getString(getColumnIndexOrThrow(DBContract.Employees.urlId))
-                    )
+                    //val action = ScheduleFragment().action
+                    navController.navigate(R.id.scheduleFragment, bundle)
                 }
 
-                navController.navigate(R.id.employeeSchedule, bundle)
+                1 -> {
+                    val c: Cursor = db.rawQuery(
+                        "SELECT * FROM ${DBContract.Employees.TABLE_NAME} " +
+                                "WHERE ${DBContract.Employees.TABLE_NAME}.${DBContract.Employees.employeeID} = $opened ",
+
+                        null
+                    )
+                    c.moveToFirst()
+                    with(c) {
+                        bundle.putString(
+                            "employeeName",
+                            getString(getColumnIndexOrThrow(DBContract.Employees.urlId))
+                        )
+                        bundle.putString(
+                            "FIO",
+                            "${getString(getColumnIndexOrThrow(DBContract.Employees.lastName))} ${
+                                getString(
+                                    getColumnIndexOrThrow(DBContract.Employees.firstName)
+                                )
+                            } ${getString(getColumnIndexOrThrow(DBContract.Employees.middleName))}"
+
+                        )
+                        bundle.putInt(
+                            "id",
+                            getInt(getColumnIndexOrThrow(DBContract.Employees.employeeID))
+                        )
+                        bundle.putString(
+                            "urlId",
+                            getString(getColumnIndexOrThrow(DBContract.Employees.urlId))
+                        )
+                    }
+
+                    navController.navigate(R.id.employeeSchedule, bundle)
+                }
             }
         }
         updateUI()

@@ -6,6 +6,7 @@ import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.ContentValues
 import android.database.Cursor
+import android.database.sqlite.SQLiteDatabase
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -30,9 +31,6 @@ import com.maximshuhman.bsuirschedule.Data.StudentData
 import com.maximshuhman.bsuirschedule.DataBase.DBContract
 import com.maximshuhman.bsuirschedule.DataBase.DbHelper
 import com.maximshuhman.bsuirschedule.LessonInfDialog
-import com.maximshuhman.bsuirschedule.PreferenceHelper
-import com.maximshuhman.bsuirschedule.PreferenceHelper.openedGroup
-import com.maximshuhman.bsuirschedule.PreferenceHelper.openedType
 import com.maximshuhman.bsuirschedule.R
 import com.maximshuhman.bsuirschedule.RecyclerLinearManager
 import com.maximshuhman.bsuirschedule.widget.ScheduleWidget
@@ -61,9 +59,13 @@ class ScheduleFragment : Fragment() {
 
         activity?.onBackPressedDispatcher?.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                val prefs = PreferenceHelper.defaultPreference(requireContext())
-                prefs.openedGroup = 0
-                prefs.openedType = 0
+                val db = DbHelper(requireContext()).writableDatabase
+                val values = ContentValues().apply {
+                    put(DBContract.Settings.openedID, 0)
+                    put(DBContract.Settings.openedType, 2)
+                }
+
+                db.update(DBContract.Settings.TABLE_NAME, values, null, null)
                 // (requireActivity() as MainActivity).bottomNavigationView.visibility = View.VISIBLE
                 findNavController().popBackStack()
             }
@@ -72,6 +74,8 @@ class ScheduleFragment : Fragment() {
 
     private var dataFilter = StudentData.ScheduleList
     private lateinit var rawData: MutableList<Lesson>
+
+    lateinit var db: SQLiteDatabase
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -89,12 +93,23 @@ class ScheduleFragment : Fragment() {
         floatingButton.hide()
         swipeRefreshLayout.setColorSchemeResources(R.color.BSUIR_blue)
 
-        val prefs = PreferenceHelper.defaultPreference(requireContext())
+        //  val prefs = PreferenceHelper.defaultPreference(requireContext())
+
+        val dbHelper = DbHelper(requireContext())
+        db = dbHelper.writableDatabase
 
         if (arguments?.getInt("id") != null) {
             StudentData.curGroupID = arguments?.getInt("id")
-            prefs.openedGroup = arguments?.getInt("id")!!
-            prefs.openedType = 0
+            val values = ContentValues().apply {
+                put(DBContract.Settings.openedID, arguments?.getInt("id"))
+                put(DBContract.Settings.openedType, 0)
+                put(DBContract.Settings.widgetID, arguments?.getInt("id"))
+                put(DBContract.Settings.widgetOpened, 0)
+            }
+
+            db.update(DBContract.Settings.TABLE_NAME, values, null, null)
+            //  prefs.openedGroup = arguments?.getInt("id")!!
+            //prefs.openedType = 0
         } else
             StudentData.curGroupID = null
 
@@ -105,23 +120,13 @@ class ScheduleFragment : Fragment() {
             StudentData.curGroupCourse = arguments?.getInt("course")
         else
             StudentData.curGroupCourse = 0
-        /*
-                val intent = Intent(requireContext(), ScheduleWidget::class.java)
-                intent.action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
-        // Use an array and EXTRA_APPWIDGET_IDS instead of AppWidgetManager.EXTRA_APPWIDGET_ID,
-        // since it seems the onUpdate() is only fired on that:
-                // Use an array and EXTRA_APPWIDGET_IDS instead of AppWidgetManager.EXTRA_APPWIDGET_ID,
-        // since it seems the onUpdate() is only fired on that:
-                val ids: IntArray = AppWidgetManager.getInstance(requireContext())
-                    .getAppWidgetIds(ComponentName(requireContext(), ScheduleWidget::class.java))
-                intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
-                sendBroadcast(intent)*/
+
+
         val appWidgetIds: IntArray = AppWidgetManager.getInstance(requireContext())
             .getAppWidgetIds(ComponentName(requireContext(), ScheduleWidget::class.java))
         appWidgetIds.forEach { appWidgetId ->
             val appWidgetManager = AppWidgetManager.getInstance(context)
-            val dbHelper = DbHelper(requireContext())
-            val db = dbHelper.writableDatabase
+
             val views = RemoteViews(requireContext().packageName, R.layout.schedule_widget)
             val c = db.rawQuery(
                 "SELECT COUNT(*) as cnt FROM " +
@@ -150,9 +155,6 @@ class ScheduleFragment : Fragment() {
         toolBar.title = "Группа ${StudentData.curGroupName} " //+
         // "${Data.curGroupCourse} курс"
 
-
-        val dbHelper = DbHelper(requireContext())
-        val db = dbHelper.writableDatabase
 
         val exist = db.rawQuery(
             "SELECT COUNT(*) as cnt FROM ${DBContract.CommonSchedule.TABLE_NAME} WHERE ${DBContract.CommonSchedule.commonScheduleID} = ${StudentData.curGroupID}",
@@ -273,8 +275,14 @@ class ScheduleFragment : Fragment() {
 
         toolBar.setNavigationIcon(R.drawable.ic_baseline_arrow_back_24)
         toolBar.setNavigationOnClickListener {
-            prefs.openedGroup = 0
-            prefs.openedType = 0
+            val values = ContentValues().apply {
+                put(DBContract.Settings.openedID, 0)
+                put(DBContract.Settings.openedType, 2)
+            }
+
+            db.update(DBContract.Settings.TABLE_NAME, values, null, null)
+            //prefs.openedGroup = 0
+            // prefs.openedType = 0
             //(requireActivity() as MainActivity).bottomNavigationView.visibility = View.VISIBLE
             findNavController().popBackStack()
         }
@@ -411,9 +419,6 @@ class ScheduleFragment : Fragment() {
         inflater.inflate(R.menu.group_schedule_menu, menu)
 
         val favIndicator: MenuItem = menu.findItem(R.id.favorites)
-
-        val dbHelper = DbHelper(requireContext())
-        val db = dbHelper.writableDatabase
 
         var exams = db.rawQuery(
             "SELECT COUNT(*) as cnt FROM ${DBContract.Exams.TABLE_NAME} WHERE ${DBContract.Exams.TABLE_NAME}.${DBContract.Schedule.groupID} = ${StudentData.curGroupID}",
@@ -557,7 +562,6 @@ class ScheduleFragment : Fragment() {
 
             R.id.subgroup -> {
 
-                val db = DbHelper(requireContext()).writableDatabase
 
                 val exist =
                     db.rawQuery(
@@ -676,8 +680,6 @@ class ScheduleFragment : Fragment() {
                 progressBar.visibility = View.INVISIBLE
                 swipeRefreshLayout.isRefreshing = false
 
-                val db = DbHelper(requireContext()).writableDatabase
-
 
                 var exist: Cursor =
                     db.rawQuery(
@@ -736,6 +738,7 @@ class ScheduleFragment : Fragment() {
         dataFilter.clear()
         executors.shutdown()
 
+            //  db.close()
     }
 
 

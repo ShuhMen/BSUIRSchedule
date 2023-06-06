@@ -15,7 +15,7 @@ class DbHelper(context: Context) :
     SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
     private val SQL_CREATE_GROUPS =
-        "CREATE TABLE ${DBContract.Groups.TABLE_NAME} (" +
+        "CREATE TABLE IF NOT EXISTS ${DBContract.Groups.TABLE_NAME} (" +
                 "${DBContract.Groups.groupID} INTEGER PRIMARY KEY," +
                 "${DBContract.Groups.course} TEXT," +
                 "${DBContract.Groups.specialityAbbrev} TEXT," +
@@ -24,7 +24,7 @@ class DbHelper(context: Context) :
                 "${DBContract.Groups.name} TEXT ) "
 
     private val SQL_CREATE_COMMONSCHEDULE =
-        "CREATE TABLE ${DBContract.CommonSchedule.TABLE_NAME} (" +
+        "CREATE TABLE IF NOT EXISTS ${DBContract.CommonSchedule.TABLE_NAME} (" +
                 "${DBContract.CommonSchedule.commonScheduleID} INTEGER PRIMARY KEY," +
                 "${DBContract.CommonSchedule.startExamsDate} TEXT," +
                 "${DBContract.CommonSchedule.endExamsDate} TEXT," +
@@ -35,7 +35,7 @@ class DbHelper(context: Context) :
                 "FOREIGN KEY (${DBContract.CommonSchedule.commonScheduleID}) REFERENCES ${DBContract.Groups.TABLE_NAME}(${DBContract.Groups.groupID}));"
 
     private val SQL_CREATE_SCHEDULE =
-        "CREATE TABLE ${DBContract.Schedule.TABLE_NAME} (" +
+        "CREATE TABLE IF NOT EXISTS ${DBContract.Schedule.TABLE_NAME} (" +
                 "${DBContract.Schedule.scheduleID} INTEGER PRIMARY KEY," +
                 "${DBContract.Schedule.inScheduleID} INTEGER," +
                 "${DBContract.Schedule.day_of_week} INTEGER," +
@@ -78,7 +78,7 @@ class DbHelper(context: Context) :
     // "FOREIGN KEY (${DBContract.finalSchedule.employeeID}) REFERENCES ${DBContract.Employees.TABLE_NAME}(${DBContract.Employees.employeeID}))"
 
     private val SQL_CREATE_EMPlOYEES =
-        "CREATE TABLE ${DBContract.Employees.TABLE_NAME} (" +
+        "CREATE TABLE IF NOT EXISTS ${DBContract.Employees.TABLE_NAME} (" +
                 "${DBContract.Employees.employeeID} INTEGER PRIMARY KEY," +
                 "${DBContract.Employees.firstName} TEXT," +
                 "${DBContract.Employees.middleName} TEXT," +
@@ -94,7 +94,7 @@ class DbHelper(context: Context) :
 
 
     private val SQL_CREATE_FAVORITES =
-        "CREATE TABLE ${DBContract.Favorites.TABLE_NAME} (" +
+        "CREATE TABLE IF NOT EXISTS ${DBContract.Favorites.TABLE_NAME} (" +
                 "${DBContract.Favorites.groupID} INTEGER PRIMARY KEY," +
                 "${DBContract.Favorites.type} INTEGER ," +
                 "FOREIGN KEY (${DBContract.Favorites.groupID}) REFERENCES ${DBContract.Groups.TABLE_NAME}(${DBContract.Groups.groupID}))"
@@ -236,13 +236,15 @@ class DbHelper(context: Context) :
         "CREATE TABLE IF NOT EXISTS ${DBContract.Settings.TABLE_NAME} (" +
                 "${DBContract.Settings.openedType} INTEGER," +
                 "${DBContract.Settings.openedID} INTEGER, " +
-                "${DBContract.Settings.lastWeekUpdate} INTEGER, " +
-                "${DBContract.Settings.week} INTEGER )"
+                "${DBContract.Settings.lastWeekUpdate} TEXT, " +
+                "${DBContract.Settings.week} INTEGER, " +
+                "${DBContract.Settings.widgetID} INTEGER," +
+                "${DBContract.Settings.widgetOpened} INTEGER )"
 
-                override fun onCreate(p0: SQLiteDatabase?) {
+    override fun onCreate(p0: SQLiteDatabase?) {
         Log.v("DBDD", "p0 override fun onCreate(db: SQLiteDatabase?) {")
-        with(p0!!){
-            try{
+        with(p0!!) {
+            try {
                 /*val a1  = */execSQL(SQL_CREATE_GROUPS)
                 /*val a2  = */execSQL(SQL_CREATE_COMMONSCHEDULE)
                 /*val a3  = */execSQL(SQL_CREATE_SCHEDULE)
@@ -259,18 +261,24 @@ class DbHelper(context: Context) :
                 /*val a14 = */execSQL(SQL_CREATE_EMPLOYEETOEXAM)
                 /*val a15 = */execSQL(SQL_CREATE_SUBGROUPSETTINGS)
                 /*val a16 = */execSQL(SQL_CREATE_SETTINGS)
+
+
             } catch (e: Exception) {
                 Log.v("DBDD", "SQL_ONCREATE_ERROR")
             }
+            val values = ContentValues().apply {
+                put(DBContract.Settings.week, 0)
+            }
+            insert(DBContract.Settings.TABLE_NAME, "week", values)
         }
     }
 
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-     /*   Log.v(
-            "DBDD",
-            "override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {"
-        )*/
+        /*   Log.v(
+               "DBDD",
+               "override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {"
+           )*/
 
         if (oldVersion < 3)
             db.execSQL("ALTER TABLE ${DBContract.Employees.TABLE_NAME} ADD COLUMN ${DBContract.Employees.photo} BLOB")
@@ -466,8 +474,69 @@ class DbHelper(context: Context) :
             ).close()
         }
 
-        if(oldVersion < 13){
+        if (oldVersion < 13) {
             val a1 = db.execSQL(SQL_CREATE_SUBGROUPSETTINGS)
+
+            val c: Cursor = db.rawQuery(
+                "SELECT ${DBContract.CommonSchedule.commonScheduleID} " +
+                        "FROM ${DBContract.CommonSchedule.TABLE_NAME}", null
+            )
+
+            with(c) {
+                while (moveToNext()) {
+                    val group =
+                        getInt(getColumnIndexOrThrow(DBContract.CommonSchedule.commonScheduleID))
+
+
+                    val values = ContentValues().apply {
+                        put(DBContract.SubgroupSettings.groupID, group)
+                        put(DBContract.SubgroupSettings.subGroup, 0)
+                    }
+
+                    val newRowId = db.insert(DBContract.SubgroupSettings.TABLE_NAME, null, values)
+
+                }
+            }
+
+            c.close()
+        }
+
+        if (oldVersion < 14) {
+            db.execSQL(SQL_CREATE_SETTINGS)
+
+            val values = ContentValues().apply {
+                put(DBContract.Settings.openedID, 0)
+            }
+            db.insert(DBContract.Settings.TABLE_NAME, null, values)
+        }
+
+        if (oldVersion < 15) {
+            db.execSQL("ALTER TABLE ${DBContract.Settings.TABLE_NAME} ADD COLUMN ${DBContract.Settings.widgetID} INTEGER ")
+            db.execSQL("ALTER TABLE ${DBContract.Settings.TABLE_NAME} ADD COLUMN ${DBContract.Settings.widgetOpened} INTEGER ")
+            val values = ContentValues().apply {
+                put(DBContract.Settings.widgetID, 0)
+                put(DBContract.Settings.widgetOpened, 0)
+            }
+            db.update(DBContract.Settings.TABLE_NAME, values, null, null)
+        }
+
+        /*if(oldVersion < 16){
+
+            val a1 = db.execSQL("DROP TABLE IF EXISTS ${DBContract.SubgroupSettings.TABLE_NAME}")
+            val a2 = db.execSQL("DROP TABLE IF EXISTS ${DBContract.Settings.TABLE_NAME}")
+
+            db.execSQL(SQL_CREATE_SUBGROUPSETTINGS)
+            db.execSQL(SQL_CREATE_SETTINGS)
+
+            val values = ContentValues().apply{
+                put(DBContract.Settings.widgetID, 0)
+                put(DBContract.Settings.widgetOpened, 0)
+                put(DBContract.Settings.openedID, 0)
+                put(DBContract.Settings.openedType, 0)
+
+            }
+
+            db.insert(DBContract.Settings.TABLE_NAME,"week" , values)
 
             val c: Cursor = db.rawQuery(
                 "SELECT ${DBContract.CommonSchedule.commonScheduleID} " +
@@ -490,8 +559,7 @@ class DbHelper(context: Context) :
             }
 
             c.close()
-        }
-
+        }*/
 
     }
 
@@ -501,7 +569,7 @@ class DbHelper(context: Context) :
 
     companion object {
         // If you change the database schema, you must increment the database version.
-        const val DATABASE_VERSION = 13
+        const val DATABASE_VERSION = 15
         const val DATABASE_NAME = "Schedule"
     }
 }

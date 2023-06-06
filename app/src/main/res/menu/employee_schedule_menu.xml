@@ -6,15 +6,13 @@
         android:checkable="true"
         android:icon="@drawable/favorite_selector"
         android:title="Избранное"
-        app:showAsAction="ifRoom|collapseActionView"
-        />
+        app:showAsAction="ifRoom|collapseActionView" />
 
     <item
         android:id="@+id/exams"
         android:checkable="true"
         android:icon="@drawable/exams"
         android:title="Экзамены"
-        app:showAsAction="ifRoom|collapseActionView"
         android:visible="false"
-        />
+        app:showAsAction="ifRoom|collapseActionView" />
 </menu>

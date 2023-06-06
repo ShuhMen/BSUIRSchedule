@@ -21,6 +21,7 @@ import org.json.JSONObject
 import java.io.ByteArrayOutputStream
 import java.text.ParseException
 import java.text.SimpleDateFormat
+import java.time.temporal.ChronoUnit
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
@@ -236,7 +237,7 @@ object StudentData {
                 put(DBContract.PairToEmployers.groupID, groupID)
             }
 
-            val a1 = db.insert(DBContract.PairToEmployers.TABLE_NAME, null, connect)
+            db.insert(DBContract.PairToEmployers.TABLE_NAME, null, connect)
 
         }
 
@@ -255,7 +256,7 @@ object StudentData {
 
 
         for (i in 0 until json.length()) {
-            val newRowId = db.insert(
+            db.insert(
                 DBContract.Exams.TABLE_NAME,
                 null,
                 addExamToList(json.getJSONObject(i), grID, db)
@@ -503,10 +504,10 @@ object StudentData {
             override fun compare(a: Exam, b: Exam): Int {
                 val formatter =
                     SimpleDateFormat("dd.MM.yyyy", Locale.getDefault(Locale.Category.FORMAT))
-                if (formatter.parse(a.dateLesson!!)!!.after(formatter.parse(b.dateLesson!!)))
-                    return 0
+                return if (formatter.parse(a.dateLesson!!)!!.after(formatter.parse(b.dateLesson!!)))
+                    1
                 else
-                    return 1
+                    -1
             }
         }
     }
@@ -686,19 +687,61 @@ object StudentData {
     fun fillScheduleList(calendar: Calendar, formatter: SimpleDateFormat, context: Context) {
         var week: Int
 
+
         var ind: Int
+        val db = DbHelper(context).writableDatabase
+
+        val settings = db.rawQuery(
+            "SELECT ${DBContract.Settings.week}, ${DBContract.Settings.lastWeekUpdate} FROM ${DBContract.Settings.TABLE_NAME}",
+            null
+        )
+
+        settings.moveToFirst()
+        val previous =
+            settings.getString(settings.getColumnIndexOrThrow(DBContract.Settings.lastWeekUpdate)) //prefs.openedGroup
+        // val type = settings.getInt(settings.getColumnIndexOrThrow(DBContract.Settings.openedID))  //prefs.openedType
+
         week = Requests.getCurrent().res
 
+        if (week == 0) {
+            if (previous != "") {
+                week = settings.getInt(settings.getColumnIndexOrThrow(DBContract.Settings.week))
 
-        var day: Int = calendar.get(Calendar.DAY_OF_WEEK)
+                val prevday = formatter.parse(previous)!!.day
+
+
+                val diff = ChronoUnit.DAYS.between(
+                    formatter.parse(previous)!!.toInstant(),
+                    formatter.parse(formatter.format(calendar.time))!!.toInstant()
+                )
+
+                week = ((week + (prevday + diff) / 7) % 4).toInt()
+
+                if (week == 0)
+                    week = 1
+            } else
+                week = Requests.getCurrent().res
+        }
+
+        val values = ContentValues().apply {
+            put(DBContract.Settings.week, week)
+            put(DBContract.Settings.lastWeekUpdate, formatter.format(calendar.time))
+        }
+
+        db.update(DBContract.Settings.TABLE_NAME, values, null, null)
+
+        settings.close()
+
+        val day: Int = calendar.get(Calendar.DAY_OF_WEEK)
+
 
         //val startLessonsDate = formatter.parse(commonSchedule.startDate)
+
         val endLessonsDate = formatter.parse(commonSchedule.endDate)
 
-        var curday: Int
         var weeks = 0
 
-        curday = if (day == 1) 7 else day - 1
+        var curday = if (day == 1) 7 else day - 1
 
         ind = listOfPairs.indexOf(listOfPairs.firstOrNull {
             (it.day_of_week == curday && it.weekNumber.contains(week.toString()))
@@ -747,6 +790,7 @@ object StudentData {
 
         val system = context
         l.day_of_week = 9
+        //l.numSubgroup = 0
         l.note = "${
             when (calendar.get(Calendar.DAY_OF_WEEK)) {
                 2 -> system.getString(R.string.monday)
@@ -811,23 +855,23 @@ object StudentData {
                             "can't parse date" + ScheduleList[k].subject + " " + ScheduleList[k].weekNumber + " " + ScheduleList[k].day_of_week
                         )
                     } catch (e: java.lang.IndexOutOfBoundsException) {
-
+                        Log.d("STUDENTDATA", "fillScheduleList ${e.message}")
                     }
 
                     k--
                 }
 
-                if(i <= ScheduleList.size)
-                if (delta < 0)
-                    calendar.add(
-                        Calendar.DATE,
-                        delta + 7
-                    )
-                else
-                    calendar.add(
-                        Calendar.DATE,
-                        delta
-                    )
+                if (i <= ScheduleList.size)
+                    if (delta < 0)
+                        calendar.add(
+                            Calendar.DATE,
+                            delta + 7
+                        )
+                    else
+                        calendar.add(
+                            Calendar.DATE,
+                            delta
+                        )
 
 
                 curent = formatter.parse(formatter.format(calendar.time))
@@ -839,6 +883,7 @@ object StudentData {
 
                 val les: Lesson = ScheduleList[0].copy()
                 les.day_of_week = 9
+               // les.numSubgroup = 0
                 les.note = "${
                     when (ScheduleList[i].day_of_week) {
                         1 -> system.getString(R.string.monday)
@@ -873,7 +918,7 @@ object StudentData {
             i++
         }
 
-        var k: Int = i - 1
+
         if (delta < 0)
             calendar.add(
                 Calendar.DATE,
@@ -884,47 +929,14 @@ object StudentData {
                 Calendar.DATE,
                 -delta
             )
-        val curent = formatter.parse(formatter.format(calendar.time))
-        while (ScheduleList[k].day_of_week != 9) {
-
-            try {
-                val start = formatter.parse(ScheduleList[k].startLessonDate.toString())
-                val end = formatter.parse(ScheduleList[k].endLessonDate.toString())
-
-                if (start != null && curent != null) {
-                    if ((curent.after(end) || start.after(curent))) {
-                        ScheduleList.removeAt(k)
-                    }
-                }
-
-            } catch (e: ParseException) {
-                Log.v(
-                    "DateParce",
-                    "can't parse date" + ScheduleList[k].subject + " " + ScheduleList[k].weekNumber + " " + ScheduleList[k].day_of_week
-                )
-            } catch (e: java.lang.IndexOutOfBoundsException) {
-
-            }
-
-            k--
-        }
-
-        i = ScheduleList.size - 1
-
-        while (i > 1) {
-            if (ScheduleList[i - 1].day_of_week == 9 && ScheduleList[i].day_of_week == 9)
-                ScheduleList.removeAt(i - 1)
-            i--
-        }
-
 
 
         if (ScheduleList[ScheduleList.size - 1].day_of_week == 9)
             ScheduleList.removeAt(ScheduleList.size - 1)
 
-        if (ScheduleList[0].day_of_week == ScheduleList[1].day_of_week)
-            ScheduleList.removeAt(0)
-
+        /* if (ScheduleList[0].day_of_week == ScheduleList[1].day_of_week)
+             ScheduleList.removeAt(0)
+ */
 
     }
 
@@ -1018,8 +1030,7 @@ object StudentData {
                 )
 
                 with(c) {
-                    moveToFirst()
-                    do {
+                    while (moveToNext()) {
 
                         val inScheduleIDLocal =
                             getInt(getColumnIndexOrThrow(DBContract.Schedule.inScheduleID))
@@ -1096,14 +1107,14 @@ object StudentData {
                         )
 
 
-                    } while (moveToNext())
+                    }
                 }
                 c.close()
 
                 return if (ScheduleList.size != 0) {
                     0
                 } else
-                    1
+                    4
 
             }
         } else {
@@ -1145,12 +1156,13 @@ object StudentData {
             ScheduleList.clear()
             listOfPairs.clear()
             val c: Cursor = db.rawQuery(
-                "SELECT COUNT(*) as cnt FROM ${DBContract.Schedule.TABLE_NAME} WHERE ${DBContract.Schedule.TABLE_NAME}.${DBContract.Schedule.groupID} = $groupID",
+                "SELECT COUNT(*) as cnt FROM ${DBContract.Schedule.TABLE_NAME} " +
+                        "WHERE ${DBContract.Schedule.TABLE_NAME}.${DBContract.Schedule.groupID} = $groupID",
                 null
             )
             c.moveToFirst()
 
-            var response = JSONResponse(0, "", JSONObject())
+            val response: JSONResponse
 
             if (c.getInt(0) == 0 || mode == 1) {
 
@@ -1158,11 +1170,26 @@ object StudentData {
                 if (response.errorCode == 0) {
                     c.close()
 
-                    db.execSQL("DELETE FROM ${DBContract.Schedule.TABLE_NAME} WHERE ${DBContract.Schedule.TABLE_NAME}.${DBContract.Schedule.groupID} = $groupID")
-                    db.execSQL("DELETE FROM ${DBContract.finalSchedule.TABLE_NAME} WHERE ${DBContract.finalSchedule.TABLE_NAME}.${DBContract.finalSchedule.groupID} = $groupID")
-                    db.execSQL("DELETE FROM ${DBContract.Exams.TABLE_NAME} WHERE ${DBContract.Exams.TABLE_NAME}.${DBContract.Schedule.groupID} = $groupID")
-                    db.execSQL("DELETE FROM ${DBContract.PairToEmployers.TABLE_NAME} WHERE ${DBContract.PairToEmployers.TABLE_NAME}.${DBContract.PairToEmployers.groupID} = $groupID")
-                    db.execSQL("DELETE FROM ${DBContract.CommonSchedule.TABLE_NAME} WHERE ${DBContract.CommonSchedule.TABLE_NAME}.${DBContract.CommonSchedule.commonScheduleID} = $groupID")
+                    db.execSQL(
+                        "DELETE FROM ${DBContract.Schedule.TABLE_NAME} " +
+                                "WHERE ${DBContract.Schedule.TABLE_NAME}.${DBContract.Schedule.groupID} = $groupID"
+                    )
+                    db.execSQL(
+                        "DELETE FROM ${DBContract.finalSchedule.TABLE_NAME} " +
+                                "WHERE ${DBContract.finalSchedule.TABLE_NAME}.${DBContract.finalSchedule.groupID} = $groupID"
+                    )
+                    db.execSQL(
+                        "DELETE FROM ${DBContract.Exams.TABLE_NAME} " +
+                                "WHERE ${DBContract.Exams.TABLE_NAME}.${DBContract.Schedule.groupID} = $groupID"
+                    )
+                    db.execSQL(
+                        "DELETE FROM ${DBContract.PairToEmployers.TABLE_NAME} " +
+                                "WHERE ${DBContract.PairToEmployers.TABLE_NAME}.${DBContract.PairToEmployers.groupID} = $groupID"
+                    )
+                    db.execSQL(
+                        "DELETE FROM ${DBContract.CommonSchedule.TABLE_NAME} " +
+                                "WHERE ${DBContract.CommonSchedule.TABLE_NAME}.${DBContract.CommonSchedule.commonScheduleID} = $groupID"
+                    )
 
                     var err = 0
 
@@ -1172,52 +1199,54 @@ object StudentData {
                     if (fillExamsTable(response.obj, context) != 0)
                         err = 5
 
+
                     if (err != 0)
                         return err
+                }
+                if (fillListOfPairs(db, groupID) == 1)
+                    return 1
 
-                    if (fillListOfPairs(db, groupID) == 1)
-                        return 1
+                if (listOfPairs.size == 0)
+                    return 4
 
-                    fillScheduleList(calendar, formatter, context)
+                fillScheduleList(calendar, formatter, context)
 
-                    finalBuild(db, groupID)
+                finalBuild(db, groupID)
 
-                    calendar = Calendar.getInstance()
+                calendar = Calendar.getInstance()
 
-                    val values = ContentValues().apply {
-                        put(DBContract.CommonSchedule.lastBuild, formatter.format(calendar.time))
-                    }
+                val values = ContentValues().apply {
+                    put(DBContract.CommonSchedule.lastBuild, formatter.format(calendar.time))
+                }
 
-                    db.update(
-                        DBContract.CommonSchedule.TABLE_NAME,
-                        values,
-                        "${DBContract.CommonSchedule.commonScheduleID} = $groupID",
-                        null
-                    )
+                db.update(
+                    DBContract.CommonSchedule.TABLE_NAME,
+                    values,
+                    "${DBContract.CommonSchedule.commonScheduleID} = $groupID",
+                    null
+                )
 
-                } else
-                    if (c.getInt(0) != 0) {
-                        c.close()
-                        if (loadFromFinal(groupID, formatter, curent, db, context) == 1)
-                            return 1
-                    } else
-                        return 1
+
             } else {
                 c.close()
                 if (loadFromFinal(groupID, formatter, curent, db, context) == 1)
                     return 1
+
+
             }
 
 
 
 
-            if (ScheduleList.size == 1)
+            if (ScheduleList.size == 0) {
+                Log.d("DATA", "Empty schedule list")
                 return 4
+            }
 
-            return if (response.errorCode != 0)
-                response.errorCode
-            else 0
+            return 0
         } catch (e: Exception) {
+            Log.d("DATA", "Something wrong ${e.message}")
+
             return 6
         }
     }
@@ -1338,8 +1367,7 @@ object StudentData {
             gr.type = 1
             GroupsList.add(gr)
 
-        } catch (e: Exception) {
-            "Ошибка"
+        } catch (_: Exception) {
         }
 
 
@@ -1384,7 +1412,7 @@ object StudentData {
 
             }
 
-            val newRowId = db.insert(DBContract.Favorites.TABLE_NAME, null, values)
+            db.insert(DBContract.Favorites.TABLE_NAME, null, values)
 
         }
     }
@@ -1480,8 +1508,7 @@ object StudentData {
                 gr.type = 1
                 FavoritesList.add(Pair(gr, null))
 
-            } catch (e: Exception) {
-                "Ошибка"
+            } catch (_: Exception) {
             }
 
 
@@ -1558,7 +1585,7 @@ object StudentData {
                     "WHERE ${DBContract.SubgroupSettings.groupID} = $grID"
         )
 
-        row
+        return row
     }
 
 }

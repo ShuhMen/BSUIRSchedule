@@ -1,6 +1,7 @@
 package com.maximshuhman.bsuirschedule.Data
 
 import Employees
+import android.util.Log
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonParser
 import com.maximshuhman.bsuirschedule.DataClasses.Group
@@ -163,7 +164,11 @@ object Requests {
                     response = service.getGroupsList()
                 }
             } catch (e: Exception) {
-                return JSONArrayResponse(-1, "REQUEST ERROR", JSONArray(emptyArray<Group>()))
+                e.stackTrace.forEach {
+                    Log.d("STACKTRACE", it.methodName)
+                }
+                Log.d("REQUESTS", "Error getGroups ${e.message} ${e.stackTrace}")
+                return JSONArrayResponse(-4, e.message.toString(), JSONArray(emptyArray<Group>()))
             }
         } catch (e: NullPointerException) {
             return JSONArrayResponse(-2, "WRONG ADDRESS TYPE", JSONArray(emptyArray<Group>()))
@@ -203,7 +208,7 @@ object Requests {
                         val json = JSONObject(jsonString)
 
                         return JSONArrayResponse(
-                            -1,
+                            -5,
                             "REQUEST ERROR",
                             JSONArray(emptyArray<Group>())
                         )
@@ -223,7 +228,7 @@ object Requests {
                     JSONArray(emptyArray<Group>())
                 )
 
-                else -> JSONArrayResponse(-1, "REQUEST ERROR", JSONArray(emptyArray<Group>()))
+                else -> JSONArrayResponse(-6, "REQUEST ERROR", JSONArray(emptyArray<Group>()))
             }
         }
 

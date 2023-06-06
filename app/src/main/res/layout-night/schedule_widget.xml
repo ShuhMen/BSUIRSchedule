@@ -1,4 +1,4 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/widget_background"
@@ -7,8 +7,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
         android:background="@drawable/widget_background"
+        android:orientation="vertical"
         android:theme="@style/WidgetTheme">
 
         <TextView
@@ -20,7 +20,7 @@
             android:paddingTop="5dp"
             android:paddingEnd="10dp"
             android:paddingBottom="5dp"
-            android:text="TextView"
+            android:text="@string/widget_choose_schedule"
             android:textColor="#F8F8F8"
             android:textSize="20sp" />
 
@@ -34,8 +34,15 @@
 
     <TextView
         android:id="@+id/empty_view"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="TextView" />
+        android:layout_alignParentTop="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginTop="0dp"
+        android:layout_marginBottom="0dp"
+        android:gravity="center"
+        android:text="@string/schedule_doesnt_exist"
+        android:textAlignment="center"
+        android:textSize="20sp" />
 
-</FrameLayout>
+</RelativeLayout>

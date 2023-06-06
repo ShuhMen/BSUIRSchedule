@@ -1,6 +1,8 @@
 package com.maximshuhman.bsuirschedule.Views
 
 import android.annotation.SuppressLint
+import android.appwidget.AppWidgetManager
+import android.content.ComponentName
 import android.content.ContentValues
 import android.database.Cursor
 import android.os.Bundle
@@ -10,6 +12,7 @@ import android.util.Log
 import android.view.*
 import android.widget.ImageView
 import android.widget.ProgressBar
+import android.widget.RemoteViews
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
@@ -30,8 +33,7 @@ import com.maximshuhman.bsuirschedule.Data.Requests
 import com.maximshuhman.bsuirschedule.DataBase.DBContract
 import com.maximshuhman.bsuirschedule.DataBase.DbHelper
 import com.maximshuhman.bsuirschedule.DataClasses.EmployeeLesson
-import com.maximshuhman.bsuirschedule.PreferenceHelper.openedGroup
-import com.maximshuhman.bsuirschedule.PreferenceHelper.openedType
+import com.maximshuhman.bsuirschedule.widget.ScheduleWidget
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.ExecutorService
@@ -53,9 +55,16 @@ class EmployeeSchedule : Fragment() {
 
         activity?.onBackPressedDispatcher?.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                val prefs = PreferenceHelper.defaultPreference(requireContext())
-                prefs.openedGroup = 0
-                prefs.openedType = 1
+                //  val prefs = PreferenceHelper.defaultPreference(requireContext())
+                //prefs.openedGroup = 0
+                // prefs.openedType = 1
+                val db = DbHelper(requireContext()).writableDatabase
+                val values = ContentValues().apply {
+                    put(DBContract.Settings.openedID, 0)
+                    put(DBContract.Settings.openedType, 2)
+                }
+
+                db.update(DBContract.Settings.TABLE_NAME, values, null, null)
                 // (requireActivity() as MainActivity).bottomNavigationView.visibility = View.VISIBLE
                 findNavController().popBackStack()
             }
@@ -79,12 +88,20 @@ class EmployeeSchedule : Fragment() {
         floatingButton.hide()
         swipeRefreshLayout.setColorSchemeResources(R.color.BSUIR_blue)
 
-        val prefs = PreferenceHelper.defaultPreference(requireContext())
+        // val prefs = PreferenceHelper.defaultPreference(requireContext())
+
+        val db = DbHelper(requireContext()).writableDatabase
 
         if (arguments?.getInt("id") != null) {
             EmployeeData.curEmployeeID = arguments?.getInt("id")
-            prefs.openedGroup = arguments?.getInt("id")!!
-            prefs.openedType = 1
+            val values = ContentValues().apply {
+                put(DBContract.Settings.openedID, arguments?.getInt("id"))
+                put(DBContract.Settings.openedType, 1)
+                put(DBContract.Settings.widgetID, arguments?.getInt("id"))
+                put(DBContract.Settings.widgetOpened, 1)
+            }
+
+            db.update(DBContract.Settings.TABLE_NAME, values, null, null)
         } else
             EmployeeData.curEmployeeID = null
 
@@ -104,19 +121,46 @@ class EmployeeSchedule : Fragment() {
             //prefs.openedGroup = arguments?.getInt("id")!!
         } else
             EmployeeData.curEmployeeUrlId = ""
-        //curGroupName = arguments?.getString("groupNumber").toString()
-        //curGroupSpeciality = arguments?.getString("specialityAbbrev").toString()
 
-        /*if (arguments?.getInt("id") != null)
-            curGroupCourse = arguments?.getInt("course")
-        else
-            curGroupCourse = 0
-*/
+        val appWidgetIds: IntArray = AppWidgetManager.getInstance(requireContext())
+            .getAppWidgetIds(ComponentName(requireContext(), ScheduleWidget::class.java))
+        appWidgetIds.forEach { appWidgetId ->
+            val appWidgetManager = AppWidgetManager.getInstance(context)
+
+            val views = RemoteViews(requireContext().packageName, R.layout.schedule_widget)
+            val c = db.rawQuery(
+                "SELECT COUNT(*) as cnt FROM " +
+                        "${DBContract.Employees.TABLE_NAME} WHERE ${DBContract.Employees.employeeID} = ${EmployeeData.curEmployeeID}",
+                null
+            )
+            c.moveToFirst()
+            if (c.getInt(0) != 0) {
+                c.close()
+                val cursor = db.rawQuery(
+                    "SELECT * FROM " +
+                            "${DBContract.Employees.TABLE_NAME} WHERE ${DBContract.Employees.employeeID} = ${EmployeeData.curEmployeeID}",
+                    null
+                )
+
+                cursor.moveToFirst()
+
+                val firstName =
+                    cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Employees.firstName))
+                val lastName =
+                    cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Employees.lastName))
+                val middleName =
+                    cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Employees.middleName))
+
+
+                views.setTextViewText(R.id.name_text, "$lastName $firstName $middleName")
+            }
+            appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetId, R.id.list_view)
+
+            appWidgetManager.updateAppWidget(appWidgetIds, views)
+        }
+
         ToolBar.title = fio
 
-
-        val dbHelper = DbHelper(requireContext())
-        val db = dbHelper.writableDatabase
 
         val exist = db.rawQuery(
             "SELECT COUNT(*) as cnt FROM ${DBContract.CommonEmployee.TABLE_NAME} WHERE ${DBContract.CommonEmployee.commonEmployeeID} = ${EmployeeData.curEmployeeID}",
@@ -228,8 +272,15 @@ class EmployeeSchedule : Fragment() {
 
         ToolBar.setNavigationIcon(R.drawable.ic_baseline_arrow_back_24)
         ToolBar.setNavigationOnClickListener {
-            prefs.openedGroup = 0
-            prefs.openedType = 1
+
+            val values = ContentValues().apply {
+                put(DBContract.Settings.openedID, 0)
+                put(DBContract.Settings.openedType, 2)
+            }
+
+            db.update(DBContract.Settings.TABLE_NAME, values, null, null)
+            //prefs.openedGroup = 0
+            // prefs.openedType = 1
             //(requireActivity() as MainActivity).bottomNavigationView.visibility = View.VISIBLE
             findNavController().popBackStack()
         }
