@@ -43,7 +43,7 @@ object StudentData {
     var curGroupName: String = ""
     var curGroupSpeciality: String = ""
     var curGroupCourse: Int? = 0
-    private lateinit var commonSchedule: CommonSchedule
+    lateinit var commonSchedule: CommonSchedule
     private var inScheduleID = 0
 
 

@@ -471,160 +471,182 @@ class ListWidgetService : RemoteViewsService() {
 
             widgetItems.clear()
             var commonSchedule: CommonSchedule
-            val common: Cursor = db.rawQuery(
-                "SELECT * FROM ${DBContract.CommonSchedule.TABLE_NAME} " +
+
+
+            val exist = db.rawQuery(
+                "SELECT COUNT(*) as cnt FROM ${DBContract.CommonSchedule.TABLE_NAME} " +
                         "WHERE ${DBContract.CommonSchedule.commonScheduleID} = $groupID ",
 
                 null
             )
+            exist.moveToFirst()
+            if(exist.getInt(0) != 0) {
+                exist.close()
+                val common: Cursor = db.rawQuery(
+                    "SELECT * FROM ${DBContract.CommonSchedule.TABLE_NAME} " +
+                            "WHERE ${DBContract.CommonSchedule.commonScheduleID} = $groupID ",
 
-            with(common) {
-                moveToFirst()
-                commonSchedule = CommonSchedule(
-                    getString(getColumnIndexOrThrow(DBContract.CommonSchedule.startDate)),
-                    getString(getColumnIndexOrThrow(DBContract.CommonSchedule.endDate)),
-                    "", "",
-                    getString(getColumnIndexOrThrow(DBContract.CommonSchedule.lastBuild))
+                    null
                 )
-            }
-
-            common.close()
 
 
-            var calendar: Calendar = Calendar.getInstance()
-            val formatter =
-                SimpleDateFormat("dd.MM.yyyy", Locale.getDefault(Locale.Category.FORMAT))
-
-            val curent = formatter.parse(formatter.format(calendar.time))
-            if (commonSchedule.lastBuild != null && commonSchedule.lastBuild != "") {
-                if (formatter.parse(commonSchedule.lastBuild).before(curent)) {
-
-                    StudentData.fillScheduleList(calendar, formatter, context)
-                    StudentData.finalBuild(db, groupID)
-
-                    calendar = Calendar.getInstance()
-
-                    val values = ContentValues().apply {
-                        put(DBContract.CommonSchedule.lastBuild, formatter.format(calendar.time))
-                    }
-
-                    db.update(
-                        DBContract.CommonSchedule.TABLE_NAME,
-                        values,
-                        "${DBContract.CommonSchedule.commonScheduleID} = $groupID",
-                        null
-                    )
+                with(common) {
+                    moveToFirst()
+                        commonSchedule = CommonSchedule(
+                            getString(getColumnIndexOrThrow(DBContract.CommonSchedule.startDate)),
+                            getString(getColumnIndexOrThrow(DBContract.CommonSchedule.endDate)),
+                            "", "",
+                            getString(getColumnIndexOrThrow(DBContract.CommonSchedule.lastBuild))
+                        )
 
                 }
-            }
 
-            val c: Cursor = db.rawQuery(
-                "SELECT * FROM ${DBContract.finalSchedule.TABLE_NAME} " +
-                        "INNER JOIN ${DBContract.CommonSchedule.TABLE_NAME} ON (${DBContract.finalSchedule.TABLE_NAME}.${DBContract.Schedule.groupID} = ${DBContract.CommonSchedule.TABLE_NAME}.${DBContract.CommonSchedule.commonScheduleID}) " +
-                        "INNER JOIN ${DBContract.Groups.TABLE_NAME} ON (${DBContract.Groups.TABLE_NAME}.${DBContract.Groups.groupID} = ${DBContract.CommonSchedule.TABLE_NAME}.${DBContract.CommonSchedule.commonScheduleID}) " +
-                        //  "INNER JOIN ${DBContract.Employees.TABLE_NAME} ON (${DBContract.finalSchedule.TABLE_NAME}.${DBContract.Schedule.employeeID} = ${DBContract.Employees.TABLE_NAME}.${DBContract.Employees.employeeID}) " +
-                        "WHERE ${DBContract.Groups.TABLE_NAME}.${DBContract.Groups.groupID} = $groupID " +
-                        "ORDER BY ${DBContract.finalSchedule.TABLE_NAME}.${DBContract.finalSchedule.dayIndex} ",
+                StudentData.commonSchedule = commonSchedule
 
-                null
-            )
-            var i = 0
-
-            with(c) {
-                moveToFirst()
-                moveToNext()
-                while (moveToNext()) {
-
-                    if (getInt(getColumnIndexOrThrow(DBContract.Schedule.day_of_week)) == 9 && i != 0)
-                        break
-
-                    var inScheduleIDLocal =
-                        getInt(getColumnIndexOrThrow(DBContract.Schedule.inScheduleID))
-
-                    var list = ArrayList<Employees>()
-                    val cursor: Cursor = db.rawQuery(
-                        "SELECT * FROM ${DBContract.PairToEmployers.TABLE_NAME} " +
-                                "INNER JOIN ${DBContract.Employees.TABLE_NAME} ON " +
-                                "(${DBContract.PairToEmployers.TABLE_NAME}.${DBContract.PairToEmployers.employeeID} = ${DBContract.Employees.TABLE_NAME}.${DBContract.Employees.employeeID})" +
-                                "WHERE ${DBContract.PairToEmployers.lessonID} = $inScheduleIDLocal " +
-                                "AND ${DBContract.PairToEmployers.groupID} = $groupID",
-                        null
-                    )
+                common.close()
 
 
-                    cursor.moveToFirst()
+                var calendar: Calendar = Calendar.getInstance()
+                val formatter =
+                    SimpleDateFormat("dd.MM.yyyy", Locale.getDefault(Locale.Category.FORMAT))
 
-                    do {
-                        list.add(
-                            try {
-                                Employees(
-                                    0,
-                                    cursor.getInt(cursor.getColumnIndexOrThrow(DBContract.Employees.employeeID)),
-                                    cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Employees.firstName)),
-                                    cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Employees.middleName)),
-                                    cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Employees.lastName)),
-                                    cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Employees.photoLink)),
+                val curent = formatter.parse(formatter.format(calendar.time))
+                if (commonSchedule.lastBuild != null && commonSchedule.lastBuild != "") {
+                    if (formatter.parse(commonSchedule.lastBuild).before(curent)) {
+
+                        StudentData.fillScheduleList(calendar, formatter, context)
+                        StudentData.finalBuild(db, groupID)
+
+                        calendar = Calendar.getInstance()
+
+                        val values = ContentValues().apply {
+                            put(
+                                DBContract.CommonSchedule.lastBuild,
+                                formatter.format(calendar.time)
+                            )
+                        }
+
+                        db.update(
+                            DBContract.CommonSchedule.TABLE_NAME,
+                            values,
+                            "${DBContract.CommonSchedule.commonScheduleID} = $groupID",
+                            null
+                        )
+
+                    }
+                }
+
+                val c: Cursor = db.rawQuery(
+                    "SELECT * FROM ${DBContract.finalSchedule.TABLE_NAME} " +
+                            "INNER JOIN ${DBContract.CommonSchedule.TABLE_NAME} ON (${DBContract.finalSchedule.TABLE_NAME}.${DBContract.Schedule.groupID} = ${DBContract.CommonSchedule.TABLE_NAME}.${DBContract.CommonSchedule.commonScheduleID}) " +
+                            "INNER JOIN ${DBContract.Groups.TABLE_NAME} ON (${DBContract.Groups.TABLE_NAME}.${DBContract.Groups.groupID} = ${DBContract.CommonSchedule.TABLE_NAME}.${DBContract.CommonSchedule.commonScheduleID}) " +
+                            //  "INNER JOIN ${DBContract.Employees.TABLE_NAME} ON (${DBContract.finalSchedule.TABLE_NAME}.${DBContract.Schedule.employeeID} = ${DBContract.Employees.TABLE_NAME}.${DBContract.Employees.employeeID}) " +
+                            "WHERE ${DBContract.Groups.TABLE_NAME}.${DBContract.Groups.groupID} = $groupID " +
+                            "ORDER BY ${DBContract.finalSchedule.TABLE_NAME}.${DBContract.finalSchedule.dayIndex} ",
+
+                    null
+                )
+                var i = 0
+
+                with(c) {
+                    moveToFirst()
+                    moveToNext()
+                    while (moveToNext()) {
+
+                        if (getInt(getColumnIndexOrThrow(DBContract.Schedule.day_of_week)) == 9 && i != 0)
+                            break
+
+                        var inScheduleIDLocal =
+                            getInt(getColumnIndexOrThrow(DBContract.Schedule.inScheduleID))
+
+                        var list = ArrayList<Employees>()
+                        val cursor: Cursor = db.rawQuery(
+                            "SELECT * FROM ${DBContract.PairToEmployers.TABLE_NAME} " +
+                                    "INNER JOIN ${DBContract.Employees.TABLE_NAME} ON " +
+                                    "(${DBContract.PairToEmployers.TABLE_NAME}.${DBContract.PairToEmployers.employeeID} = ${DBContract.Employees.TABLE_NAME}.${DBContract.Employees.employeeID})" +
+                                    "WHERE ${DBContract.PairToEmployers.lessonID} = $inScheduleIDLocal " +
+                                    "AND ${DBContract.PairToEmployers.groupID} = $groupID",
+                            null
+                        )
+
+
+                        cursor.moveToFirst()
+
+                        do {
+                            list.add(
+                                try {
+                                    Employees(
+                                        0,
+                                        cursor.getInt(cursor.getColumnIndexOrThrow(DBContract.Employees.employeeID)),
+                                        cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Employees.firstName)),
+                                        cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Employees.middleName)),
+                                        cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Employees.lastName)),
+                                        cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Employees.photoLink)),
+                                        try {
+                                            cursor.getBlob(cursor.getColumnIndexOrThrow(DBContract.Employees.photo))
+                                        } catch (e: Exception) {
+                                            ByteArray(0)
+                                        },
+                                        try {
+                                            cursor.getString(getColumnIndexOrThrow(DBContract.Employees.urlId))
+                                        } catch (e: Exception) {
+                                            ""
+                                        }
+                                    )
+                                } catch (e: Exception) {
+                                    Employees(0, 0, "", "", "", "", ByteArray(0), "")
+                                }
+                            )
+                        } while (cursor.moveToNext())
+
+
+                        cursor.close()
+
+                        widgetItems.add(
+                            Pair(
+                                Lesson(
+                                    getInt(getColumnIndexOrThrow("_id")),
+                                    getInt(getColumnIndexOrThrow(DBContract.Schedule.inScheduleID)),
+                                    getInt(getColumnIndexOrThrow(DBContract.Schedule.day_of_week)),
+                                    getString(getColumnIndexOrThrow(DBContract.Schedule.auditories)),
+                                    getString(getColumnIndexOrThrow(DBContract.Schedule.endLessonTime)),
+                                    getString(getColumnIndexOrThrow(DBContract.Schedule.lessonTypeAbbrev)),
+                                    getString(getColumnIndexOrThrow(DBContract.Schedule.note)),
+                                    getInt(getColumnIndexOrThrow(DBContract.Schedule.numSubgroup)),
+                                    getString(getColumnIndexOrThrow(DBContract.Schedule.startLessonTime)),
+                                    getString(getColumnIndexOrThrow(DBContract.Schedule.subject)),
+                                    getString(getColumnIndexOrThrow(DBContract.Schedule.subjectFullName)),
+                                    getString(getColumnIndexOrThrow(DBContract.Schedule.weekNumber)),
+                                    list,
                                     try {
-                                        cursor.getBlob(cursor.getColumnIndexOrThrow(DBContract.Employees.photo))
-                                    } catch (e: Exception) {
-                                        ByteArray(0)
-                                    },
-                                    try {
-                                        cursor.getString(getColumnIndexOrThrow(DBContract.Employees.urlId))
+                                        getString(getColumnIndexOrThrow(DBContract.Schedule.startLessonDate))
                                     } catch (e: Exception) {
                                         ""
-                                    }
-                                )
-                            } catch (e: Exception) {
-                                Employees(0, 0, "", "", "", "", ByteArray(0), "")
-                            }
+                                    },
+                                    try {
+                                        getString(getColumnIndexOrThrow(DBContract.Schedule.endLessonDate))
+                                    } catch (e: Exception) {
+                                        ""
+                                    }, null
+                                ), null
+                            )
                         )
-                    } while (cursor.moveToNext())
 
-
-                    cursor.close()
-
-                    widgetItems.add(
-                        Pair(
-                            Lesson(
-                                getInt(getColumnIndexOrThrow("_id")),
-                                getInt(getColumnIndexOrThrow(DBContract.Schedule.inScheduleID)),
-                                getInt(getColumnIndexOrThrow(DBContract.Schedule.day_of_week)),
-                                getString(getColumnIndexOrThrow(DBContract.Schedule.auditories)),
-                                getString(getColumnIndexOrThrow(DBContract.Schedule.endLessonTime)),
-                                getString(getColumnIndexOrThrow(DBContract.Schedule.lessonTypeAbbrev)),
-                                getString(getColumnIndexOrThrow(DBContract.Schedule.note)),
-                                getInt(getColumnIndexOrThrow(DBContract.Schedule.numSubgroup)),
-                                getString(getColumnIndexOrThrow(DBContract.Schedule.startLessonTime)),
-                                getString(getColumnIndexOrThrow(DBContract.Schedule.subject)),
-                                getString(getColumnIndexOrThrow(DBContract.Schedule.subjectFullName)),
-                                getString(getColumnIndexOrThrow(DBContract.Schedule.weekNumber)),
-                                list,
-                                try {
-                                    getString(getColumnIndexOrThrow(DBContract.Schedule.startLessonDate))
-                                } catch (e: Exception) {
-                                    ""
-                                },
-                                try {
-                                    getString(getColumnIndexOrThrow(DBContract.Schedule.endLessonDate))
-                                } catch (e: Exception) {
-                                    ""
-                                }, null
-                            ), null
-                        )
-                    )
-
-                    i++
+                        i++
+                    }
                 }
+                c.close()
+
+                return if (widgetItems.size != 0) {
+                    0
+                } else
+                    1
+
+            }else {
+                exist.close()
+
+                return 1
             }
-            c.close()
-
-            return if (widgetItems.size != 0) {
-                0
-            } else
-                1
-
-
         }
 
         fun fillEmployee(employeeID: Int, db: SQLiteDatabase): Int {
@@ -638,6 +660,16 @@ class ListWidgetService : RemoteViewsService() {
                 SimpleDateFormat("dd.MM.yyyy", Locale.getDefault(Locale.Category.FORMAT))
 
             val curent = formatter.parse(formatter.format(calendar.time))
+
+            val exist = db.rawQuery(
+                "SELECT COUNT(*) as cnt FROM ${DBContract.CommonEmployee.TABLE_NAME} " +
+                        "WHERE ${DBContract.CommonEmployee.commonEmployeeID} = $employeeID ",
+
+                null
+            )
+            exist.moveToFirst()
+            if (exist.getInt(0) != 0){
+                exist.close()
 
             val common: Cursor = db.rawQuery(
                 "SELECT * FROM ${DBContract.CommonEmployee.TABLE_NAME} " +
@@ -791,7 +823,10 @@ class ListWidgetService : RemoteViewsService() {
                 0
             } else
                 1
-
+            }else {
+                exist.close()
+            return 1
+        }
         }
     }
 }
