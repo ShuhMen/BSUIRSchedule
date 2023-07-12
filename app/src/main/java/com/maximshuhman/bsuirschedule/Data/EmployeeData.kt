@@ -58,7 +58,7 @@ object EmployeeData {
     //  var curGroupSpeciality: String = ""
     //var curGroupCourse: Int? = 0
 
-    private lateinit var commonSchedule: CommonSchedule
+    lateinit var commonSchedule: CommonSchedule
     private var inScheduleID = 0
     private var inExamsID = 0
     private val listOfPairs = mutableListOf<EmployeeLesson>()

@@ -511,8 +511,8 @@ class DbHelper(context: Context) :
         }
 
         if (oldVersion < 15) {
-            db.execSQL("ALTER TABLE ${DBContract.Settings.TABLE_NAME} ADD COLUMN ${DBContract.Settings.widgetID} INTEGER ")
-            db.execSQL("ALTER TABLE ${DBContract.Settings.TABLE_NAME} ADD COLUMN ${DBContract.Settings.widgetOpened} INTEGER ")
+           // db.execSQL("ALTER TABLE ${DBContract.Settings.TABLE_NAME} ADD COLUMN ${DBContract.Settings.widgetID} INTEGER ")
+           // db.execSQL("ALTER TABLE ${DBContract.Settings.TABLE_NAME} ADD COLUMN ${DBContract.Settings.widgetOpened} INTEGER ")
             val values = ContentValues().apply {
                 put(DBContract.Settings.widgetID, 0)
                 put(DBContract.Settings.widgetOpened, 0)

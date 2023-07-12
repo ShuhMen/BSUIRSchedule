@@ -13,8 +13,8 @@ android {
         applicationId "com.maximshuhman.bsuirschedule"
         minSdk 28
         targetSdk 33
-        versionCode 49
-        versionName "1.0.2.47"
+        versionCode 51
+        versionName "1.0.2.49"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

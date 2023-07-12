@@ -934,6 +934,9 @@ object StudentData {
         if (ScheduleList[ScheduleList.size - 1].day_of_week == 9)
             ScheduleList.removeAt(ScheduleList.size - 1)
 
+        if(ScheduleList.size == 0)
+            return
+
         /* if (ScheduleList[0].day_of_week == ScheduleList[1].day_of_week)
              ScheduleList.removeAt(0)
  */

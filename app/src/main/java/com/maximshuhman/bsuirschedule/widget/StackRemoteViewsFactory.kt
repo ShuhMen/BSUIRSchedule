@@ -688,6 +688,8 @@ class ListWidgetService : RemoteViewsService() {
                 )
             }
 
+                EmployeeData.commonSchedule = commonSchedule
+
             common.close()
 
             if (commonSchedule.lastBuild != null && commonSchedule.lastBuild != "") {
