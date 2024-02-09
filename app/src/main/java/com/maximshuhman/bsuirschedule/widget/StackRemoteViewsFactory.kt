@@ -84,80 +84,6 @@ class ListWidgetService : RemoteViewsService() {
                     c.moveToFirst()
                     if (c.getInt(0) != 0) {
                         c.close()
-                        /*val cursor = db.rawQuery(
-                            "SELECT ${DBContract.CommonEmployee.lastBuild} FROM " +
-                                    "${DBContract.CommonEmployee.TABLE_NAME} WHERE ${DBContract.CommonEmployee.commonEmployeeID} = ${id}",
-                            null
-                        )
-
-                        cursor.moveToFirst()*/
-
-                        /* val lastBuild =
-                             cursor.getString(cursor.getColumnIndexOrThrow(DBContract.CommonSchedule.lastBuild))
-
-                         var calendar: Calendar = Calendar.getInstance()
-                         val formatter =
-                             SimpleDateFormat("dd.MM.yyyy", Locale.getDefault(Locale.Category.FORMAT))
-
-                         val curent = formatter.parse(formatter.format(calendar.time))
-                         val lastBuildDate = formatter.parse(lastBuild)
-                         if (curent != null) {
-                             if (curent.after(lastBuildDate)) {
-                                 var err = 0
-
-                                 val executors = Executors.newSingleThreadExecutor()
-                                 executors.execute {
-
-                                     err = StudentData.makeSchedule(
-                                         StudentData.curGroupName,
-                                         context,
-                                         StudentData.curGroupID,
-                                         1
-                                     )
-                                     Handler(Looper.getMainLooper()).post {
-                                         when (err) {
-                                             0 -> {
-
-                                             }
-                                             4 -> {
-                                                 //endOfSchedule.visibility = View.VISIBLE
-                                             }
-                                             5 -> try {
-                                                 /* Toast.makeText(
-                                                                  context,
-                                                                  "Расписание отсутствует!",
-                                                                  Toast.LENGTH_SHORT
-                                                              ).show()*/
-                                             } catch (e: java.lang.NullPointerException) {
-                                                 Firebase.crashlytics.log("SсheduleFragmentToast5")
-                                             }
-                                             6 -> try {
-                                                 /*Toast.makeText(
-                                                                 context,
-                                                                 "Что-то пошло не так",
-                                                                 Toast.LENGTH_SHORT
-                                                             ).show()*/
-                                             } catch (e: java.lang.NullPointerException) {
-                                                 Firebase.crashlytics.log("SсheduleFragmentToast6")
-                                             }
-                                             else -> try {
-                                                 /*Toast.makeText(
-                                                                 context,
-                                                                 "Ошибка получения данных",
-                                                                 Toast.LENGTH_SHORT
-                                                             ).show()*/
-                                             } catch (e: java.lang.NullPointerException) {
-                                                 Firebase.crashlytics.log("SсheduleFragmentToastElse")
-                                             }
-                                         }
-                                     }
-                                 }
-                             } else {
-
-
-
-                             }
-                         }*/
                         fillEmployee(id, db)
 
                     } else
@@ -171,82 +97,7 @@ class ListWidgetService : RemoteViewsService() {
                     c.moveToFirst()
                     if (c.getInt(0) != 0) {
                         c.close()
-                        /*val cursor = db.rawQuery(
-                            "SELECT ${DBContract.CommonSchedule.lastBuild} FROM " +
-                                    "${DBContract.CommonSchedule.TABLE_NAME} WHERE ${DBContract.CommonSchedule.commonScheduleID} = ${id}",
-                            null
-                        )
-
-                        cursor.moveToFirst()*/
-
-                        /* val lastBuild =
-                             cursor.getString(cursor.getColumnIndexOrThrow(DBContract.CommonSchedule.lastBuild))
-
-                         var calendar: Calendar = Calendar.getInstance()
-                         val formatter =
-                             SimpleDateFormat("dd.MM.yyyy", Locale.getDefault(Locale.Category.FORMAT))
-
-                         val curent = formatter.parse(formatter.format(calendar.time))
-                         val lastBuildDate = formatter.parse(lastBuild)
-                         if (curent != null) {
-                             if (curent.after(lastBuildDate)) {
-                                 var err = 0
-
-                                 val executors = Executors.newSingleThreadExecutor()
-                                 executors.execute {
-
-                                     err = StudentData.makeSchedule(
-                                         StudentData.curGroupName,
-                                         context,
-                                         StudentData.curGroupID,
-                                         1
-                                     )
-                                     Handler(Looper.getMainLooper()).post {
-                                         when (err) {
-                                             0 -> {
-
-                                             }
-                                             4 -> {
-                                                 //endOfSchedule.visibility = View.VISIBLE
-                                             }
-                                             5 -> try {
-                                                 /* Toast.makeText(
-                                                                  context,
-                                                                  "Расписание отсутствует!",
-                                                                  Toast.LENGTH_SHORT
-                                                              ).show()*/
-                                             } catch (e: java.lang.NullPointerException) {
-                                                 Firebase.crashlytics.log("SсheduleFragmentToast5")
-                                             }
-                                             6 -> try {
-                                                 /*Toast.makeText(
-                                                                 context,
-                                                                 "Что-то пошло не так",
-                                                                 Toast.LENGTH_SHORT
-                                                             ).show()*/
-                                             } catch (e: java.lang.NullPointerException) {
-                                                 Firebase.crashlytics.log("SсheduleFragmentToast6")
-                                             }
-                                             else -> try {
-                                                 /*Toast.makeText(
-                                                                 context,
-                                                                 "Ошибка получения данных",
-                                                                 Toast.LENGTH_SHORT
-                                                             ).show()*/
-                                             } catch (e: java.lang.NullPointerException) {
-                                                 Firebase.crashlytics.log("SсheduleFragmentToastElse")
-                                             }
-                                         }
-                                     }
-                                 }
-                             } else {
-
-
-
-                             }
-                         }*/
                         fillGroup(id, db)
-
                     } else
                         c.close()
                 }
@@ -339,14 +190,20 @@ class ListWidgetService : RemoteViewsService() {
                             emp += "\n"
                         emp +=
                             "${widgetItems[position].first!!.employees[i].lastName} " +
+                                    if(widgetItems[position].first!!.employees[i].firstName.isNullOrBlank())
+                                        ""
+                                    else
                                     "${
-                                        widgetItems[position].first!!.employees[i].firstName.substring(
+                                        widgetItems[position].first!!.employees[i].firstName!!.substring(
                                             0,
                                             1
                                         )
                                     }. " +
+                                    if(widgetItems[position].first!!.employees[i].middleName.isNullOrBlank())
+                                        ""
+                                    else
                                     "${
-                                        widgetItems[position].first!!.employees[i].middleName.substring(
+                                        widgetItems[position].first!!.employees[i].middleName!!.substring(
                                             0,
                                             1
                                         )
@@ -550,7 +407,6 @@ class ListWidgetService : RemoteViewsService() {
 
                 with(c) {
                     moveToFirst()
-                    moveToNext()
                     while (moveToNext()) {
 
                         if (getInt(getColumnIndexOrThrow(DBContract.Schedule.day_of_week)) == 9 && i != 0)

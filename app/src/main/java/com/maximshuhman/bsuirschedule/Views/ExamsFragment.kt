@@ -206,10 +206,8 @@ class ExamsFragment : Fragment() {
                 try {
                     EmployeesText.text =
                         "${pair.employees.lastName} " +
-                                "${pair.employees.firstName.substring(0, 1)}. " +
-                                "${
-                                    pair.employees.middleName.substring(0, 1)
-                                }."
+                                if(pair.employees.firstName.isNullOrBlank()) "" else "${pair.employees.firstName!!.substring(0, 1)}. " +
+                                if(pair.employees.middleName.isNullOrBlank()) "" else "${pair.employees.middleName!!.substring(0, 1)}. "
                 } catch (e: Exception) {
                     EmployeesText.text = ""
                 }

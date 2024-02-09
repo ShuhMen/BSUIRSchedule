@@ -684,7 +684,7 @@ object StudentData {
         return 0
     }
 
-    fun fillScheduleList(calendar: Calendar, formatter: SimpleDateFormat, context: Context) {
+    fun  fillScheduleList(calendar: Calendar, formatter: SimpleDateFormat, context: Context) {
         var week: Int
 
 
@@ -695,6 +695,7 @@ object StudentData {
             "SELECT ${DBContract.Settings.week}, ${DBContract.Settings.lastWeekUpdate} FROM ${DBContract.Settings.TABLE_NAME}",
             null
         )
+
 
         settings.moveToFirst()
         val previous =
@@ -722,7 +723,10 @@ object StudentData {
             } else
                 week = Requests.getCurrent().res
         }
-
+        if(formatter.parse(commonSchedule.startDate)!!.after(calendar.time)) {
+            calendar.time = formatter.parse(commonSchedule.startDate)!!
+            week = 1
+        }
         val values = ContentValues().apply {
             put(DBContract.Settings.week, week)
             put(DBContract.Settings.lastWeekUpdate, formatter.format(calendar.time))
@@ -790,7 +794,7 @@ object StudentData {
 
         val system = context
         l.day_of_week = 9
-        //l.numSubgroup = 0
+        l.numSubgroup = 0
         l.note = "${
             when (calendar.get(Calendar.DAY_OF_WEEK)) {
                 2 -> system.getString(R.string.monday)
@@ -930,6 +934,9 @@ object StudentData {
                 -delta
             )
 
+        if(ScheduleList.size > 3)
+            while(ScheduleList[0].day_of_week == 9 && ScheduleList[1].day_of_week == 9)
+                ScheduleList.removeAt(0)
 
         if (ScheduleList[ScheduleList.size - 1].day_of_week == 9)
             ScheduleList.removeAt(ScheduleList.size - 1)
@@ -1546,14 +1553,11 @@ object StudentData {
             listOfFavoriteEmployees.add(emp)
 
             emp = listOfFavoriteEmployees[0].copy()
-            try {
 
-                emp.lastName = emp.lastName[0].toString()
                 emp.type = 3
-                FavoritesList.add(Pair(null, emp))
+            FavoritesList.add(Pair(null, emp))
 
-            } catch (_: Exception) {
-            }
+
 
 
             var i = 0
@@ -1563,9 +1567,9 @@ object StudentData {
 
                 FavoritesList.add(Pair(null, listOfFavoriteEmployees[i].copy()))
 
-                if (listOfFavoriteEmployees[i].lastName[0] != listOfFavoriteEmployees[i + 1].lastName[0] && listOfFavoriteEmployees[i + 1].type != 5) {
+                if (listOfFavoriteEmployees[i].lastName != listOfFavoriteEmployees[i + 1].lastName && listOfFavoriteEmployees[i + 1].type != 5) {
                     val group = listOfFavoriteEmployees[i + 1].copy()
-                    group.lastName = group.lastName[0].toString()
+                    group.lastName = group.lastName.toString()
                     group.type = 3
                     FavoritesList.add(Pair(null, group))
                 }

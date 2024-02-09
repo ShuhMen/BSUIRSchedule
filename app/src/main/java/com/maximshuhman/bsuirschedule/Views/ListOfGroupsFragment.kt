@@ -278,7 +278,7 @@ class ListOfGroupsFragment : Fragment() {
                         } else {
                             val resultList = mutableListOf<Group>()
                             for (row in StudentData.GroupsList) {
-                                if (row.name.toString().contains(
+                                if ((row.name + row.facultyAbbrev + row.specialityAbbrev).contains(
                                         charSearch,
                                         true
                                     ) || row.name.toString() == charSearch

@@ -247,11 +247,10 @@ class TeachersFragment : Fragment() {
                         } else {
                             val resultList = mutableListOf<Employees>()
                             for (row in EmployeeData.employeesList) {
-                                if (("${row.lastName} ${row.firstName} ${row.middleName}").contains(
+                                if ((row.lastName +row.firstName+row.middleName).contains(
                                         charSearch,
                                         true
                                     )
-                                // ||row.name.toString() == charSearch
                                 ) {
                                     resultList.add(row)
                                 }
