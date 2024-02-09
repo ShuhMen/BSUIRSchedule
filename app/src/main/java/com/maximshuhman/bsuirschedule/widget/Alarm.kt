@@ -25,6 +25,23 @@ class SampleBootReceiver : BroadcastReceiver() {
                 scheduleUpdate(context)
             }
 
+            /* val alarmManager =
+                 context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager
+             val pendingIntent =
+                 PendingIntent.getService(
+                     context, 1, intent,
+                     PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
+                 )
+             if (pendingIntent != null && alarmManager != null) {
+                 alarmManager.cancel(pendingIntent)
+             }
+
+             alarmManager?.setInexactRepeating(
+                 AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                 SystemClock.elapsedRealtime() + AlarmManager.INTERVAL_HALF_HOUR,
+                 AlarmManager.INTERVAL_HALF_HOUR,
+                 pendingIntent
+             )*/
         }
     }
 }
@@ -33,7 +50,7 @@ object Util {
 
     fun scheduleUpdate(context: Context) {
         val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val intervalMillis = (80 * 60 * 1000).toLong()
+        val intervalMillis = (30 * 60 * 1000).toLong()
         val pi = getAlarmIntent(context)
         am.cancel(pi)
         am.setInexactRepeating(AlarmManager.RTC, System.currentTimeMillis(), intervalMillis, pi)

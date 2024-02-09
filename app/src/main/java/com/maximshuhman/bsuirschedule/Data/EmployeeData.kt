@@ -8,7 +8,6 @@ import android.database.Cursor
 import android.database.CursorIndexOutOfBoundsException
 import android.database.sqlite.SQLiteDatabase
 import android.util.Log
-import androidx.core.database.getStringOrNull
 import com.maximshuhman.bsuirschedule.DataBase.DBContract
 import com.maximshuhman.bsuirschedule.DataBase.DbHelper
 import com.maximshuhman.bsuirschedule.DataClasses.EmployeeExam
@@ -59,7 +58,7 @@ object EmployeeData {
     //  var curGroupSpeciality: String = ""
     //var curGroupCourse: Int? = 0
 
-    lateinit var commonSchedule: CommonSchedule
+    private lateinit var commonSchedule: CommonSchedule
     private var inScheduleID = 0
     private var inExamsID = 0
     private val listOfPairs = mutableListOf<EmployeeLesson>()
@@ -1147,13 +1146,11 @@ object EmployeeData {
                     if (fillListOfPairs(db, employeeID) == 1)
                         return 1
 
-
+                    if (ScheduleList.size == 0)
+                        return 4
 
                     fillScheduleList(calendar, formatter, context)
 
-
-                    if (ScheduleList.size == 0)
-                        return 4
                     finalBuild(db, employeeID)
 
                     calendar = Calendar.getInstance()
@@ -1338,11 +1335,15 @@ object EmployeeData {
             listOfEmployees.add(emp)
 
             emp = listOfEmployees[0].copy()
+            try {
 
-
-            emp.type = 1
+                emp.lastName = emp.lastName[0].toString()
+                emp.type = 1
                 employeesList.add(emp)
 
+            } catch (_: Exception) {
+
+            }
 
 
             var i = 0
@@ -1352,9 +1353,9 @@ object EmployeeData {
 
                 employeesList.add(listOfEmployees[i].copy())
 
-                if (listOfEmployees[i].lastName != listOfEmployees[i + 1].lastName && listOfEmployees[i + 1].type != 5) {
+                if (listOfEmployees[i].lastName[0] != listOfEmployees[i + 1].lastName[0] && listOfEmployees[i + 1].type != 5) {
                     val group = listOfEmployees[i + 1].copy()
-                    group.lastName = group.lastName.toString()
+                    group.lastName = group.lastName[0].toString()
                     group.type = 1
                     employeesList.add(group)
                 }
@@ -1380,28 +1381,24 @@ object EmployeeData {
             "SELECT * FROM ${DBContract.Employees.TABLE_NAME} ORDER BY ${DBContract.Employees.lastName}",
             null
         )
-        try {
-            with(c) {
-                moveToFirst()
-                while (moveToNext()) {
-                    listOfEmployees.add(
-                        Employees(
-                            0,
-                            getInt(getColumnIndexOrThrow("employeeID")),
-                            getStringOrNull(getColumnIndexOrThrow("firstName")),
-                            getStringOrNull(getColumnIndexOrThrow("middleName")),
-                            getString(getColumnIndexOrThrow("lastName")),
-                            getStringOrNull(getColumnIndexOrThrow("photoLink")),
-                            null,
-                            getStringOrNull(getColumnIndexOrThrow("urlId"))
-                        )
+        with(c) {
+            moveToFirst()
+            while (moveToNext()) {
+                listOfEmployees.add(
+                    Employees(
+                        0,
+                        getInt(getColumnIndexOrThrow("employeeID")),
+                        getString(getColumnIndexOrThrow("firstName")),
+                        getString(getColumnIndexOrThrow("middleName")),
+                        getString(getColumnIndexOrThrow("lastName")),
+                        getString(getColumnIndexOrThrow("photoLink")),
+                        null,
+                        getString(getColumnIndexOrThrow("urlId"))
                     )
-                }
+                )
             }
-        }catch (e: Exception){
-            Log.v("Employeer", c.getInt(c.getColumnIndexOrThrow("lastName")).toString())
-
         }
+
         var emp = listOfEmployees[0].copy()
         emp.type = 5
         listOfEmployees.add(emp)

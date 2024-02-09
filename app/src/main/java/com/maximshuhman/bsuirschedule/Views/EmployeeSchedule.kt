@@ -122,7 +122,42 @@ class EmployeeSchedule : Fragment() {
         } else
             EmployeeData.curEmployeeUrlId = ""
 
+        val appWidgetIds: IntArray = AppWidgetManager.getInstance(requireContext())
+            .getAppWidgetIds(ComponentName(requireContext(), ScheduleWidget::class.java))
+        appWidgetIds.forEach { appWidgetId ->
+            val appWidgetManager = AppWidgetManager.getInstance(context)
 
+            val views = RemoteViews(requireContext().packageName, R.layout.schedule_widget)
+            val c = db.rawQuery(
+                "SELECT COUNT(*) as cnt FROM " +
+                        "${DBContract.Employees.TABLE_NAME} WHERE ${DBContract.Employees.employeeID} = ${EmployeeData.curEmployeeID}",
+                null
+            )
+            c.moveToFirst()
+            if (c.getInt(0) != 0) {
+                c.close()
+                val cursor = db.rawQuery(
+                    "SELECT * FROM " +
+                            "${DBContract.Employees.TABLE_NAME} WHERE ${DBContract.Employees.employeeID} = ${EmployeeData.curEmployeeID}",
+                    null
+                )
+
+                cursor.moveToFirst()
+
+                val firstName =
+                    cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Employees.firstName))
+                val lastName =
+                    cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Employees.lastName))
+                val middleName =
+                    cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Employees.middleName))
+
+
+                views.setTextViewText(R.id.name_text, "$lastName $firstName $middleName")
+            }
+            appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetId, R.id.list_view)
+
+            appWidgetManager.updateAppWidget(appWidgetIds, views)
+        }
 
         ToolBar.title = fio
 
@@ -254,43 +289,6 @@ class EmployeeSchedule : Fragment() {
             updateUI(1)
         }
 
-
-        val appWidgetIds: IntArray = AppWidgetManager.getInstance(requireContext())
-            .getAppWidgetIds(ComponentName(requireContext(), ScheduleWidget::class.java))
-        appWidgetIds.forEach { appWidgetId ->
-            val appWidgetManager = AppWidgetManager.getInstance(context)
-
-            val views = RemoteViews(requireContext().packageName, R.layout.schedule_widget)
-            val c = db.rawQuery(
-                "SELECT COUNT(*) as cnt FROM " +
-                        "${DBContract.Employees.TABLE_NAME} WHERE ${DBContract.Employees.employeeID} = ${EmployeeData.curEmployeeID}",
-                null
-            )
-            c.moveToFirst()
-            if (c.getInt(0) != 0) {
-                c.close()
-                val cursor = db.rawQuery(
-                    "SELECT * FROM " +
-                            "${DBContract.Employees.TABLE_NAME} WHERE ${DBContract.Employees.employeeID} = ${EmployeeData.curEmployeeID}",
-                    null
-                )
-
-                cursor.moveToFirst()
-
-                val firstName =
-                    cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Employees.firstName))
-                val lastName =
-                    cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Employees.lastName))
-                val middleName =
-                    cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Employees.middleName))
-
-
-                views.setTextViewText(R.id.name_text, "$lastName $firstName $middleName")
-            }
-            appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetId, R.id.list_view)
-
-            appWidgetManager.updateAppWidget(appWidgetIds, views)
-        }
         return view
     }
 
