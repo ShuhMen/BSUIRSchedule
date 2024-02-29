@@ -1324,7 +1324,11 @@ object EmployeeData {
                         0,
                         employee.getInt("id"),
                         employee.getString("firstName"),
-                        employee.getString("middleName"),
+                        if (employee.has("middleName") && !employee.isNull("middleName")) employee.getString(
+                            "middleName"
+                        ) else null
+                        //employee.getString("middleName")
+                        ,
                         employee.getString("lastName"),
                         employee.getString("photoLink"),
                         null,
@@ -1338,11 +1342,15 @@ object EmployeeData {
             listOfEmployees.add(emp)
 
             emp = listOfEmployees[0].copy()
+            try {
 
-
-            emp.type = 1
+                emp.lastName = emp.lastName[0].toString()
+                emp.type = 1
                 employeesList.add(emp)
 
+            } catch (_: Exception) {
+
+            }
 
 
             var i = 0
@@ -1352,9 +1360,9 @@ object EmployeeData {
 
                 employeesList.add(listOfEmployees[i].copy())
 
-                if (listOfEmployees[i].lastName != listOfEmployees[i + 1].lastName && listOfEmployees[i + 1].type != 5) {
+                if (listOfEmployees[i].lastName[0] != listOfEmployees[i + 1].lastName[0] && listOfEmployees[i + 1].type != 5) {
                     val group = listOfEmployees[i + 1].copy()
-                    group.lastName = group.lastName.toString()
+                    group.lastName = group.lastName[0].toString()
                     group.type = 1
                     employeesList.add(group)
                 }
