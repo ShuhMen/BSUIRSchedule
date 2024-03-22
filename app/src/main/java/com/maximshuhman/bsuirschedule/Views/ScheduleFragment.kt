@@ -344,39 +344,6 @@ class ScheduleFragment : Fragment() {
             2 -> {
                 var i = 0
                 var j = 0
-                while (i < dataFilter.size && j < rawData.size) {
-
-                    if (dataFilter[i] != rawData[j]) {
-                        scheduleRecycler.adapter!!.notifyItemInserted(i)
-                        dataFilter.add(i, rawData[j])
-                    }
-
-                    i++
-                    j++
-                }
-                if (j < rawData.size) {
-                    while (j < rawData.size) {
-                        scheduleRecycler.adapter!!.notifyItemInserted(i)
-                        dataFilter.add(i, rawData[j])
-
-                        i++
-                        j++
-                    }
-                }
-
-                i = 0
-                while (i < dataFilter.size) {
-
-                    if (dataFilter[i].numSubgroup == 1) {
-                        scheduleRecycler.adapter!!.notifyItemRemoved(i)
-                        dataFilter.removeAt(i)
-                        i--
-                    }
-                    i++
-                }
-
-               /* i = 0
-                j = 0
                 while (i < dataFilter.size) {
                     if (dataFilter[i].numSubgroup == 1) {
                         dataFilter.removeAt(i)
@@ -416,7 +383,7 @@ class ScheduleFragment : Fragment() {
                         j++
                     }
                 }
-*/
+
             }
 
             else -> {
@@ -442,18 +409,9 @@ class ScheduleFragment : Fragment() {
                     }
                 }
             }
+        }
 
-        }
-        var i = 0
-        while( i < dataFilter.size)
-        {
-            if(dataFilter[i].day_of_week == 9 && dataFilter[i+1].day_of_week == 9) {
-                dataFilter.removeAt(i)
-                scheduleRecycler.adapter!!.notifyItemRemoved(i)
-                i--
-            }
-i++
-        }
+
     }
 
     @Deprecated("Deprecated in Java")
@@ -888,9 +846,10 @@ i++
                             emp += "\n"
                         emp +=
                             "${pair.employees[i].lastName} " +
-                                    if(pair.employees[i].firstName.isNullOrBlank()) "" else "${pair.employees[i].firstName!!.substring(0, 1)}. " +
-                                            if(pair.employees[i].firstName.isNullOrBlank()) "" else "${pair.employees[i].firstName!!.substring(0, 1)}. "
-
+                                    "${pair.employees[i].firstName.substring(0, 1)}. " +
+                                    "${
+                                        pair.employees[i].middleName.substring(0, 1)
+                                    }."
                     }
                     employeesText.text = emp
                 } catch (e: Exception) {

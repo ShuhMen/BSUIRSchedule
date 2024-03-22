@@ -17,41 +17,41 @@ class DbHelper(context: Context) :
     private val SQL_CREATE_GROUPS =
         "CREATE TABLE IF NOT EXISTS ${DBContract.Groups.TABLE_NAME} (" +
                 "${DBContract.Groups.groupID} INTEGER PRIMARY KEY," +
-                "${DBContract.Groups.course} varchar(7)," +
-                "${DBContract.Groups.specialityAbbrev} varchar(10)," +
-                "${DBContract.Groups.specialityName} varchar(50)," +
-                "${DBContract.Groups.facultyAbbrev} varchar(10)," +
-                "${DBContract.Groups.name} varchar(10) ) "
+                "${DBContract.Groups.course} TEXT," +
+                "${DBContract.Groups.specialityAbbrev} TEXT," +
+                "${DBContract.Groups.specialityName} TEXT," +
+                "${DBContract.Groups.facultyAbbrev} TEXT," +
+                "${DBContract.Groups.name} TEXT ) "
 
     private val SQL_CREATE_COMMONSCHEDULE =
         "CREATE TABLE IF NOT EXISTS ${DBContract.CommonSchedule.TABLE_NAME} (" +
                 "${DBContract.CommonSchedule.commonScheduleID} INTEGER PRIMARY KEY," +
-                "${DBContract.CommonSchedule.startExamsDate} varchar(10)," +
-                "${DBContract.CommonSchedule.endExamsDate} varchar(10)," +
-                "${DBContract.CommonSchedule.startDate} varchar(10)," +
-                "${DBContract.CommonSchedule.endDate} varchar(10)," +
-                "${DBContract.CommonSchedule.lastUpdate} varchar(10)," +
-                "${DBContract.CommonSchedule.lastBuild} varchar(10)," +
+                "${DBContract.CommonSchedule.startExamsDate} TEXT," +
+                "${DBContract.CommonSchedule.endExamsDate} TEXT," +
+                "${DBContract.CommonSchedule.startDate} TEXT," +
+                "${DBContract.CommonSchedule.endDate} TEXT," +
+                "${DBContract.CommonSchedule.lastUpdate} TEXT," +
+                "${DBContract.CommonSchedule.lastBuild} TEXT," +
                 "FOREIGN KEY (${DBContract.CommonSchedule.commonScheduleID}) REFERENCES ${DBContract.Groups.TABLE_NAME}(${DBContract.Groups.groupID}));"
 
     private val SQL_CREATE_SCHEDULE =
         "CREATE TABLE IF NOT EXISTS ${DBContract.Schedule.TABLE_NAME} (" +
                 "${DBContract.Schedule.scheduleID} INTEGER PRIMARY KEY," +
-                "${DBContract.Schedule.inScheduleID} varchar(10)," +
-                "${DBContract.Schedule.day_of_week} varchar(10)," +
-                "${DBContract.Schedule.auditories} varchar(10)," +
-                "${DBContract.Schedule.endLessonTime} varchar(10)," +
-                "${DBContract.Schedule.lessonTypeAbbrev} varchar(7)," +
-                "${DBContract.Schedule.note} varchar(50)," +
+                "${DBContract.Schedule.inScheduleID} INTEGER," +
+                "${DBContract.Schedule.day_of_week} INTEGER," +
+                "${DBContract.Schedule.auditories} TEXT," +
+                "${DBContract.Schedule.endLessonTime} TEXT," +
+                "${DBContract.Schedule.lessonTypeAbbrev} TEXT," +
+                "${DBContract.Schedule.note} TEXT," +
                 "${DBContract.Schedule.numSubgroup} INTEGER," +
-                "${DBContract.Schedule.startLessonTime} varchar(10)," +
-                "${DBContract.Schedule.studentGroups} varchar(30)," +
-                "${DBContract.Schedule.subject} varchar(20)," +
-                "${DBContract.Schedule.subjectFullName} varchar(40)," +
+                "${DBContract.Schedule.startLessonTime} TEXT," +
+                "${DBContract.Schedule.studentGroups} TEXT," +
+                "${DBContract.Schedule.subject} TEXT," +
+                "${DBContract.Schedule.subjectFullName} TEXT," +
                 "${DBContract.Schedule.weekNumber} INTEGER," +
                 "${DBContract.Schedule.groupID} INTEGER," +
-                "${DBContract.Schedule.startLessonDate} varchar(10)," +
-                "${DBContract.Schedule.endLessonDate} varchar(10)," +
+                "${DBContract.Schedule.startLessonDate} TEXT," +
+                "${DBContract.Schedule.endLessonDate} TEXT," +
                 "FOREIGN KEY (${DBContract.Schedule.groupID}) REFERENCES ${DBContract.CommonSchedule.TABLE_NAME}(${DBContract.CommonSchedule.commonScheduleID}))"//," +
     // "FOREIGN KEY (${DBContract.Schedule.employeeID}) REFERENCES ${DBContract.Employees.TABLE_NAME}(${DBContract.Employees.employeeID}))"
 
@@ -61,34 +61,34 @@ class DbHelper(context: Context) :
                 "${DBContract.Schedule.inScheduleID} INTEGER," +
                 "${DBContract.finalSchedule.dayIndex} INTEGER," +
                 "${DBContract.finalSchedule.day_of_week} INTEGER," +
-                "${DBContract.finalSchedule.auditories} varchar(20)," +
-                "${DBContract.finalSchedule.endLessonTime} varchar(10)," +
-                "${DBContract.finalSchedule.lessonTypeAbbrev} varchar(7)," +
-                "${DBContract.finalSchedule.note} varchar(50)," +
+                "${DBContract.finalSchedule.auditories} TEXT," +
+                "${DBContract.finalSchedule.endLessonTime} TEXT," +
+                "${DBContract.finalSchedule.lessonTypeAbbrev} TEXT," +
+                "${DBContract.finalSchedule.note} TEXT," +
                 "${DBContract.finalSchedule.numSubgroup} INTEGER," +
-                "${DBContract.finalSchedule.startLessonTime} varchar(10)," +
-                "${DBContract.finalSchedule.studentGroups} varchar(30)," +
-                "${DBContract.finalSchedule.subject} varchar(10)," +
-                "${DBContract.finalSchedule.subjectFullName} varchar(30)," +
+                "${DBContract.finalSchedule.startLessonTime} TEXT," +
+                "${DBContract.finalSchedule.studentGroups} TEXT," +
+                "${DBContract.finalSchedule.subject} TEXT," +
+                "${DBContract.finalSchedule.subjectFullName} TEXT," +
                 "${DBContract.finalSchedule.weekNumber} INTEGER," +
                 "${DBContract.finalSchedule.groupID} INTEGER," +
-                "${DBContract.finalSchedule.startLessonDate} varchar(10)," +
-                "${DBContract.finalSchedule.endLessonDate} varchar(10)," +
+                "${DBContract.finalSchedule.startLessonDate} TEXT," +
+                "${DBContract.finalSchedule.endLessonDate} TEXT," +
                 "FOREIGN KEY (${DBContract.finalSchedule.groupID}) REFERENCES ${DBContract.CommonSchedule.TABLE_NAME}(${DBContract.CommonSchedule.commonScheduleID}))"//," +
     // "FOREIGN KEY (${DBContract.finalSchedule.employeeID}) REFERENCES ${DBContract.Employees.TABLE_NAME}(${DBContract.Employees.employeeID}))"
 
     private val SQL_CREATE_EMPlOYEES =
         "CREATE TABLE IF NOT EXISTS ${DBContract.Employees.TABLE_NAME} (" +
                 "${DBContract.Employees.employeeID} INTEGER PRIMARY KEY," +
-                "${DBContract.Employees.firstName} varchar(20)," +
-                "${DBContract.Employees.middleName} varchar(20)," +
-                "${DBContract.Employees.lastName} varchar(20)," +
+                "${DBContract.Employees.firstName} TEXT," +
+                "${DBContract.Employees.middleName} TEXT," +
+                "${DBContract.Employees.lastName} TEXT," +
                 "${DBContract.Employees.photoLink} TEXT," +
-                "${DBContract.Employees.degree} varchar(20)," +
-                "${DBContract.Employees.degreeAbbrev} varchar(10)," +
-                "${DBContract.Employees.rank} varchar(20)," +
-                "${DBContract.Employees.department} varchar(30)," +
-                "${DBContract.Employees.fio} varchar(20)," +
+                "${DBContract.Employees.degree} TEXT," +
+                "${DBContract.Employees.degreeAbbrev} TEXT," +
+                "${DBContract.Employees.rank} TEXT," +
+                "${DBContract.Employees.department} TEXT," +
+                "${DBContract.Employees.fio} TEXT," +
                 "${DBContract.Employees.urlId} TEXT," +
                 "${DBContract.Employees.photo} BLOB )"
 
@@ -103,19 +103,19 @@ class DbHelper(context: Context) :
         "CREATE TABLE IF NOT EXISTS ${DBContract.Exams.TABLE_NAME} (" +
                 "${DBContract.Schedule.scheduleID} INTEGER PRIMARY KEY," +
                 "${DBContract.Schedule.day_of_week} INTEGER," +
-                "${DBContract.Schedule.auditories} varchar(30)," +
-                "${DBContract.Schedule.endLessonTime} varchar(10)," +
-                "${DBContract.Schedule.lessonTypeAbbrev} varchar(10)," +
-                "${DBContract.Schedule.note} varchar(40)," +
+                "${DBContract.Schedule.auditories} TEXT," +
+                "${DBContract.Schedule.endLessonTime} TEXT," +
+                "${DBContract.Schedule.lessonTypeAbbrev} TEXT," +
+                "${DBContract.Schedule.note} TEXT," +
                 "${DBContract.Schedule.numSubgroup} INTEGER," +
-                "${DBContract.Schedule.startLessonTime} varchar(10)," +
-                "${DBContract.Schedule.studentGroups} varchar(30)," +
-                "${DBContract.Schedule.subject} varchar(10)," +
-                "${DBContract.Schedule.subjectFullName} varchar(30)," +
+                "${DBContract.Schedule.startLessonTime} TEXT," +
+                "${DBContract.Schedule.studentGroups} TEXT," +
+                "${DBContract.Schedule.subject} TEXT," +
+                "${DBContract.Schedule.subjectFullName} TEXT," +
                 "${DBContract.Schedule.weekNumber} INTEGER," +
                 "${DBContract.Schedule.employeeID} INTEGER," +
                 "${DBContract.Schedule.groupID} INTEGER," +
-                "${DBContract.Exams.dateLesson} varchar(10)," +
+                "${DBContract.Exams.dateLesson} TEXT," +
                 "FOREIGN KEY (${DBContract.Schedule.groupID}) REFERENCES ${DBContract.Groups.TABLE_NAME}(${DBContract.CommonSchedule.commonScheduleID})," +
                 "FOREIGN KEY (${DBContract.Schedule.employeeID}) REFERENCES ${DBContract.Employees.TABLE_NAME}(${DBContract.Employees.employeeID}))"
 
@@ -136,12 +136,12 @@ class DbHelper(context: Context) :
     private val SQL_CREATE_COMMONEMPLOYEE =
         "CREATE TABLE ${DBContract.CommonEmployee.TABLE_NAME} (" +
                 "${DBContract.CommonEmployee.commonEmployeeID} INTEGER PRIMARY KEY," +
-                "${DBContract.CommonEmployee.startExamsDate} varchar(10)," +
-                "${DBContract.CommonEmployee.endExamsDate} varchar(10)," +
-                "${DBContract.CommonEmployee.startDate} varchar(10)," +
-                "${DBContract.CommonEmployee.endDate} varchar(10)," +
-                "${DBContract.CommonEmployee.lastUpdate} varchar(10)," +
-                "${DBContract.CommonEmployee.lastBuild} varchar(10)," +
+                "${DBContract.CommonEmployee.startExamsDate} TEXT," +
+                "${DBContract.CommonEmployee.endExamsDate} TEXT," +
+                "${DBContract.CommonEmployee.startDate} TEXT," +
+                "${DBContract.CommonEmployee.endDate} TEXT," +
+                "${DBContract.CommonEmployee.lastUpdate} TEXT," +
+                "${DBContract.CommonEmployee.lastBuild} TEXT," +
                 "FOREIGN KEY (${DBContract.CommonEmployee.commonEmployeeID}) REFERENCES ${DBContract.Employees.TABLE_NAME}(${DBContract.Employees.employeeID}));"
 
     private val SQL_CREATE_EMPLOYEESCHEDULE =
@@ -149,19 +149,19 @@ class DbHelper(context: Context) :
                 "${DBContract.EmployeeSchedule.scheduleID} INTEGER PRIMARY KEY," +
                 "${DBContract.EmployeeSchedule.inScheduleID} INTEGER," +
                 "${DBContract.EmployeeSchedule.day_of_week} INTEGER," +
-                "${DBContract.EmployeeSchedule.auditories} varchar(20)," +
-                "${DBContract.EmployeeSchedule.endLessonTime} varchar(10)," +
-                "${DBContract.EmployeeSchedule.lessonTypeAbbrev} varchar(10)," +
-                "${DBContract.EmployeeSchedule.note} varchar(40)," +
+                "${DBContract.EmployeeSchedule.auditories} TEXT," +
+                "${DBContract.EmployeeSchedule.endLessonTime} TEXT," +
+                "${DBContract.EmployeeSchedule.lessonTypeAbbrev} TEXT," +
+                "${DBContract.EmployeeSchedule.note} TEXT," +
                 "${DBContract.EmployeeSchedule.numSubgroup} INTEGER," +
-                "${DBContract.EmployeeSchedule.startLessonTime} varchar(10)," +
-                "${DBContract.EmployeeSchedule.studentGroups} varchar(30)," +
-                "${DBContract.EmployeeSchedule.subject} varchar(30)," +
-                "${DBContract.EmployeeSchedule.subjectFullName} varchar(30)," +
+                "${DBContract.EmployeeSchedule.startLessonTime} TEXT," +
+                "${DBContract.EmployeeSchedule.studentGroups} TEXT," +
+                "${DBContract.EmployeeSchedule.subject} TEXT," +
+                "${DBContract.EmployeeSchedule.subjectFullName} TEXT," +
                 "${DBContract.EmployeeSchedule.weekNumber} INTEGER," +
                 "${DBContract.EmployeeSchedule.employeeID} INTEGER," +
-                "${DBContract.EmployeeSchedule.startLessonDate} varchar(10)," +
-                "${DBContract.EmployeeSchedule.endLessonDate} varchar(10)," +
+                "${DBContract.EmployeeSchedule.startLessonDate} TEXT," +
+                "${DBContract.EmployeeSchedule.endLessonDate} TEXT," +
                 "FOREIGN KEY (${DBContract.EmployeeSchedule.employeeID}) REFERENCES ${DBContract.CommonEmployee.TABLE_NAME}(${DBContract.CommonEmployee.commonEmployeeID}))"
 
 
@@ -169,20 +169,21 @@ class DbHelper(context: Context) :
         "CREATE TABLE IF NOT EXISTS ${DBContract.finalEmployeeSchedule.TABLE_NAME} (" +
                 "${DBContract.finalEmployeeSchedule.scheduleID} INTEGER PRIMARY KEY," +
                 "${DBContract.finalEmployeeSchedule.inScheduleID} INTEGER," +
+                "${DBContract.finalEmployeeSchedule.dayIndex} INTEGER," +
                 "${DBContract.finalEmployeeSchedule.day_of_week} INTEGER," +
-                "${DBContract.finalEmployeeSchedule.auditories} varchar(20)," +
-                "${DBContract.finalEmployeeSchedule.endLessonTime} varchar(10)," +
-                "${DBContract.finalEmployeeSchedule.lessonTypeAbbrev} varchar(10)," +
-                "${DBContract.finalEmployeeSchedule.note} varchar(40)," +
+                "${DBContract.finalEmployeeSchedule.auditories} TEXT," +
+                "${DBContract.finalEmployeeSchedule.endLessonTime} TEXT," +
+                "${DBContract.finalEmployeeSchedule.lessonTypeAbbrev} TEXT," +
+                "${DBContract.finalEmployeeSchedule.note} TEXT," +
                 "${DBContract.finalEmployeeSchedule.numSubgroup} INTEGER," +
-                "${DBContract.finalEmployeeSchedule.startLessonTime} varchar(10)," +
-                "${DBContract.finalEmployeeSchedule.studentGroups} varchar(30)," +
-                "${DBContract.finalEmployeeSchedule.subject} varchar(30)," +
-                "${DBContract.finalEmployeeSchedule.subjectFullName} varchar(30)," +
+                "${DBContract.finalEmployeeSchedule.startLessonTime} TEXT," +
+                "${DBContract.finalEmployeeSchedule.studentGroups} TEXT," +
+                "${DBContract.finalEmployeeSchedule.subject} TEXT," +
+                "${DBContract.finalEmployeeSchedule.subjectFullName} TEXT," +
                 "${DBContract.finalEmployeeSchedule.weekNumber} INTEGER," +
                 "${DBContract.finalEmployeeSchedule.employeeID} INTEGER," +
-                "${DBContract.finalEmployeeSchedule.startLessonDate} varchar(10)," +
-                "${DBContract.finalEmployeeSchedule.endLessonDate} varchar(10)," +
+                "${DBContract.finalEmployeeSchedule.startLessonDate} TEXT," +
+                "${DBContract.finalEmployeeSchedule.endLessonDate} TEXT," +
                 "FOREIGN KEY (${DBContract.finalEmployeeSchedule.employeeID}) REFERENCES ${DBContract.CommonEmployee.TABLE_NAME}(${DBContract.CommonEmployee.commonEmployeeID}))"
     // "FOREIGN KEY (${DBContract.finalSchedule.employeeID}) REFERENCES ${DBContract.Employees.TABLE_NAME}(${DBContract.Employees.employeeID}))"
 
@@ -204,18 +205,18 @@ class DbHelper(context: Context) :
                 "${DBContract.EmployeeSchedule.scheduleID} INTEGER PRIMARY KEY," +
                 "${DBContract.EmployeeSchedule.inScheduleID} INTEGER," +
                 "${DBContract.EmployeeSchedule.day_of_week} INTEGER," +
-                "${DBContract.EmployeeSchedule.auditories} varchar(20)," +
-                "${DBContract.EmployeeSchedule.endLessonTime} varchar(10)," +
-                "${DBContract.EmployeeSchedule.lessonTypeAbbrev} varchar(20)," +
-                "${DBContract.EmployeeSchedule.note} varchar(100)," +
+                "${DBContract.EmployeeSchedule.auditories} TEXT," +
+                "${DBContract.EmployeeSchedule.endLessonTime} TEXT," +
+                "${DBContract.EmployeeSchedule.lessonTypeAbbrev} TEXT," +
+                "${DBContract.EmployeeSchedule.note} TEXT," +
                 "${DBContract.EmployeeSchedule.numSubgroup} INTEGER," +
-                "${DBContract.EmployeeSchedule.startLessonTime} varchar(7)," +
-                "${DBContract.EmployeeSchedule.studentGroups} varchar(7)," +
-                "${DBContract.EmployeeSchedule.subject} varchar(20)," +
-                "${DBContract.EmployeeSchedule.subjectFullName} varchar(50)," +
+                "${DBContract.EmployeeSchedule.startLessonTime} TEXT," +
+                "${DBContract.EmployeeSchedule.studentGroups} TEXT," +
+                "${DBContract.EmployeeSchedule.subject} TEXT," +
+                "${DBContract.EmployeeSchedule.subjectFullName} TEXT," +
                 "${DBContract.EmployeeSchedule.weekNumber} INTEGER," +
                 "${DBContract.EmployeeSchedule.employeeID} INTEGER," +
-                "${DBContract.EmployeeExams.dateLesson} varchar(10)," +
+                "${DBContract.EmployeeExams.dateLesson} TEXT," +
                 "FOREIGN KEY (${DBContract.EmployeeSchedule.employeeID}) REFERENCES ${DBContract.CommonEmployee.TABLE_NAME}(${DBContract.CommonEmployee.commonEmployeeID}))"
 
     private val SQL_CREATE_EMPLOYEETOEXAM =
@@ -235,7 +236,7 @@ class DbHelper(context: Context) :
         "CREATE TABLE IF NOT EXISTS ${DBContract.Settings.TABLE_NAME} (" +
                 "${DBContract.Settings.openedType} INTEGER," +
                 "${DBContract.Settings.openedID} INTEGER, " +
-                "${DBContract.Settings.lastWeekUpdate} varchar(10), " +
+                "${DBContract.Settings.lastWeekUpdate} TEXT, " +
                 "${DBContract.Settings.week} INTEGER, " +
                 "${DBContract.Settings.widgetID} INTEGER," +
                 "${DBContract.Settings.widgetOpened} INTEGER )"
@@ -510,8 +511,8 @@ class DbHelper(context: Context) :
         }
 
         if (oldVersion < 15) {
-           // db.execSQL("ALTER TABLE ${DBContract.Settings.TABLE_NAME} ADD COLUMN ${DBContract.Settings.widgetID} INTEGER ")
-           // db.execSQL("ALTER TABLE ${DBContract.Settings.TABLE_NAME} ADD COLUMN ${DBContract.Settings.widgetOpened} INTEGER ")
+            db.execSQL("ALTER TABLE ${DBContract.Settings.TABLE_NAME} ADD COLUMN ${DBContract.Settings.widgetID} INTEGER ")
+            db.execSQL("ALTER TABLE ${DBContract.Settings.TABLE_NAME} ADD COLUMN ${DBContract.Settings.widgetOpened} INTEGER ")
             val values = ContentValues().apply {
                 put(DBContract.Settings.widgetID, 0)
                 put(DBContract.Settings.widgetOpened, 0)
@@ -519,11 +520,47 @@ class DbHelper(context: Context) :
             db.update(DBContract.Settings.TABLE_NAME, values, null, null)
         }
 
-        if(oldVersion < 16) {
+        /*if(oldVersion < 16){
+
+            val a1 = db.execSQL("DROP TABLE IF EXISTS ${DBContract.SubgroupSettings.TABLE_NAME}")
+            val a2 = db.execSQL("DROP TABLE IF EXISTS ${DBContract.Settings.TABLE_NAME}")
+
+            db.execSQL(SQL_CREATE_SUBGROUPSETTINGS)
+            db.execSQL(SQL_CREATE_SETTINGS)
+
+            val values = ContentValues().apply{
+                put(DBContract.Settings.widgetID, 0)
+                put(DBContract.Settings.widgetOpened, 0)
+                put(DBContract.Settings.openedID, 0)
+                put(DBContract.Settings.openedType, 0)
+
+            }
+
+            db.insert(DBContract.Settings.TABLE_NAME,"week" , values)
+
+            val c: Cursor = db.rawQuery(
+                "SELECT ${DBContract.CommonSchedule.commonScheduleID} " +
+                        "FROM ${DBContract.CommonSchedule.TABLE_NAME}"
+                ,null)
+
+            with(c) {
+                while (moveToNext()) {
+                    val group = getInt(getColumnIndexOrThrow(DBContract.CommonSchedule.commonScheduleID))
 
 
+                    val values = ContentValues().apply {
+                        put(DBContract.SubgroupSettings.groupID, group)
+                        put(DBContract.SubgroupSettings.subGroup, 0)
+                    }
 
-        }
+                    val newRowId = db.insert(DBContract.SubgroupSettings.TABLE_NAME, null, values)
+
+                }
+            }
+
+            c.close()
+        }*/
+
     }
 
     override fun onDowngrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
@@ -532,7 +569,7 @@ class DbHelper(context: Context) :
 
     companion object {
         // If you change the database schema, you must increment the database version.
-        const val DATABASE_VERSION = 16
+        const val DATABASE_VERSION = 15
         const val DATABASE_NAME = "Schedule"
     }
 }

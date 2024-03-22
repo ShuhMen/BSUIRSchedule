@@ -12,6 +12,9 @@ import android.widget.RemoteViews
 import com.maximshuhman.bsuirschedule.DataBase.DBContract
 import com.maximshuhman.bsuirschedule.DataBase.DbHelper
 import com.maximshuhman.bsuirschedule.R
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 
 /**
@@ -98,7 +101,14 @@ class ScheduleWidget : AppWidgetProvider() {
                         views.setTextViewText(R.id.name_text, "$lastName $firstName $middleName")
                     }
                 } else {
-
+                    val c = db.rawQuery(
+                        "SELECT COUNT(*) as cnt FROM " +
+                                "${DBContract.Groups.TABLE_NAME} WHERE ${DBContract.Groups.groupID} = $id",
+                        null
+                    )
+                    c.moveToFirst()
+                    if (c.getInt(0) != 0) {
+                        c.close()
                         val cursor = db.rawQuery(
                             "SELECT * FROM " +
                                     "${DBContract.Groups.TABLE_NAME} WHERE ${DBContract.Groups.groupID} = $id",
@@ -112,12 +122,12 @@ class ScheduleWidget : AppWidgetProvider() {
 
                         cursor.close()
                         views.setTextViewText(R.id.name_text, "Группа $name")
-
+                    }
                 }
 
-               // var calendar: Calendar = Calendar.getInstance()
-               // val formatter =
-                //    SimpleDateFormat("dd HH:mm", Locale.getDefault(Locale.Category.FORMAT))
+                var calendar: Calendar = Calendar.getInstance()
+                val formatter =
+                    SimpleDateFormat("dd HH:mm", Locale.getDefault(Locale.Category.FORMAT))
 
                 //val curent = formatter.parse(formatter.format(calendar.time))
                 //  views.setTextViewText(R.id.name_text, formatter.format(calendar.time).toString())
@@ -152,12 +162,55 @@ class ScheduleWidget : AppWidgetProvider() {
     }
 
     override fun onEnabled(context: Context) {
-      //  Util.scheduleUpdate(context)
+        Util.scheduleUpdate(context)
     }
 
     override fun onDisabled(context: Context) {
-     //   Util.clearUpdate(context)
+        Util.clearUpdate(context)
     }
+
+    /*override fun onReceive(context: Context?, intent: Intent?) {
+
+        when(intent!!.action) {
+            "inc" -> {
+                val curName = intent.getStringExtra("CurName")!!
+                val intentType = intent.getStringExtra("UpdateType")!!
+                when (intentType) {
+                    "INC" -> {
+                        val newAmount = intent.getIntExtra("CurAmount", 0) + 1
+                        CoroutineScope(Dispatchers.Main).launch {
+                            val widgetManager =
+                                AppWidgetManager.getInstance(context!!.applicationContext)
+                            widgetManager.notifyAppWidgetViewDataChanged(widgetManager.getAppWidgetIds(ComponentName(context.applicationContext.packageName,ScheduleWidget::class.java.name)),
+                                R.id.list_view
+                            )
+                        }
+                    }
+                    "DEC" -> {
+                        val newAmount = intent.getIntExtra("CurAmount", 0) - 1
+                        CoroutineScope(Dispatchers.Main).launch {
+                            val widgetManager =
+                                AppWidgetManager.getInstance(context!!.applicationContext)
+                            widgetManager.notifyAppWidgetViewDataChanged(widgetManager.getAppWidgetIds(ComponentName(context.applicationContext.packageName,ScheduleWidget::class.java.name)),
+                                R.id.list_view
+                            )
+                        }
+                    }
+                    "DEL" -> {
+                        CoroutineScope(Dispatchers.Main).launch {
+                            val curAmount = intent.getIntExtra("CurAmount", 0)
+                            val widgetManager =
+                                AppWidgetManager.getInstance(context!!.applicationContext)
+                            widgetManager.notifyAppWidgetViewDataChanged(widgetManager.getAppWidgetIds(ComponentName(context.applicationContext.packageName,ScheduleWidget::class.java.name)),
+                                R.id.list_view
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        super.onReceive(context, intent)
+    }*/
 
 
 }
