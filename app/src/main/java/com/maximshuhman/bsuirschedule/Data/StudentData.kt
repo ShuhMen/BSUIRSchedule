@@ -82,8 +82,8 @@ object StudentData {
         val js: JSONArray? = json.optJSONArray(arrayName)
         if (js != null) {
             for (i in 0 until js.length()) {
-                if (getStringDef(js.getJSONObject(i), "lessonTypeAbbrev") != "Консультация" &&
-                    getStringDef(js.getJSONObject(i), "lessonTypeAbbrev") != "Экзамен"
+                if (js.getJSONObject(i).optString("lessonTypeAbbrev") != "Консультация" &&
+                    js.getJSONObject(i).optString("lessonTypeAbbrev") != "Экзамен"
                 ) {
                     db.insert(
                         DBContract.Schedule.TABLE_NAME,
@@ -108,7 +108,7 @@ object StudentData {
     ): ContentValues {
 
         var ph: String
-        val empId = getIntDef(startPair.getJSONArray("employees"), 0, "id")
+        val empId = startPair.getJSONArray("employees").getJSONObject(0).optInt( "id")
         if (empId != 0) {
 
             val count: Cursor = db.rawQuery(
@@ -854,7 +854,7 @@ object StudentData {
                             "DateParce",
                             "can't parse date" + ScheduleList[k].subject + " " + ScheduleList[k].weekNumber + " " + ScheduleList[k].day_of_week
                         )
-                    } catch (e: java.lang.IndexOutOfBoundsException) {
+                    } catch (e: IndexOutOfBoundsException) {
                         Log.d("STUDENTDATA", "fillScheduleList ${e.message}")
                     }
 
@@ -1251,7 +1251,6 @@ object StudentData {
         }
     }
 
-
     private fun fillGroupsTable(db: SQLiteDatabase, mode: Int): Int {
 
         val response: JSONArrayResponse = Requests.getGroupsList("https://iis.bsuir.by/api/v1/")
@@ -1395,7 +1394,6 @@ object StudentData {
         return 0
     }
 
-
     fun add_removeFavGroup(context: Context, mode: Int, grID: Int) {
 
         val dbHelper = DbHelper(context)
@@ -1416,7 +1414,6 @@ object StudentData {
 
         }
     }
-
 
     private fun fillFavoritesList(db: SQLiteDatabase) {
 

@@ -208,7 +208,7 @@ class ExamsFragment : Fragment() {
                         "${pair.employees.lastName} " +
                                 "${pair.employees.firstName.substring(0, 1)}. " +
                                 "${
-                                    pair.employees.middleName.substring(0, 1)
+                                    pair.employees.middleName!!.substring(0, 1)
                                 }."
                 } catch (e: Exception) {
                     EmployeesText.text = ""
@@ -227,7 +227,7 @@ class ExamsFragment : Fragment() {
                 try {
 
                     // val dayOfWeek :String = formatter.parse(date)
-                    val dayOfMonth = pair.dateLesson!!.substring(0, 3)
+                    pair.dateLesson!!.substring(0, 3)
                     if(adapterPosition != 0 )
                         if( exams[layoutPosition-1].dateLesson == exams[layoutPosition].dateLesson){
                             DateView.visibility = View.GONE

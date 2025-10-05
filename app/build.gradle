@@ -7,14 +7,14 @@ plugins {
 }
 
 android {
-    compileSdk 33
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.maximshuhman.bsuirschedule"
         minSdk 28
-        targetSdk 33
-        versionCode 49
-        versionName "1.0.2.47"
+        targetSdk 34
+        versionCode 57
+        versionName "1.0.2.55"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

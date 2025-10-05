@@ -652,7 +652,7 @@ class ScheduleFragment : Fragment() {
                             "Расписание отсутствует!",
                             Toast.LENGTH_SHORT
                         ).show()
-                    } catch (e: java.lang.NullPointerException) {
+                    } catch (e: NullPointerException) {
                         Firebase.crashlytics.log("SсheduleFragmentToast5")
                     }
 
@@ -662,7 +662,7 @@ class ScheduleFragment : Fragment() {
                             "Что-то пошло не так",
                             Toast.LENGTH_SHORT
                         ).show()
-                    } catch (e: java.lang.NullPointerException) {
+                    } catch (e: NullPointerException) {
                         Firebase.crashlytics.log("SсheduleFragmentToast6")
                     }
 
@@ -672,7 +672,7 @@ class ScheduleFragment : Fragment() {
                             "Ошибка получения данных",
                             Toast.LENGTH_SHORT
                         ).show()
-                    } catch (e: java.lang.NullPointerException) {
+                    } catch (e: NullPointerException) {
                         Firebase.crashlytics.log("SсheduleFragmentToastElse")
                     }
                 }
@@ -848,7 +848,7 @@ class ScheduleFragment : Fragment() {
                             "${pair.employees[i].lastName} " +
                                     "${pair.employees[i].firstName.substring(0, 1)}. " +
                                     "${
-                                        pair.employees[i].middleName.substring(0, 1)
+                                        pair.employees[i].middleName!!.substring(0, 1)
                                     }."
                     }
                     employeesText.text = emp

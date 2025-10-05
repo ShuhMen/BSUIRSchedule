@@ -269,9 +269,8 @@ class ListWidgetService : RemoteViewsService() {
 
                 remoteViews.removeAllViews(R.id.outer)
                 val time = RemoteViews(RemoteViews(context.packageName, R.layout.time_widget))
-                var calendar: Calendar = Calendar.getInstance()
-                val formatter =
-                    SimpleDateFormat("dd HH:mm", Locale.getDefault(Locale.Category.FORMAT))
+                Calendar.getInstance()
+                SimpleDateFormat("dd HH:mm", Locale.getDefault(Locale.Category.FORMAT))
 
                 //val curent = formatter.parse(formatter.format(calendar.time))
                 time.setTextViewText(
@@ -346,7 +345,7 @@ class ListWidgetService : RemoteViewsService() {
                                         )
                                     }. " +
                                     "${
-                                        widgetItems[position].first!!.employees[i].middleName.substring(
+                                        widgetItems[position].first!!.employees[i].middleName!!.substring(
                                             0,
                                             1
                                         )
@@ -364,9 +363,8 @@ class ListWidgetService : RemoteViewsService() {
 
                 remoteViews.removeAllViews(R.id.outer)
                 val time = RemoteViews(RemoteViews(context.packageName, R.layout.time_widget))
-                var calendar: Calendar = Calendar.getInstance()
-                val formatter =
-                    SimpleDateFormat("dd HH:mm", Locale.getDefault(Locale.Category.FORMAT))
+                Calendar.getInstance()
+                SimpleDateFormat("dd HH:mm", Locale.getDefault(Locale.Category.FORMAT))
 
                 //val curent = formatter.parse(formatter.format(calendar.time))
                 time.setTextViewText(

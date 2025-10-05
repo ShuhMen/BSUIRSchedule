@@ -21,6 +21,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.BSUIRSchedule"
         tools:targetApi="33">
+        <activity
+            android:name=".Schedule"
+            android:exported="false" />
+
         <service
             android:name=".widget.ListWidgetService"
             android:permission="android.permission.BIND_REMOTEVIEWS" />
@@ -36,7 +40,6 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/schedule_widget_info" />
         </receiver>
-
         <receiver
             android:name=".widget.SampleBootReceiver"
             android:enabled="false"

@@ -24,7 +24,7 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
-object EmployeeData {
+object EmployeeData:IScheduleMaking {
 
     private fun getStringDef(jsonArray: JSONArray, index: Int, valueName: String): String? = try {
         jsonArray.getJSONObject(index).getString(valueName)
@@ -663,7 +663,7 @@ object EmployeeData {
 
         val day: Int = calendar.get(Calendar.DAY_OF_WEEK)
 
-        val startLessonsDate = formatter.parse(commonSchedule.startDate)
+        formatter.parse(commonSchedule.startDate)
         val endLessonsDate = formatter.parse(commonSchedule.endDate)
 
         var curday: Int
@@ -781,7 +781,7 @@ object EmployeeData {
                             "DateParce",
                             "can't parse date" + ScheduleList[k].subject + " " + ScheduleList[k].weekNumber + " " + ScheduleList[k].day_of_week
                         )
-                    } catch (_: java.lang.IndexOutOfBoundsException) {
+                    } catch (_: IndexOutOfBoundsException) {
 
                     }
 
@@ -863,7 +863,7 @@ object EmployeeData {
                     "DateParce",
                     "can't parse date" + ScheduleList[k].subject + " " + ScheduleList[k].weekNumber + " " + ScheduleList[k].day_of_week
                 )
-            } catch (_: java.lang.IndexOutOfBoundsException) {
+            } catch (_: IndexOutOfBoundsException) {
 
             }
 

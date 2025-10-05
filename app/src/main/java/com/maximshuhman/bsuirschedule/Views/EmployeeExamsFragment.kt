@@ -91,7 +91,7 @@ class EmployeeExamsFragment : Fragment() {
     }
 
 
-    fun updateUI() {
+    private fun updateUI() {
 
 
         ExamsRecyclerView.adapter = null
@@ -228,7 +228,7 @@ class EmployeeExamsFragment : Fragment() {
                 try {
 
                     // val dayOfWeek :String = formatter.parse(date)
-                    val dayOfMonth = pair.dateLesson!!.substring(0, 3)
+                    pair.dateLesson!!.substring(0, 3)
                     if(adapterPosition != 0 )
                         if( exams[layoutPosition-1].dateLesson == exams[layoutPosition].dateLesson){
                             DateView.visibility = View.GONE
