@@ -1,3 +1,4 @@
+/*
 package com.maximshuhman.bsuirschedule.widget
 
 import CommonSchedule
@@ -19,7 +20,7 @@ import com.maximshuhman.bsuirschedule.Data.StudentData
 import com.maximshuhman.bsuirschedule.DataBase.DBContract
 import com.maximshuhman.bsuirschedule.DataBase.DbHelper
 import com.maximshuhman.bsuirschedule.DataClasses.EmployeeLesson
-import com.maximshuhman.bsuirschedule.DataClasses.Group
+import com.maximshuhman.bsuirschedule.data.models.Group
 import com.maximshuhman.bsuirschedule.R
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -84,15 +85,18 @@ class ListWidgetService : RemoteViewsService() {
                     c.moveToFirst()
                     if (c.getInt(0) != 0) {
                         c.close()
-                        /*val cursor = db.rawQuery(
+                        */
+/*val cursor = db.rawQuery(
                             "SELECT ${DBContract.CommonEmployee.lastBuild} FROM " +
                                     "${DBContract.CommonEmployee.TABLE_NAME} WHERE ${DBContract.CommonEmployee.commonEmployeeID} = ${id}",
                             null
                         )
 
-                        cursor.moveToFirst()*/
+                        cursor.moveToFirst()*//*
 
-                        /* val lastBuild =
+
+                        */
+/* val lastBuild =
                              cursor.getString(cursor.getColumnIndexOrThrow(DBContract.CommonSchedule.lastBuild))
 
                          var calendar: Calendar = Calendar.getInstance()
@@ -127,7 +131,8 @@ class ListWidgetService : RemoteViewsService() {
                                                                   context,
                                                                   "Расписание отсутствует!",
                                                                   Toast.LENGTH_SHORT
-                                                              ).show()*/
+                                                              ).show()*//*
+
                                              } catch (e: java.lang.NullPointerException) {
                                                  Firebase.crashlytics.log("SсheduleFragmentToast5")
                                              }
@@ -136,7 +141,8 @@ class ListWidgetService : RemoteViewsService() {
                                                                  context,
                                                                  "Что-то пошло не так",
                                                                  Toast.LENGTH_SHORT
-                                                             ).show()*/
+                                                             ).show()*//*
+
                                              } catch (e: java.lang.NullPointerException) {
                                                  Firebase.crashlytics.log("SсheduleFragmentToast6")
                                              }
@@ -145,7 +151,8 @@ class ListWidgetService : RemoteViewsService() {
                                                                  context,
                                                                  "Ошибка получения данных",
                                                                  Toast.LENGTH_SHORT
-                                                             ).show()*/
+                                                             ).show()*//*
+
                                              } catch (e: java.lang.NullPointerException) {
                                                  Firebase.crashlytics.log("SсheduleFragmentToastElse")
                                              }
@@ -157,7 +164,8 @@ class ListWidgetService : RemoteViewsService() {
 
 
                              }
-                         }*/
+                         }*//*
+
                         fillEmployee(id, db)
 
                     } else
@@ -171,15 +179,18 @@ class ListWidgetService : RemoteViewsService() {
                     c.moveToFirst()
                     if (c.getInt(0) != 0) {
                         c.close()
-                        /*val cursor = db.rawQuery(
+                        */
+/*val cursor = db.rawQuery(
                             "SELECT ${DBContract.CommonSchedule.lastBuild} FROM " +
                                     "${DBContract.CommonSchedule.TABLE_NAME} WHERE ${DBContract.CommonSchedule.commonScheduleID} = ${id}",
                             null
                         )
 
-                        cursor.moveToFirst()*/
+                        cursor.moveToFirst()*//*
 
-                        /* val lastBuild =
+
+                        */
+/* val lastBuild =
                              cursor.getString(cursor.getColumnIndexOrThrow(DBContract.CommonSchedule.lastBuild))
 
                          var calendar: Calendar = Calendar.getInstance()
@@ -214,7 +225,8 @@ class ListWidgetService : RemoteViewsService() {
                                                                   context,
                                                                   "Расписание отсутствует!",
                                                                   Toast.LENGTH_SHORT
-                                                              ).show()*/
+                                                              ).show()*//*
+
                                              } catch (e: java.lang.NullPointerException) {
                                                  Firebase.crashlytics.log("SсheduleFragmentToast5")
                                              }
@@ -223,7 +235,8 @@ class ListWidgetService : RemoteViewsService() {
                                                                  context,
                                                                  "Что-то пошло не так",
                                                                  Toast.LENGTH_SHORT
-                                                             ).show()*/
+                                                             ).show()*//*
+
                                              } catch (e: java.lang.NullPointerException) {
                                                  Firebase.crashlytics.log("SсheduleFragmentToast6")
                                              }
@@ -232,7 +245,8 @@ class ListWidgetService : RemoteViewsService() {
                                                                  context,
                                                                  "Ошибка получения данных",
                                                                  Toast.LENGTH_SHORT
-                                                             ).show()*/
+                                                             ).show()*//*
+
                                              } catch (e: java.lang.NullPointerException) {
                                                  Firebase.crashlytics.log("SсheduleFragmentToastElse")
                                              }
@@ -244,7 +258,8 @@ class ListWidgetService : RemoteViewsService() {
 
 
                              }
-                         }*/
+                         }*//*
+
                         fillGroup(id, db)
 
                     } else
@@ -275,7 +290,9 @@ class ListWidgetService : RemoteViewsService() {
                 //val curent = formatter.parse(formatter.format(calendar.time))
                 time.setTextViewText(
                     R.id.start_time_text,
-                    widgetItems[position].first!!.startLessonTime/*formatter.format(calendar.time).toString()*/
+                    widgetItems[position].first!!.startLessonTime*/
+/*formatter.format(calendar.time).toString()*//*
+
                 )
                 time.setTextViewText(
                     R.id.end_time_text,
@@ -369,7 +386,9 @@ class ListWidgetService : RemoteViewsService() {
                 //val curent = formatter.parse(formatter.format(calendar.time))
                 time.setTextViewText(
                     R.id.start_time_text,
-                    widgetItems[position].second!!.startLessonTime/*formatter.format(calendar.time).toString()*/
+                    widgetItems[position].second!!.startLessonTime*/
+/*formatter.format(calendar.time).toString()*//*
+
                 )
                 time.setTextViewText(
                     R.id.end_time_text,
@@ -827,4 +846,4 @@ class ListWidgetService : RemoteViewsService() {
         }
         }
     }
-}
+}*/

@@ -1,3 +1,4 @@
+/*
 package com.maximshuhman.bsuirschedule.Views
 
 import Employees
@@ -18,7 +19,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.maximshuhman.bsuirschedule.Data.StudentData
 import com.maximshuhman.bsuirschedule.DataBase.DBContract
 import com.maximshuhman.bsuirschedule.DataBase.DbHelper
-import com.maximshuhman.bsuirschedule.DataClasses.Group
+import com.maximshuhman.bsuirschedule.data.models.Group
 import com.maximshuhman.bsuirschedule.R
 import java.util.concurrent.Executors
 
@@ -357,4 +358,4 @@ class FavoritesFragment : Fragment() {
     }
 
 
-}
+}*/

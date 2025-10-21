@@ -1,3 +1,4 @@
+/*
 package com.maximshuhman.bsuirschedule.widget
 
 import android.app.PendingIntent
@@ -6,20 +7,14 @@ import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.util.Log
-import android.widget.RemoteViews
-import com.maximshuhman.bsuirschedule.DataBase.DBContract
-import com.maximshuhman.bsuirschedule.DataBase.DbHelper
-import com.maximshuhman.bsuirschedule.R
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Locale
 
 
+*/
 /**
  * Implementation of App Widget functionality.
- */
+ *//*
+
 class ScheduleWidget : AppWidgetProvider() {
 
     val ACTION_UPDATE = "com.maximshuhman.bsuirschedule.action.UPDATE"
@@ -41,7 +36,8 @@ class ScheduleWidget : AppWidgetProvider() {
         Log.d("WIDGET", "onUpdate")
 
         appWidgetIds.forEach { appWidgetId ->
-            // Here we setup the intent which points to the StackViewService which will
+          */
+/*  // Here we setup the intent which points to the StackViewService which will
             // provide the views for this collection.
             val intent = Intent(context, ListWidgetService::class.java)
             intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
@@ -136,7 +132,8 @@ class ScheduleWidget : AppWidgetProvider() {
             views.setEmptyView(R.id.list_view, R.id.empty_view)
             appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetId, R.id.list_view)
             // Instruct the widget manager to update the widget
-            appWidgetManager.updateAppWidget(appWidgetIds, views)
+            appWidgetManager.updateAppWidget(appWidgetIds, views)*//*
+
         }
 
         Log.d("WIDGET", "onUpdate end")
@@ -169,7 +166,8 @@ class ScheduleWidget : AppWidgetProvider() {
         Util.clearUpdate(context)
     }
 
-    /*override fun onReceive(context: Context?, intent: Intent?) {
+    */
+/*override fun onReceive(context: Context?, intent: Intent?) {
 
         when(intent!!.action) {
             "inc" -> {
@@ -210,8 +208,10 @@ class ScheduleWidget : AppWidgetProvider() {
             }
         }
         super.onReceive(context, intent)
-    }*/
+    }*//*
+
 
 
 }
 
+*/

@@ -1,49 +1,51 @@
-package com.maximshuhman.bsuirschedule.Data
+package com.maximshuhman.bsuirschedule.data.sources
 
+import CommonSchedule
+import com.maximshuhman.bsuirschedule.DataClasses.Employee
+import com.maximshuhman.bsuirschedule.DataClasses.LastUpdateDate
+import com.maximshuhman.bsuirschedule.data.models.Group
 import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
 
-
-interface IISApi {
+interface IISService {
 
 
     @GET("schedule?")
     suspend fun getGroupSchedule(
         @Query("studentGroup") groupId: String
-    ): Response<ResponseBody>
+    ): Response<CommonSchedule>
 
-    @GET("current-week")
-    suspend fun getCurWeek(): Int?
+    @GET("schedule/current-week")
+    suspend fun getCurWeek(): Response<Int>
 
     @GET("student-groups")
-    suspend fun getGroupsList(): Response<ResponseBody>
-
+    suspend fun getGroupsList(): Response<List<Group>>
 
     @GET("employees/all")
-    suspend fun getEmployeesList(): Response<ResponseBody>
+    suspend fun getEmployeesList(): Response<List<Employee>>
 
     @GET("photo/{id}")
     suspend fun getEmployeePhoto(
         @Path("id") emplId: String
     ): Response<ResponseBody>
 
-    @GET("student-group?")
+    @GET("last-update-date/student-group?")
     suspend fun getGroupScheduleLastUpdate(
         @Query("groupNumber") groupNumber: String
-    ): Response<ResponseBody>
+    ): Response<LastUpdateDate>
 
     @GET("schedule/{id}")
     suspend fun getEmployeeSchedule(
         @Path("id") emplId: String
     ): Response<ResponseBody>
 
-    @GET("employee?")
+    @GET("last-update-date/employee?")
     suspend fun getEmployeeScheduleLastUpdate(
         @Query("id") employeeID: Int
-    ): Response<ResponseBody>
+    ): Response<LastUpdateDate>
 
     // https://iis.bsuir.by/api/v1/last-update-date/employee?id={empId}
 }

@@ -1,3 +1,4 @@
+/*
 package com.maximshuhman.bsuirschedule
 
 import android.os.Bundle
@@ -89,4 +90,4 @@ class EmployeeLessonInf : DialogFragment() {
         return view
     }
 
-}
+}*/

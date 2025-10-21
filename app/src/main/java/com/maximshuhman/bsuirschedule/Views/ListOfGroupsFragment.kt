@@ -1,3 +1,4 @@
+/*
 package com.maximshuhman.bsuirschedule.Views
 
 import android.annotation.SuppressLint
@@ -20,7 +21,7 @@ import com.google.firebase.crashlytics.ktx.crashlytics
 import com.google.firebase.ktx.Firebase
 import com.maximshuhman.bsuirschedule.Data.EmployeeData
 import com.maximshuhman.bsuirschedule.Data.StudentData
-import com.maximshuhman.bsuirschedule.DataClasses.Group
+import com.maximshuhman.bsuirschedule.data.models.Group
 import com.maximshuhman.bsuirschedule.R
 import com.maximshuhman.bsuirschedule.RecyclerLinearManager
 import java.util.concurrent.Executors
@@ -60,10 +61,12 @@ class ListOfGroupsFragment : Fragment() {
         GroupsResyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
-                /*  if ((recyclerView?.layoutManager as LinearLayoutManager)
+                */
+/*  if ((recyclerView?.layoutManager as LinearLayoutManager)
                           .findFirstCompletelyVisibleItemPosition() == 0) {
                       floatingButton.visibility = View.GONE
-                  }*/
+                  }*//*
+
                 if (dy > 10 && floatingButton.isShown) {
                     floatingButton.hide()
                 }
@@ -157,8 +160,10 @@ class ListOfGroupsFragment : Fragment() {
                             .show()
                     }catch (_:Exception){}
                 } else {
-                    /*dataFilter = StudentData.GroupsList
-                    GroupsResyclerView.adapter = GroupsRecyclerAdapter()*/
+                    */
+/*dataFilter = StudentData.GroupsList
+                    GroupsResyclerView.adapter = GroupsRecyclerAdapter()*//*
+
 //                    GroupsResyclerView.recycledViewPool.clear()
                     // GroupsResyclerView.adapter!!.notifyDataSetChanged()
                 }
@@ -314,3 +319,4 @@ class ListOfGroupsFragment : Fragment() {
 }
 
 
+*/

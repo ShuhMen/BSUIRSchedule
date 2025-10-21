@@ -1,3 +1,4 @@
+/*
 package com.maximshuhman.bsuirschedule.Views
 
 import android.annotation.SuppressLint
@@ -15,7 +16,6 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.maximshuhman.bsuirschedule.Data.EmployeeData
 import com.maximshuhman.bsuirschedule.DataClasses.EmployeeExam
 import com.maximshuhman.bsuirschedule.EmployeeLessonInf
 import com.maximshuhman.bsuirschedule.R
@@ -94,13 +94,15 @@ class EmployeeExamsFragment : Fragment() {
     private fun updateUI() {
 
 
-        ExamsRecyclerView.adapter = null
+*/
+/*        ExamsRecyclerView.adapter = null
 
         groupID?.let { EmployeeData.makeExams(requireContext(), it) }
 
         ExamsRecyclerView.adapter = ExamsRecyclerAdapter(EmployeeData.ExamsList)
         ExamsRecyclerView.recycledViewPool.clear()
-        ExamsRecyclerView.adapter!!.notifyDataSetChanged()
+        ExamsRecyclerView.adapter!!.notifyDataSetChanged()*//*
+
 
     }
 
@@ -236,7 +238,8 @@ class EmployeeExamsFragment : Fragment() {
                             DateView.visibility = View.VISIBLE
                     else
                         DateView.visibility = View.VISIBLE
-                    DateView.text = /*"${
+                    DateView.text = */
+/*"${
                         when (dayOfWeek) {
                             1 -> "Понедельник"
                             2 -> "Вторник"
@@ -247,7 +250,8 @@ class EmployeeExamsFragment : Fragment() {
                             7 -> "Воскресенье"
                             else -> "Ошибка"
                         }
-                    }," + */ pair.dateLesson!!.substring(0, 2) + " " +
+                    }," + *//*
+ pair.dateLesson!!.substring(0, 2) + " " +
                             when (pair.dateLesson!!.substring(3, 5)) {
                                 "01" -> "Января"
                                 "02" -> "Февраля"
@@ -302,4 +306,4 @@ class EmployeeExamsFragment : Fragment() {
         }
 
     }
-}
+}*/

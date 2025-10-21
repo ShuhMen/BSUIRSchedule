@@ -1,47 +1,12 @@
+/*
 package com.maximshuhman.bsuirschedule.Views
 
-import android.annotation.SuppressLint
-import android.appwidget.AppWidgetManager
-import android.content.ComponentName
-import android.content.ContentValues
-import android.database.Cursor
-import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.util.Log
-import android.view.*
-import android.widget.ImageView
-import android.widget.ProgressBar
-import android.widget.RemoteViews
-import android.widget.TextView
-import android.widget.Toast
-import androidx.activity.OnBackPressedCallback
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.firebase.crashlytics.ktx.crashlytics
-import com.google.firebase.ktx.Firebase
-import com.maximshuhman.bsuirschedule.*
-import com.maximshuhman.bsuirschedule.Data.EmployeeData
-import com.maximshuhman.bsuirschedule.Data.Requests
-import com.maximshuhman.bsuirschedule.DataBase.DBContract
-import com.maximshuhman.bsuirschedule.DataBase.DbHelper
-import com.maximshuhman.bsuirschedule.DataClasses.EmployeeLesson
-import com.maximshuhman.bsuirschedule.widget.ScheduleWidget
-import java.text.SimpleDateFormat
-import java.util.*
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 
 
 class EmployeeSchedule : Fragment() {
-    lateinit var ScheduleRecycler: RecyclerView
+   */
+/* lateinit var ScheduleRecycler: RecyclerView
     lateinit var ProgressBar: ProgressBar
     lateinit var scheduleSituated: TextView
     private lateinit var ToolBar: androidx.appcompat.widget.Toolbar
@@ -173,7 +138,7 @@ class EmployeeSchedule : Fragment() {
             //ToolBar.setTitleTextColor(R.color.white)
             ScheduleRecycler.layoutManager = LinearLayoutManager(requireContext())
             val lastUpdateResponse =
-                Requests.getEmployeeScheduleLastUpdate(EmployeeData.curEmployeeID!!)
+                ScheduleNetworkSourceImpl.getEmployeeScheduleLastUpdate(EmployeeData.curEmployeeID!!)
             var lastUpdate = ""
 
             if (lastUpdateResponse.errorCode == 0) {
@@ -243,7 +208,8 @@ class EmployeeSchedule : Fragment() {
                 /*  if ((recyclerView?.layoutManager as LinearLayoutManager)
                           .findFirstCompletelyVisibleItemPosition() == 0) {
                       floatingButton.visibility = View.GONE
-                  }*/
+                  }*//*
+
                 if (dy > 10 && floatingButton.isShown) {
                     floatingButton.hide()
                 }
@@ -649,5 +615,7 @@ class EmployeeSchedule : Fragment() {
             }
         }
     }
+*//*
 
 }
+*/

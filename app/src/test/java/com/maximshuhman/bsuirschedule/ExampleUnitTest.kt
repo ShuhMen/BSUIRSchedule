@@ -1,6 +1,14 @@
 package com.maximshuhman.bsuirschedule
 
-import org.junit.Assert.assertEquals
+import com.maximshuhman.bsuirschedule.DataClasses.Employee
+import com.maximshuhman.bsuirschedule.data.DataModule
+import com.maximshuhman.bsuirschedule.data.models.Group
+import com.maximshuhman.bsuirschedule.data.repositories.ScheduleNetworkSourceImpl
+import com.maximshuhman.bsuirschedule.domain.models.ReadySchedule
+import com.maximshuhman.bsuirschedule.domain.useCases.GetEmployeeListUseCase
+import com.maximshuhman.bsuirschedule.domain.useCases.GetGroupListUseCase
+import com.maximshuhman.bsuirschedule.domain.useCases.GetGroupScheduleUseCase
+import kotlinx.coroutines.runBlocking
 import org.junit.Test
 
 /**
@@ -9,8 +17,45 @@ import org.junit.Test
  * See [testing documentation](http://d.android.com/tools/testing).
  */
 class ExampleUnitTest {
+
     @Test
-    fun addition_isCorrect() {
-        assertEquals(4, 2 + 2)
+    fun getGroupsList_test() {
+        runBlocking {
+
+            val service = DataModule.provideApiService(DataModule.provideRetrofit())
+
+            val source = ScheduleNetworkSourceImpl(service)
+
+            val list = GetGroupListUseCase(source)()
+
+            assert(list is AppResult.Success<List<Group>>)
+            assert((list as AppResult.Success<List<Group>>).data.isNotEmpty())
+        }
+    }
+
+    @Test
+    fun getGroupSchedule_test() {
+        runBlocking {
+            val service = DataModule.provideApiService(DataModule.provideRetrofit())
+            val source = ScheduleNetworkSourceImpl(service)
+            val list = GetGroupScheduleUseCase(source, DataModule.provideUserDao())(23811)
+
+            assert(list is AppResult.Success<ReadySchedule>)
+        }
+    }
+
+    @Test
+    fun getEmployeeList_test() {
+        runBlocking {
+            val service = DataModule.provideApiService(DataModule.provideRetrofit())
+            val source = ScheduleNetworkSourceImpl(service)
+            val list = GetEmployeeListUseCase(source)()
+
+            assert(list is AppResult.Success<List<Employee>>)
+            assert((list as AppResult.Success<List<Employee>>).data.isNotEmpty()){
+                "Список преподавателей пуст"
+            }
+
+        }
     }
 }

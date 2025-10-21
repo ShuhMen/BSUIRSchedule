@@ -1,3 +1,4 @@
+/*
 package com.maximshuhman.bsuirschedule.DataBase
 
 import android.content.ContentValues
@@ -196,10 +197,12 @@ class DbHelper(context: Context) :
                 //   "FOREIGN KEY (${DBContract.PairToEmployers.lessonID}) REFERENCES ${DBContract.Schedule.TABLE_NAME}(${DBContract.Schedule.scheduleID})," +
                 "FOREIGN KEY (${DBContract.EmployeeToPair.groupName}) REFERENCES ${DBContract.Groups.TABLE_NAME}(${DBContract.Groups.name}))"
 
-    /*fun createGroupScheduleIndex(db:SQLiteDatabase){
+    */
+/*fun createGroupScheduleIndex(db:SQLiteDatabase){
         db.execSQL(SQL_CREATE_SCHEDULE_INDEX)
     }
-*/
+*//*
+
     private val SQL_CREATE_EMPLOYEEEXAMS =
         "CREATE TABLE IF NOT EXISTS ${DBContract.EmployeeExams.TABLE_NAME} (" +
                 "${DBContract.EmployeeSchedule.scheduleID} INTEGER PRIMARY KEY," +
@@ -245,22 +248,54 @@ class DbHelper(context: Context) :
         Log.v("DBDD", "p0 override fun onCreate(db: SQLiteDatabase?) {")
         with(p0!!) {
             try {
-                /*val a1  = */execSQL(SQL_CREATE_GROUPS)
-                /*val a2  = */execSQL(SQL_CREATE_COMMONSCHEDULE)
-                /*val a3  = */execSQL(SQL_CREATE_SCHEDULE)
-                /*val a4  = */execSQL(SQL_CREATE_EMPlOYEES)
-                /*val a5  = */execSQL(SQL_CREATE_FAVORITES)
-                /*val a6  = */execSQL(SQL_CREATE_EXAMS)
-                /*val a7  = */execSQL(SQL_CREATE_FINALSCHEDULE)
-                /*val a8  = */execSQL(SQL_CREATE_PAIRTOEMPLOYER)
-                /*val a9  = */execSQL(SQL_CREATE_COMMONEMPLOYEE)
-                /*val a10 = */execSQL(SQL_CREATE_EMPLOYEESCHEDULE)
-                /*val a11 = */execSQL(SQL_CREATE_EMPLOYEETOPAIR)
-                /*val a12 = */execSQL(SQL_CREATE_EMPLOYEEEXAMS)
-                /*val a13 = */execSQL(SQL_CREATE_FINALEMPLOYEESCHEDULE)
-                /*val a14 = */execSQL(SQL_CREATE_EMPLOYEETOEXAM)
-                /*val a15 = */execSQL(SQL_CREATE_SUBGROUPSETTINGS)
-                /*val a16 = */execSQL(SQL_CREATE_SETTINGS)
+                */
+/*val a1  = *//*
+execSQL(SQL_CREATE_GROUPS)
+                */
+/*val a2  = *//*
+execSQL(SQL_CREATE_COMMONSCHEDULE)
+                */
+/*val a3  = *//*
+execSQL(SQL_CREATE_SCHEDULE)
+                */
+/*val a4  = *//*
+execSQL(SQL_CREATE_EMPlOYEES)
+                */
+/*val a5  = *//*
+execSQL(SQL_CREATE_FAVORITES)
+                */
+/*val a6  = *//*
+execSQL(SQL_CREATE_EXAMS)
+                */
+/*val a7  = *//*
+execSQL(SQL_CREATE_FINALSCHEDULE)
+                */
+/*val a8  = *//*
+execSQL(SQL_CREATE_PAIRTOEMPLOYER)
+                */
+/*val a9  = *//*
+execSQL(SQL_CREATE_COMMONEMPLOYEE)
+                */
+/*val a10 = *//*
+execSQL(SQL_CREATE_EMPLOYEESCHEDULE)
+                */
+/*val a11 = *//*
+execSQL(SQL_CREATE_EMPLOYEETOPAIR)
+                */
+/*val a12 = *//*
+execSQL(SQL_CREATE_EMPLOYEEEXAMS)
+                */
+/*val a13 = *//*
+execSQL(SQL_CREATE_FINALEMPLOYEESCHEDULE)
+                */
+/*val a14 = *//*
+execSQL(SQL_CREATE_EMPLOYEETOEXAM)
+                */
+/*val a15 = *//*
+execSQL(SQL_CREATE_SUBGROUPSETTINGS)
+                */
+/*val a16 = *//*
+execSQL(SQL_CREATE_SETTINGS)
 
 
             } catch (e: Exception) {
@@ -275,10 +310,12 @@ class DbHelper(context: Context) :
 
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        /*   Log.v(
+        */
+/*   Log.v(
                "DBDD",
                "override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {"
-           )*/
+           )*//*
+
 
         if (oldVersion < 3)
             db.execSQL("ALTER TABLE ${DBContract.Employees.TABLE_NAME} ADD COLUMN ${DBContract.Employees.photo} BLOB")
@@ -520,7 +557,8 @@ class DbHelper(context: Context) :
             db.update(DBContract.Settings.TABLE_NAME, values, null, null)
         }
 
-        /*if(oldVersion < 16){
+        */
+/*if(oldVersion < 16){
 
             val a1 = db.execSQL("DROP TABLE IF EXISTS ${DBContract.SubgroupSettings.TABLE_NAME}")
             val a2 = db.execSQL("DROP TABLE IF EXISTS ${DBContract.Settings.TABLE_NAME}")
@@ -559,7 +597,8 @@ class DbHelper(context: Context) :
             }
 
             c.close()
-        }*/
+        }*//*
+
 
     }
 
@@ -572,4 +611,4 @@ class DbHelper(context: Context) :
         const val DATABASE_VERSION = 15
         const val DATABASE_NAME = "Schedule"
     }
-}
+}*/

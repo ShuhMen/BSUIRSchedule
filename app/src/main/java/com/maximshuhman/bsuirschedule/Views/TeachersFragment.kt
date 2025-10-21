@@ -1,3 +1,4 @@
+/*
 package com.maximshuhman.bsuirschedule.Views
 
 import Employees
@@ -5,8 +6,17 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.view.*
-import android.widget.*
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Filter
+import android.widget.Filterable
+import android.widget.ProgressBar
+import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
@@ -17,8 +27,8 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.firebase.crashlytics.ktx.crashlytics
-import com.google.firebase.ktx.Firebase
+import com.google.firebase.Firebase
+import com.google.firebase.crashlytics.crashlytics
 import com.maximshuhman.bsuirschedule.Data.EmployeeData
 import com.maximshuhman.bsuirschedule.R
 import com.maximshuhman.bsuirschedule.RecyclerLinearManager
@@ -59,10 +69,12 @@ class TeachersFragment : Fragment() {
         employeesResyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
-                /*  if ((recyclerView?.layoutManager as LinearLayoutManager)
+                */
+/*  if ((recyclerView?.layoutManager as LinearLayoutManager)
                           .findFirstCompletelyVisibleItemPosition() == 0) {
                       floatingButton.visibility = View.GONE
-                  }*/
+                  }*//*
+
                 if (dy > 10 && floatingButton.isShown) {
                     floatingButton.hide()
                 }
@@ -291,4 +303,4 @@ class TeachersFragment : Fragment() {
     }
 
 
-}
+}*/

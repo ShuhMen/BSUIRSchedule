@@ -1,3 +1,4 @@
+/*
 package com.maximshuhman.bsuirschedule.Views
 
 import android.annotation.SuppressLint
@@ -205,10 +206,10 @@ class ExamsFragment : Fragment() {
 
                 try {
                     EmployeesText.text =
-                        "${pair.employees.lastName} " +
-                                "${pair.employees.firstName.substring(0, 1)}. " +
+                        "${pair.employee.lastName} " +
+                                "${pair.employee.firstName.substring(0, 1)}. " +
                                 "${
-                                    pair.employees.middleName!!.substring(0, 1)
+                                    pair.employee.middleName!!.substring(0, 1)
                                 }."
                 } catch (e: Exception) {
                     EmployeesText.text = ""
@@ -238,7 +239,8 @@ class ExamsFragment : Fragment() {
 
 
 
-                    DateView.text = /*"${
+                    DateView.text = */
+/*"${
                         when (dayOfWeek) {
                             1 -> "Понедельник"
                             2 -> "Вторник"
@@ -249,7 +251,8 @@ class ExamsFragment : Fragment() {
                             7 -> "Воскресенье"
                             else -> "Ошибка"
                         }
-                    }," + */ pair.dateLesson!!.substring(0, 2) + " " +
+                    }," + *//*
+ pair.dateLesson!!.substring(0, 2) + " " +
                             when (pair.dateLesson!!.substring(3, 5)) {
                                 "01" -> "Января"
                                 "02" -> "Февраля"
@@ -273,14 +276,14 @@ class ExamsFragment : Fragment() {
 
             override fun onClick(p0: View?) {
                 val args = LessonInfDialog.getBundle(
-                    exams[position].employees.photo,
+                    exams[position].employee.photo,
                     StartTimeText.text.toString(),
                     EndTimeText.text.toString(),
                     exams[position].auditories,
 
-                    exams[position].employees.lastName.toString() + ' ' +
-                            exams[position].employees.firstName.toString() + ' ' +
-                            exams[position].employees.middleName.toString(),
+                    exams[position].employee.lastName.toString() + ' ' +
+                            exams[position].employee.firstName.toString() + ' ' +
+                            exams[position].employee.middleName.toString(),
 
                     exams[position].subjectFullName.toString() + '(' + exams[position].lessonTypeAbbrev + ')',
                     exams[position].note
@@ -297,4 +300,4 @@ class ExamsFragment : Fragment() {
         }
 
     }
-}
+}*/

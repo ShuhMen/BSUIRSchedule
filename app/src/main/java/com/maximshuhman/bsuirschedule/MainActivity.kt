@@ -1,75 +1,67 @@
 package com.maximshuhman.bsuirschedule
 
-import android.database.Cursor
 import android.os.Bundle
-import android.view.View
-import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
-import androidx.navigation.findNavController
-import androidx.navigation.ui.setupWithNavController
-import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.maximshuhman.bsuirschedule.DataBase.DBContract
-import com.maximshuhman.bsuirschedule.DataBase.DbHelper
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.maximshuhman.bsuirschedule.presentation.views.GroupScheduleView
+import com.maximshuhman.bsuirschedule.presentation.views.GroupsScreen
+import com.maximshuhman.bsuirschedule.ui.theme.BSUIRScheduleTheme
+import dagger.hilt.android.AndroidEntryPoint
 
-
-class MainActivity : AppCompatActivity() {
-
-    lateinit var bottomNavigationView: BottomNavigationView
-
+@AndroidEntryPoint
+class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-
-        try {
-            bottomNavigationView = findViewById(R.id.bottom_navigating_view)
-        } catch (e: Exception) {
-            Toast.makeText(
-                this.applicationContext,
-                "Ошибка открытия приложения",
-                Toast.LENGTH_SHORT
-            ).show()
-            this.recreate()
-        }
-
-        val navController = findNavController(R.id.nav_fragment)
-
-        val noBottomNabBarDest = setOf(
-            R.id.scheduleFragment,
-            R.id.examsFragment,
-            R.id.lessonInfDialog,
-            R.id.employeeSchedule,
-            R.id.employeeLessonInf,
-            R.id.employeeExamsFragment
-        )
-
-        navController.addOnDestinationChangedListener { _, destination, _ ->
-            if (destination.id in noBottomNabBarDest) {
-
-                //bottomNavigationView.animate().translationY(bottomNavigationView.height.toFloat())
-                bottomNavigationView.visibility = View.GONE
-
-            } else {
-                //  bottomNavigationView.animate().translationY(0f)
-
-                bottomNavigationView.visibility = View.VISIBLE
+        enableEdgeToEdge()
+        setContent {
+            BSUIRScheduleTheme {
+                Main()
             }
         }
+    }
+}
 
+@Composable
+fun Main(modifier: Modifier = Modifier) {
+    val navController = rememberNavController()
+    NavHost(
+        navController = navController,
+        startDestination = NavRoutes.Groups.route
+    ){
+        composable(NavRoutes.Groups.route) { GroupsScreen(navController) }
+        composable(NavRoutes.GroupSchedule.route + "/{groupId}&{groupName}",
+            arguments = listOf(navArgument("groupId") { type = NavType.IntType }, navArgument("groupName") { type = NavType.StringType })) {
+                stackEntry ->
+                val groupId = stackEntry.arguments?.getInt("groupId")!!
+                val groupName = stackEntry.arguments?.getString("groupName")!!
 
-        bottomNavigationView.setupWithNavController(navController)
-
-        val dbHelper = DbHelper(this.applicationContext)
-        val db = dbHelper.writableDatabase
-        val c: Cursor = db.rawQuery(
-            "SELECT COUNT(*) as cnt FROM ${DBContract.Favorites.TABLE_NAME}",
-            null
-        )
-        c.moveToFirst()
-
-        if (c.getInt(0) != 0) {
-            c.close()
-            bottomNavigationView.selectedItemId = R.id.favoritesFragment
+            GroupScheduleView(navController, groupId, groupName)
         }
+        //composable(NavRoutes.Contacts.route) { Contacts()  }
+        //composable(NavRoutes.About.route) { About() }
+    }
+}
 
+sealed class NavRoutes(val route: String) {
+    object Groups : NavRoutes("groups")
+    object Employees : NavRoutes("employees")
+    object GroupSchedule : NavRoutes("group_schedule")
+}
+
+
+@Preview(showBackground = true)
+@Composable
+fun GreetingPreview() {
+    BSUIRScheduleTheme {
+        Main()
     }
 }

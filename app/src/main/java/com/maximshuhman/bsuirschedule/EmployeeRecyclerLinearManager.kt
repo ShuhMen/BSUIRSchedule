@@ -1,3 +1,4 @@
+/*
 package com.maximshuhman.bsuirschedule
 
 import android.content.Context
@@ -46,4 +47,4 @@ class RecyclerLinearManager : LinearLayoutManager {
     companion object {
         private var MILLISECONDS_PER_INCH = 25f //default is 25f (bigger = slower)
     }
-}
+}*/

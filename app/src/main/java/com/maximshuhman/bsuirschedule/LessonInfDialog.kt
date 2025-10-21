@@ -1,3 +1,4 @@
+/*
 package com.maximshuhman.bsuirschedule
 
 import android.graphics.Bitmap
@@ -136,7 +137,8 @@ class LessonInfDialog : DialogFragment() {
         return view
     }
 
-    /*
+    */
+/*
         override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
             activity?.let {
                 val builder = AlertDialog.Builder(it, R.style.BaseBottomSheetDialog)
@@ -159,5 +161,6 @@ class LessonInfDialog : DialogFragment() {
             } ?: throw IllegalStateException("Activity cannot be null")
         }
 
-    */
-}
+    *//*
+
+}*/

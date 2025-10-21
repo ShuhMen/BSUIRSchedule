@@ -1,5 +1,7 @@
 package com.maximshuhman.bsuirschedule.DataClasses
 
+import com.maximshuhman.bsuirschedule.data.models.Group
+
 data class EmployeeLesson(
     var inLessonID: Int,
     var day_of_week: Int,

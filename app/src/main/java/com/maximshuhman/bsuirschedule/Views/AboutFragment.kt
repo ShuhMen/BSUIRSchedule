@@ -1,3 +1,4 @@
+/*
 package com.maximshuhman.bsuirschedule.Views
 
 import android.app.AlertDialog
@@ -42,4 +43,4 @@ class AboutFragment : Fragment() {
     }
 
 
-}
+}*/

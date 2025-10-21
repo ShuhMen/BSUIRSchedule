@@ -39,4 +39,9 @@
     <string name="november">Ноября</string>
     <string name="december">Декабря</string>
     <string name="widget_choose_schedule">Выберите расписание</string>
+    <string name="search_button">Поиск</string>
+    <string name="go_back">Перейти назад</string>
+    <string name="subgroup1">Подгруппа 1</string>
+    <string name="subgroup2">Подгруппа 2</string>
+    <string name="subgroupAll">Все подгруппы</string>
 </resources>

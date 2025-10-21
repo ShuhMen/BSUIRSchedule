@@ -1,3 +1,4 @@
+/*
 package com.maximshuhman.bsuirschedule.Views
 
 import Lesson
@@ -26,7 +27,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.crashlytics.ktx.crashlytics
 import com.google.firebase.ktx.Firebase
-import com.maximshuhman.bsuirschedule.Data.Requests
+import com.maximshuhman.bsuirschedule.Data.ScheduleNetworkSourceImpl
 import com.maximshuhman.bsuirschedule.Data.StudentData
 import com.maximshuhman.bsuirschedule.DataBase.DBContract
 import com.maximshuhman.bsuirschedule.DataBase.DbHelper
@@ -169,7 +170,7 @@ class ScheduleFragment : Fragment() {
             recyclerViewLinearManager = LinearLayoutManager(requireContext())
             scheduleRecycler.layoutManager = recyclerViewLinearManager
 
-            val lastUpdateResponse = Requests.getGroupScheduleLastUpdate(StudentData.curGroupName)
+            val lastUpdateResponse = ScheduleNetworkSourceImpl.getGroupScheduleLastUpdate(StudentData.curGroupName)
             val lastUpdate: String
 
             if (lastUpdateResponse.errorCode == 0) {
@@ -230,7 +231,8 @@ class ScheduleFragment : Fragment() {
         }
 
 
-        /*  try {
+        */
+/*  try {
               (requireActivity() as MainActivity).bottomNavigationView.visibility =
                       //.menu.findItem(R.id.favoritesFragment).isChecked =
                       //true
@@ -238,16 +240,19 @@ class ScheduleFragment : Fragment() {
           } catch (_: UninitializedPropertyAccessException) {
               //do nothing
           }
-  */
+  *//*
+
         scheduleRecycler.layoutManager = RecyclerLinearManager(requireContext())
 
         scheduleRecycler.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
-                /*  if ((recyclerView?.layoutManager as LinearLayoutManager)
+                */
+/*  if ((recyclerView?.layoutManager as LinearLayoutManager)
                           .findFirstCompletelyVisibleItemPosition() == 0) {
                       floatingButton.visibility = View.GONE
-                  }*/
+                  }*//*
+
                 if (dy > 10 && floatingButton.isShown) {
                     floatingButton.hide()
                 }
@@ -902,4 +907,4 @@ class ScheduleFragment : Fragment() {
         }
 
     }
-}
+}*/

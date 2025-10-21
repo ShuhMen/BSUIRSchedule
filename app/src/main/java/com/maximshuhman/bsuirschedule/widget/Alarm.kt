@@ -1,3 +1,4 @@
+/*
 package com.maximshuhman.bsuirschedule.widget
 
 import android.app.AlarmManager
@@ -25,7 +26,8 @@ class SampleBootReceiver : BroadcastReceiver() {
                 scheduleUpdate(context)
             }
 
-            /* val alarmManager =
+            */
+/* val alarmManager =
                  context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager
              val pendingIntent =
                  PendingIntent.getService(
@@ -41,7 +43,8 @@ class SampleBootReceiver : BroadcastReceiver() {
                  SystemClock.elapsedRealtime() + AlarmManager.INTERVAL_HALF_HOUR,
                  AlarmManager.INTERVAL_HALF_HOUR,
                  pendingIntent
-             )*/
+             )*//*
+
         }
     }
 }
@@ -66,4 +69,4 @@ object Util {
         val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         am.cancel(getAlarmIntent(context))
     }
-}
+}*/
