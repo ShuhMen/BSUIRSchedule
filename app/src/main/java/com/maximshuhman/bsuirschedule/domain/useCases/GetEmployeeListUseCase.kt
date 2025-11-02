@@ -1,10 +1,10 @@
 package com.maximshuhman.bsuirschedule.domain.useCases
 
 import com.maximshuhman.bsuirschedule.AppResult
-import com.maximshuhman.bsuirschedule.DataClasses.Employee
 import com.maximshuhman.bsuirschedule.data.ScheduleSource
+import com.maximshuhman.bsuirschedule.data.dto.Employee
 import com.maximshuhman.bsuirschedule.data.repositories.NetError
-import com.maximshuhman.bsuirschedule.domain.LogicError
+import com.maximshuhman.bsuirschedule.domain.models.LogicError
 import javax.inject.Inject
 
 class GetEmployeeListUseCase @Inject constructor(

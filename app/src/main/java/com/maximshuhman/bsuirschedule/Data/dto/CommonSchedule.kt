@@ -1,4 +1,5 @@
-import com.maximshuhman.bsuirschedule.DataClasses.Schedules
+
+import com.maximshuhman.bsuirschedule.data.dto.Schedules
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -13,6 +14,6 @@ data class CommonSchedule(
     val previousSchedules : String?,
     val currentTerm       : String,
     val previousTerm      : String?,
-    val exams             : ArrayList<String>? = null,
+    val exams             : ArrayList<Lesson>? = null,
     val currentPeriod     : String,
 )

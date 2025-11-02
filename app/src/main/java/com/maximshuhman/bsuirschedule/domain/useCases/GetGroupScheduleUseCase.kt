@@ -6,11 +6,12 @@ import com.maximshuhman.bsuirschedule.AppResult
 import com.maximshuhman.bsuirschedule.data.ScheduleSource
 import com.maximshuhman.bsuirschedule.data.repositories.NetError
 import com.maximshuhman.bsuirschedule.data.sources.GroupsDAO
-import com.maximshuhman.bsuirschedule.domain.LogicError
+import com.maximshuhman.bsuirschedule.data.sources.ScheduleDAO
 import com.maximshuhman.bsuirschedule.domain.models.GroupDay
 import com.maximshuhman.bsuirschedule.domain.models.GroupDayHeader
+import com.maximshuhman.bsuirschedule.domain.models.LogicError
 import com.maximshuhman.bsuirschedule.domain.models.ReadySchedule
-import com.maximshuhman.bsuirschedule.domain.toLogicError
+import com.maximshuhman.bsuirschedule.domain.models.toLogicError
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -19,16 +20,20 @@ import javax.inject.Inject
 
 class GetGroupScheduleUseCase @Inject constructor(
     private val repository: ScheduleSource,
-    private val groupsSource: GroupsDAO
+    private val groupsSource: GroupsDAO,
+    private val scheduleDAO: ScheduleDAO,
+
 ) {
     suspend operator fun invoke(groupId: Int): AppResult<ReadySchedule, LogicError> {
 
-        val groups = groupsSource.loadAllByIds(groupId)
+        val group = groupsSource.getById(groupId)
 
-        if (groups.isEmpty())
+        if (group == null)
             return AppResult.ApiError(LogicError.Empty)
 
-        val result = repository.getGroupSchedule(groups.first().name)
+        group.isFavorite = groupsSource.getFavoriteGroupIds().contains(group.id)
+
+        val result = repository.getGroupSchedule(group.name)
 
         if (result is AppResult.ApiError<NetError>)
             return AppResult.ApiError(result.body.toLogicError())
@@ -63,12 +68,16 @@ class GetGroupScheduleUseCase @Inject constructor(
 
             fun makeSchedule(rawList: List<Lesson>) {
 
-                if (rawList.any{it.weekNumber.contains(week)}) {
+                if (rawList.any {
+                    it.weekNumber?.contains(week) ?: (currentDate == LocalDate.parse(it.dateLesson, formatter))
+                }) {
 
                     val lessons = mutableListOf<Lesson>()
 
                     for (lesson in rawList) {
-                        if (lesson.weekNumber.contains(week)) {
+                        if (
+                            lesson.weekNumber?.contains(week) ?: (currentDate == LocalDate.parse(lesson.dateLesson, formatter))
+                        ) {
                             lessons.add(lesson)
                         }
                     }
@@ -114,7 +123,7 @@ class GetGroupScheduleUseCase @Inject constructor(
         }
 
         val readySchedule: ReadySchedule =
-            ReadySchedule(schedule.studentGroupDto, listDays)
+            ReadySchedule(group, listDays)
 
         return AppResult.Success(readySchedule)
     }

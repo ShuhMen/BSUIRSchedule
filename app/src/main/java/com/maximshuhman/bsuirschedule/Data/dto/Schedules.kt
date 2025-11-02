@@ -1,4 +1,4 @@
-package com.maximshuhman.bsuirschedule.DataClasses
+package com.maximshuhman.bsuirschedule.data.dto
 
 import Lesson
 import kotlinx.serialization.SerialName

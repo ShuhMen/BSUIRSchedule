@@ -1,8 +1,8 @@
 package com.maximshuhman.bsuirschedule
 
-import com.maximshuhman.bsuirschedule.DataClasses.Employee
 import com.maximshuhman.bsuirschedule.data.DataModule
-import com.maximshuhman.bsuirschedule.data.models.Group
+import com.maximshuhman.bsuirschedule.data.dto.Employee
+import com.maximshuhman.bsuirschedule.data.dto.Group
 import com.maximshuhman.bsuirschedule.data.repositories.ScheduleNetworkSourceImpl
 import com.maximshuhman.bsuirschedule.domain.models.ReadySchedule
 import com.maximshuhman.bsuirschedule.domain.useCases.GetEmployeeListUseCase

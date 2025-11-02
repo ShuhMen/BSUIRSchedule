@@ -1,6 +1,4 @@
-package com.maximshuhman.bsuirschedule.DataClasses
-
-import com.maximshuhman.bsuirschedule.data.models.Group
+package com.maximshuhman.bsuirschedule.data.dto
 
 data class EmployeeExam
     (

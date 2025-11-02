@@ -2,9 +2,9 @@ package com.maximshuhman.bsuirschedule.data
 
 import CommonSchedule
 import com.maximshuhman.bsuirschedule.AppResult
-import com.maximshuhman.bsuirschedule.DataClasses.Employee
-import com.maximshuhman.bsuirschedule.DataClasses.LastUpdateDate
-import com.maximshuhman.bsuirschedule.data.models.Group
+import com.maximshuhman.bsuirschedule.data.dto.Employee
+import com.maximshuhman.bsuirschedule.data.dto.Group
+import com.maximshuhman.bsuirschedule.data.dto.LastUpdateDate
 import com.maximshuhman.bsuirschedule.data.repositories.NetError
 
 interface ScheduleSource {

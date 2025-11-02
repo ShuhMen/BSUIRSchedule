@@ -3,23 +3,20 @@
 package com.maximshuhman.bsuirschedule.presentation.views
 
 import Lesson
+import android.annotation.SuppressLint
 import android.content.res.Configuration
-import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -29,6 +26,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -37,28 +35,26 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.maximshuhman.bsuirschedule.DataClasses.Employee
 import com.maximshuhman.bsuirschedule.R
+import com.maximshuhman.bsuirschedule.data.dto.Employee
 import com.maximshuhman.bsuirschedule.domain.models.GroupDayHeader
 import com.maximshuhman.bsuirschedule.presentation.viewModels.GroupScheduleUiState
 import com.maximshuhman.bsuirschedule.presentation.viewModels.GroupScheduleViewModel
 import com.maximshuhman.bsuirschedule.ui.theme.BSUIRScheduleTheme
-import com.maximshuhman.bsuirschedule.ui.theme.Labaratory
-import com.maximshuhman.bsuirschedule.ui.theme.Lecture
-import com.maximshuhman.bsuirschedule.ui.theme.Practic
 
+@SuppressLint("RestrictedApi")
 @Composable
 fun GroupScheduleView(
     navController: NavController,
@@ -68,9 +64,13 @@ fun GroupScheduleView(
     viewModel: GroupScheduleViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val favorites by viewModel.favorites.collectAsState()
+
+    var bottomSheetVisible by remember { mutableStateOf(false) }
 
     LaunchedEffect(groupId) {
         viewModel.loadSchedule(groupId)
+        viewModel.getFavorites()
     }
 
     Scaffold(
@@ -82,15 +82,20 @@ fun GroupScheduleView(
                 ),
                 navigationIcon = {
                     IconButton({
-                        navController.popBackStack()
+                        bottomSheetVisible = true
                     }) {
-                        Icon(painterResource(R.drawable.nav_back), contentDescription = stringResource(R.string.go_back))
+                        Icon(
+                            painterResource(R.drawable.burger_menu),
+                            contentDescription = stringResource(R.string.menu_button),
+                            modifier = Modifier.size(24.dp),
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
                     }
                 },
                 title = {
                     Text(
                         when (uiState) {
-                            is GroupScheduleUiState.Success -> (uiState as GroupScheduleUiState.Success).schedule.groupDto.name
+                            is GroupScheduleUiState.Success -> (uiState as GroupScheduleUiState.Success).schedule.group.name
                             else -> groupName
                         },
                         maxLines = 1
@@ -122,30 +127,48 @@ fun GroupScheduleView(
                                     )
                             }
                         }
+
+                        IconButton({
+                            viewModel.clickFavorite()
+                        }) {
+                            if((uiState as GroupScheduleUiState.Success).isFavorite)
+                                Icon(painterResource(R.drawable.ic_baseline_favorite_24), stringResource(R.string.favorite_click))
+                            else
+                                Icon(painterResource(R.drawable.ic_baseline_favorite_border_24), stringResource(R.string.favorite_click))
+                        }
                     }
                 }
             )
         },
         modifier = Modifier.fillMaxSize()) { innerPadding ->
 
-            when (uiState) {
-                is GroupScheduleUiState.Error -> {
-                    Column {
-                        Text((uiState as GroupScheduleUiState.Error).message)
-                    }
+        if (bottomSheetVisible)
+            ModalBottomSheet({
+                bottomSheetVisible = false
+            }) {
+                FavoritesBottomSheet(navController, favorites) {
+                    bottomSheetVisible = false
                 }
-
-                GroupScheduleUiState.Loading -> {
-                    Column {
-                        LinearProgressIndicator(Modifier.fillMaxWidth().padding(innerPadding))
-                    }
-                }
-
-                is GroupScheduleUiState.Success -> ScheduleList(
-                    (uiState as GroupScheduleUiState.Success),
-                    innerPadding
-                )
             }
+
+        when (uiState) {
+            is GroupScheduleUiState.Error -> {
+                ScheduleViewError(innerPadding, uiState as GroupScheduleUiState.Error)
+            }
+
+            GroupScheduleUiState.Loading -> {
+                Box {
+                    LinearProgressIndicator(Modifier
+                        .fillMaxWidth()
+                        .padding(innerPadding))
+                }
+            }
+
+            is GroupScheduleUiState.Success -> ScheduleList(
+                (uiState as GroupScheduleUiState.Success),
+                innerPadding
+            )
+        }
 
     }
 }
@@ -157,7 +180,9 @@ fun ScheduleList(
 ){
 
     LazyColumn(
-        Modifier.fillMaxSize().padding(horizontal = 5.dp),
+        Modifier
+            .fillMaxSize()
+            .padding(horizontal = 5.dp),
         contentPadding = contentPaddingValues
     ) {
         items(
@@ -180,22 +205,25 @@ fun ScheduleList(
                 )
             ) {
 
-                day.list.asSequence().filter {
-                    scheduleState.numSubgroup == 0 || it.numSubgroup == 0 || it.numSubgroup == scheduleState.numSubgroup
-                }.forEachIndexed { it, lesson ->
+                val filteredLessons = day.list.asSequence()
+                    .filter {
+                        scheduleState.numSubgroup == 0 || it.numSubgroup == 0 || it.numSubgroup == scheduleState.numSubgroup
+                    }
+                    .toList()
+
+                filteredLessons.forEachIndexed { index, lesson ->
 
                     LessonCard(lesson) { }
-                    if (it < day.list.size - 1)
+                    if (index < filteredLessons.size - 1) {
                         HorizontalDivider(
                             modifier = Modifier.padding(horizontal = 5.dp),
                             thickness = 1.dp,
                         )
+                    }
                 }
             }
         }
     }
-
-
 }
 
 @Composable
@@ -212,105 +240,32 @@ fun ScheduleDayItem(groupDay: GroupDayHeader) {
 
 }
 
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-inline fun LessonCard(lesson: Lesson, crossinline onClick: () -> Unit) {
-
-    val dividerColor = when(lesson.lessonTypeAbbrev){
-        "ЛР" -> Labaratory
-        "ПЗ" -> Practic
-        "ЛК" -> Lecture
-        else -> Color.Yellow
-    }
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(70.dp)
-        .padding(horizontal = 10.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column(
-            modifier = Modifier
-                .align(Alignment.CenterVertically)
-                .padding(end = 10.dp)
-        ) {
-            Text(
-                text = lesson.startLessonTime,
-                color = MaterialTheme.colorScheme.onSecondary,
-                fontSize = 16.sp,
-                modifier = Modifier.padding(bottom = 2.dp)
-            )
-
-            Text(
-                text = lesson.endLessonTime,
-                color = MaterialTheme.colorScheme.onSecondary,
-                fontSize = 16.sp,
-                modifier = Modifier.padding(top = 2.dp)
-            )
-        }
-
-        Box(
-            modifier = Modifier
-                .fillMaxHeight()
-                .clip(CircleShape)
-                .background(dividerColor)
-                .width(10.dp)
-
-        )
-
-        Column(
-            modifier = Modifier
-                .padding(horizontal = 10.dp)
-        ) {
-            Row {
+fun bottomPreview(){
+    BSUIRScheduleTheme {
+        Surface(Modifier) {
+            Row(modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 15.dp, end = 15.dp, bottom = 10.dp)
+                , horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text ="${lesson.subject} (${lesson.lessonTypeAbbrev})",
-                    color = MaterialTheme.colorScheme.onSecondary,
-                    fontSize = 16.sp
+                    stringResource(R.string.favorite_screen),
+                    modifier = Modifier.align(Alignment.CenterVertically),
+                    fontSize = 24.sp
                 )
 
-                if(lesson.numSubgroup != 0) {
-
-
-                    Text(
-                        lesson.numSubgroup.toString(),
-                        color = MaterialTheme.colorScheme.onSecondary,
-                        modifier = Modifier.padding(start = 5.dp)
-                    )
-                    
+                IconButton ({
+                },
+                    modifier = Modifier
+                        .size(20.dp)
+                ) {
                     Icon(
-                        painterResource(R.drawable.subgroup),
-                        contentDescription = "Преподаватель",
-                        tint = MaterialTheme.colorScheme.onSecondary,
-                        modifier = Modifier
-                            .size(20.dp)
-                            .align(Alignment.CenterVertically),
-
+                        painterResource(R.drawable.edit_favorites),
+                        stringResource(R.string.edit_favorites)
                     )
                 }
             }
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            Text(
-                text = lesson.auditories.joinToString(", "),
-                color = MaterialTheme.colorScheme.onSecondary,
-                fontSize = 16.sp
-            )
-        }
-
-        if(lesson.employees.isNotEmpty()) {
-
-            Text(
-                text = lesson.employees.joinToString(", "){ it -> "${it.lastName} ${it.firstName.first()}. ${if (!it.middleName.isNullOrBlank()) it.middleName.first() + "." else ""}" },
-                color = Color.LightGray,
-                fontSize = 14.sp,
-                textAlign = TextAlign.End,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .align(Alignment.Bottom)
-                    .padding(end = 5.dp)
-            )
         }
     }
 }
@@ -354,7 +309,7 @@ fun lessonCardPreview(){
                             false
 
                         )
-                    ) {}
+                    )
                     HorizontalDivider(
                         modifier = Modifier.padding(horizontal = 16.dp),
                         thickness = 1.dp,
@@ -379,7 +334,7 @@ fun lessonCardPreview(){
                             false
 
                         )
-                    ) {}
+                    )
                     HorizontalDivider(
                         modifier = Modifier.padding(horizontal = 5.dp),
                         thickness = 1.dp,
@@ -404,7 +359,34 @@ fun lessonCardPreview(){
                             false
 
                         )
-                    ) {}
+                    )
+
+                    HorizontalDivider(
+                        modifier = Modifier.padding(horizontal = 5.dp),
+                        thickness = 1.dp,
+                    )
+
+                    LessonCard(
+                        Lesson(
+                            null,
+                            "11:00",
+                            null,
+                            "ССПОиРС (ЛР) 230501-2 перенесено на 23.12.2025",
+                            0,
+                            "10:00",
+                            arrayListOf(),
+                            null,
+                            null,
+                            null,
+                            arrayListOf<Employee>(),
+                            "10.09.2025",
+                            "10.09.2025",
+                            "10.09.2025",
+                            true,
+                            false
+
+                        )
+                    )
 
                 }
 

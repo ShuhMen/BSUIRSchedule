@@ -1,8 +1,8 @@
 package com.maximshuhman.bsuirschedule.data.repositories
 
 import com.maximshuhman.bsuirschedule.AppResult
-import com.maximshuhman.bsuirschedule.DataClasses.Employee
 import com.maximshuhman.bsuirschedule.data.ScheduleSource
+import com.maximshuhman.bsuirschedule.data.dto.Employee
 import com.maximshuhman.bsuirschedule.data.sources.IISService
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.single
@@ -61,7 +61,10 @@ class ScheduleNetworkSourceImpl @Inject constructor(
             else
                 emit(AppResult.ApiError(NetError.EmptyError))
         } else {
-            emit(AppResult.ApiError(NetError.ApiError(response.message(), ResponseCode.Error)))
+            if(response.code() == 404)
+                emit(AppResult.ApiError(NetError.EmptyError))
+            else
+                emit(AppResult.ApiError(NetError.ApiError(response.message(), ResponseCode.Error)))
         }
     }.single()
 

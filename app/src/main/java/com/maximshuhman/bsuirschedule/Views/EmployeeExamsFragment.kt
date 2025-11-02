@@ -16,7 +16,7 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.maximshuhman.bsuirschedule.DataClasses.EmployeeExam
+import com.maximshuhman.bsuirschedule.data.models.EmployeeExam
 import com.maximshuhman.bsuirschedule.EmployeeLessonInf
 import com.maximshuhman.bsuirschedule.R
 

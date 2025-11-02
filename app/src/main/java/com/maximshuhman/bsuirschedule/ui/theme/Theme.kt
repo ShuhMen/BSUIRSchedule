@@ -125,7 +125,10 @@ private val DarkColorScheme = darkColorScheme(
     onBackground = White,
     onSecondary = DarkColors.DarkGray,
     onPrimary = White,
-    outlineVariant = DarkColors.dividerColor
+    outlineVariant = DarkColors.dividerColor,
+    surface = DarkColors.Gray,
+    onTertiary = White,
+    onSurface = DarkColors.DarkGray,
     )
 
 private val LightColorScheme = lightColorScheme(
@@ -136,16 +139,10 @@ private val LightColorScheme = lightColorScheme(
     onBackground = Black,
     onSecondary = LightColors.DarkGray,
     onPrimary = White,
-    outlineVariant = LightColors.dividerColor
-
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
-
+    outlineVariant = LightColors.dividerColor,
+    surface = LightColors.Gray,
+    onTertiary = White,
+    onSurface = LightColors.DarkGray,
 )
 
 

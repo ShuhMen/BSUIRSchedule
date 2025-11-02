@@ -3,8 +3,8 @@ package com.maximshuhman.bsuirschedule.presentation.viewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.maximshuhman.bsuirschedule.AppResult
-import com.maximshuhman.bsuirschedule.DataClasses.Employee
-import com.maximshuhman.bsuirschedule.domain.LogicError
+import com.maximshuhman.bsuirschedule.data.dto.Employee
+import com.maximshuhman.bsuirschedule.domain.models.LogicError
 import com.maximshuhman.bsuirschedule.domain.useCases.GetEmployeeListUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

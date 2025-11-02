@@ -1,4 +1,4 @@
-package com.maximshuhman.bsuirschedule.DataClasses
+package com.maximshuhman.bsuirschedule.data.dto
 
 import kotlinx.serialization.Serializable
 
@@ -13,4 +13,6 @@ data class Employee(
     val photoLink          : String           ,
     val calendarId         : String           ,
     val urlId              : String           ,
-)
+){
+    val isFavorite: Boolean = false
+}

@@ -1,10 +1,10 @@
 package com.maximshuhman.bsuirschedule.domain.models
 
 import Lesson
-import StudentGroupDto
+import com.maximshuhman.bsuirschedule.data.dto.Group
 
 data class ReadySchedule (
-    val groupDto: StudentGroupDto,
+    val group: Group,
     val schedule: List<GroupDay>,
     )
 

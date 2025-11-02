@@ -1,4 +1,4 @@
-package com.maximshuhman.bsuirschedule.domain
+package com.maximshuhman.bsuirschedule.domain.models
 
 import com.maximshuhman.bsuirschedule.data.repositories.NetError
 

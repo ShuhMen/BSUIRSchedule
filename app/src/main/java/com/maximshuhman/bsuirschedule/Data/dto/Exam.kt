@@ -1,10 +1,10 @@
-package com.maximshuhman.bsuirschedule.DataClasses
+package com.maximshuhman.bsuirschedule.data.dto
 
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class Exam(
-    val auditories: String,
+    val auditories       : ArrayList<String>?,
     val endLessonTime: String?,
     val lessonTypeAbbrev: String?,
     val note: String?,
@@ -12,7 +12,7 @@ data class Exam(
     val startLessonTime: String?,
     val subject: String?,
     val subjectFullName: String?,
-    val weekNumber: String,
+    val weekNumber       : ArrayList<Int>?,
     val employee: Employee,
     val startLessonDate: String?,
     val endLessonDate: String?,

@@ -4,19 +4,26 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Query
 import androidx.room.Upsert
-import com.maximshuhman.bsuirschedule.data.models.Group
+import com.maximshuhman.bsuirschedule.data.dto.Favorite
+import com.maximshuhman.bsuirschedule.data.dto.Group
 
 @Dao
 interface GroupsDAO {
     @Query("SELECT * FROM `Group`")
-    fun getAll(): List<Group>
+    suspend fun getAll(): List<Group>
 
     @Query("SELECT * FROM `Group` WHERE groupID = :groupId")
-    fun loadAllByIds(groupId: Int): List<Group>
+    suspend fun getById(groupId: Int): Group?
+
+    @Query("SELECT id FROM favorites WHERE type = 0")
+    suspend fun getFavoriteGroupIds(): List<Int>
 
     @Upsert
-    fun insertAll(groups: List<Group>)
+    suspend fun upsertFavorite(favorite: Favorite)
 
     @Delete
-    fun delete(group: Group)
+    suspend fun deleteFavorite(favorite: Favorite)
+
+    @Upsert
+    suspend fun insertAll(groups: List<Group>)
 }

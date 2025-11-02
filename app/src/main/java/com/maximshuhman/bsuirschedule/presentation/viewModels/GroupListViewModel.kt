@@ -3,8 +3,8 @@ package com.maximshuhman.bsuirschedule.presentation.viewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.maximshuhman.bsuirschedule.AppResult
-import com.maximshuhman.bsuirschedule.data.models.Group
-import com.maximshuhman.bsuirschedule.domain.LogicError
+import com.maximshuhman.bsuirschedule.data.dto.Group
+import com.maximshuhman.bsuirschedule.domain.models.LogicError
 import com.maximshuhman.bsuirschedule.domain.useCases.GetGroupListUseCase
 import com.maximshuhman.bsuirschedule.domain.useCases.SetGroupListUseCase
 import com.maximshuhman.bsuirschedule.presentation.viewModels.GroupsListUiState.Error
@@ -20,32 +20,43 @@ class GroupListViewModel @Inject constructor(
     private val getGroupsListUseCase: GetGroupListUseCase,
     private val setGroupsListUseCase: SetGroupListUseCase
 ) : ViewModel() {
+
+    var groupsList = listOf<Group>()
+
     private val _uiState = MutableStateFlow<GroupsListUiState>(GroupsListUiState.Loading)
     val uiState: StateFlow<GroupsListUiState> = _uiState
 
     fun loadList() {
         viewModelScope.launch(Dispatchers.IO) {
             _uiState.value = GroupsListUiState.Loading
-            when(val result = getGroupsListUseCase())
-            {
-                is AppResult.Success<List<Group>> -> {
-                    _uiState.value = GroupsListUiState.Success(result.data)
 
-                    setGroupsListUseCase(result.data)
+            getGroupsListUseCase().collect { result ->
+                when(result)
+                {
+                    is AppResult.Success<List<Group>> -> {
+                        groupsList = result.data.sortedBy { it.isFavorite }
 
-                }
-                is AppResult.ApiError<LogicError> -> {
+                        _uiState.value = GroupsListUiState.Success(groupsList)
 
-                    when(result.body){
-                        LogicError.ConfigureError ->  _uiState.value = Error("Не удалось извлечь расписание!")
-
-                        LogicError.Empty -> _uiState.value = Error("Отсутствуют данные!")
-                        is LogicError.FetchDataError -> _uiState.value = Error(result.body.message)
+                        setGroupsListUseCase(result.data)
                     }
+                    is AppResult.ApiError<LogicError> -> {
 
+                        when(result.body){
+                            LogicError.ConfigureError ->  _uiState.value = Error("Не удалось извлечь расписание!")
+
+                            LogicError.Empty -> _uiState.value = Error("Отсутствуют данные!")
+                            is LogicError.FetchDataError -> _uiState.value = Error(result.body.message)
+                        }
+                    }
                 }
             }
+        }
+    }
 
+    fun search(search: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _uiState.emit(GroupsListUiState.Success(groupsList.filter { it.name.contains(search) }.toList()))
         }
     }
 }
