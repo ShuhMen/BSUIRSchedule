@@ -3,7 +3,7 @@ package com.maximshuhman.bsuirschedule.presentation.viewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.maximshuhman.bsuirschedule.AppResult
-import com.maximshuhman.bsuirschedule.data.dto.Favorite
+import com.maximshuhman.bsuirschedule.data.dto.FavoriteEntity
 import com.maximshuhman.bsuirschedule.data.sources.GroupsDAO
 import com.maximshuhman.bsuirschedule.domain.models.Favorites
 import com.maximshuhman.bsuirschedule.domain.models.LogicError
@@ -80,9 +80,9 @@ class GroupScheduleViewModel @Inject constructor(
                 )
 
                 if(state.isFavorite)
-                    groupsSource.deleteFavorite(Favorite(state.schedule.group.id, 0))
+                    groupsSource.deleteFavorite(FavoriteEntity(state.schedule.group.id, 0))
                 else
-                    groupsSource.upsertFavorite(Favorite(state.schedule.group.id, 0))
+                    groupsSource.upsertFavorite(FavoriteEntity(state.schedule.group.id, 0))
 
                 getFavorites()
             }

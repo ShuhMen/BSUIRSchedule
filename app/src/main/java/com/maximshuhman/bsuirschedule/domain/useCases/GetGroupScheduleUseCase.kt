@@ -6,7 +6,6 @@ import com.maximshuhman.bsuirschedule.AppResult
 import com.maximshuhman.bsuirschedule.data.ScheduleSource
 import com.maximshuhman.bsuirschedule.data.repositories.NetError
 import com.maximshuhman.bsuirschedule.data.sources.GroupsDAO
-import com.maximshuhman.bsuirschedule.data.sources.ScheduleDAO
 import com.maximshuhman.bsuirschedule.domain.models.GroupDay
 import com.maximshuhman.bsuirschedule.domain.models.GroupDayHeader
 import com.maximshuhman.bsuirschedule.domain.models.LogicError
@@ -21,7 +20,7 @@ import javax.inject.Inject
 class GetGroupScheduleUseCase @Inject constructor(
     private val repository: ScheduleSource,
     private val groupsSource: GroupsDAO,
-    private val scheduleDAO: ScheduleDAO,
+    //private val scheduleDAO: ScheduleDAO,
 
 ) {
     suspend operator fun invoke(groupId: Int): AppResult<ReadySchedule, LogicError> {

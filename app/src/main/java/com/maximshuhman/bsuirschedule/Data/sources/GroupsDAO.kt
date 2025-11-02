@@ -4,7 +4,7 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Query
 import androidx.room.Upsert
-import com.maximshuhman.bsuirschedule.data.dto.Favorite
+import com.maximshuhman.bsuirschedule.data.dto.FavoriteEntity
 import com.maximshuhman.bsuirschedule.data.dto.Group
 
 @Dao
@@ -19,10 +19,10 @@ interface GroupsDAO {
     suspend fun getFavoriteGroupIds(): List<Int>
 
     @Upsert
-    suspend fun upsertFavorite(favorite: Favorite)
+    suspend fun upsertFavorite(favorite: FavoriteEntity)
 
     @Delete
-    suspend fun deleteFavorite(favorite: Favorite)
+    suspend fun deleteFavorite(favorite: FavoriteEntity)
 
     @Upsert
     suspend fun insertAll(groups: List<Group>)
