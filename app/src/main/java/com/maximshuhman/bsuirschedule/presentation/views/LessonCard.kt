@@ -1,13 +1,12 @@
 package com.maximshuhman.bsuirschedule.presentation.views
 
-import Lesson
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -24,9 +23,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.maximshuhman.bsuirschedule.R
+import com.maximshuhman.bsuirschedule.data.dto.Employee
+import com.maximshuhman.bsuirschedule.data.dto.Lesson
+import com.maximshuhman.bsuirschedule.data.dto.LessonType
+import com.maximshuhman.bsuirschedule.ui.theme.BSUIRScheduleTheme
+import com.maximshuhman.bsuirschedule.ui.theme.Blue
 import com.maximshuhman.bsuirschedule.ui.theme.Labaratory
 import com.maximshuhman.bsuirschedule.ui.theme.Lecture
 import com.maximshuhman.bsuirschedule.ui.theme.Practic
@@ -42,14 +47,13 @@ inline fun LessonCard(lesson: Lesson, crossinline onClick: () -> Unit = { }) {
         "Консультация",
         "ПЗ" -> Practic
 
-        "ЛК" -> Lecture
-        else -> Color.White
+        "УЛК","ЛК" -> Lecture
+        else -> if(lesson.announcement == true) Blue else Color.White
     }
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(70.dp)
             .clickable {
                 onClick()
             }
@@ -78,10 +82,11 @@ inline fun LessonCard(lesson: Lesson, crossinline onClick: () -> Unit = { }) {
 
         Box(
             modifier = Modifier
-                .fillMaxHeight()
                 .clip(CircleShape)
                 .background(dividerColor)
                 .width(10.dp)
+                .height(60.dp)
+
 
         )
 
@@ -90,7 +95,6 @@ inline fun LessonCard(lesson: Lesson, crossinline onClick: () -> Unit = { }) {
         }else{
             LessonPart(lesson)
         }
-
     }
 }
 
@@ -102,7 +106,7 @@ fun AnnouncementPart(lesson: Lesson){
             .padding(horizontal = 10.dp)
     ) {
         Text(
-            text = lesson.employees.joinToString(", "){ it -> "${it.lastName} ${it.firstName.first()}. ${if (!it.middleName.isNullOrBlank()) it.middleName.first() + "." else ""}" } +  ": ${lesson.note}",
+            text = lesson.employees?.joinToString(", "){ it -> "${it.lastName} ${it.firstName.first()}. ${if (!it.middleName.isNullOrBlank()) it.middleName.first() + "." else ""}" } +  " : ${lesson.note}",
             fontSize = 16.sp
         )
 
@@ -115,7 +119,7 @@ fun AnnouncementPart(lesson: Lesson){
 
             Icon(
                 painterResource(R.drawable.subgroup),
-                contentDescription = "Преподаватель",
+                contentDescription = "Подгруппа",
                 tint = MaterialTheme.colorScheme.onSecondary,
                 modifier = Modifier
                     .size(20.dp)
@@ -160,32 +164,112 @@ fun LessonPart(lesson: Lesson){
 
         Spacer(modifier = Modifier.width(8.dp))
 
-        Row {
 
-            if(lesson.note != null)
-                Text(
-                    text = lesson.note,
-                    fontSize = 14.sp
-                )
-
-            if (lesson.auditories != null)
+        if (lesson.auditories != null)
+            Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = lesson.auditories.joinToString(", "),
                     fontSize = 16.sp
                 )
-        }
+
+
+                if(lesson.lessonType == LessonType.GROUP && !lesson.employees.isNullOrEmpty()) {
+                    Text(
+                        text = lesson.employees.joinToString(", "){ it -> "${it.lastName} ${it.firstName.first()}. ${if (!it.middleName.isNullOrBlank()) it.middleName.first() + "." else ""}" },
+                        fontSize = 14.sp,
+                        textAlign = TextAlign.End
+                    )
+                }
+
+                if(lesson.lessonType == LessonType.EMPLOYEE && !lesson.studentGroups.isNullOrEmpty()) {
+                    Text(
+                        text = lesson.studentGroups.joinToString(", "){ it -> it.name.toString() },
+                        fontSize = 14.sp,
+                        textAlign = TextAlign.End
+                    )
+                }
+            }
+
+        if (!lesson.note.isNullOrBlank())
+            Text(
+                text = lesson.note,
+                fontSize = 14.sp
+            )
     }
 
-    if(lesson.employees.isNotEmpty()) {
 
-        Text(
-            text = lesson.employees.joinToString(", "){ it -> "${it.lastName} ${it.firstName.first()}. ${if (!it.middleName.isNullOrBlank()) it.middleName.first() + "." else ""}" },
-            color = Color.LightGray,
-            fontSize = 14.sp,
-            textAlign = TextAlign.End,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(end = 5.dp)
-        )
+}
+
+
+@Preview(showBackground = true)
+@Composable
+fun LessonCardPreview(){
+
+    BSUIRScheduleTheme {
+
+        Box(
+            Modifier.background( MaterialTheme.colorScheme.secondary)
+        ) {
+            LessonCard(
+                Lesson(
+                    arrayListOf("202-4к.", "302-4к."),
+                    "11:00",
+                    "ЛР",
+                    "",
+                    2,
+                    "10:00",
+                    arrayListOf(),
+                    "ОБПСвИТ",
+                    "10:00",
+                    arrayListOf(1),
+                    listOf(
+                        Employee(
+                            0, "Максим", "Шухман", "Юрьевич", "", "", "", "", ""
+                        )
+                    ),
+                    "10.09.2025",
+                    "10.09.2025",
+                    "10.09.2025",
+                    false,
+                    false
+                )
+            )
+        }
+    }
+}
+
+
+@Preview
+@Composable
+fun AnnouncementCardPreview(){
+
+    BSUIRScheduleTheme {
+        Box(
+            Modifier.background(MaterialTheme.colorScheme.secondary)
+        ) {
+            LessonCard(
+                Lesson(
+                    null,
+                    "11:00",
+                    null,
+                    "ССПОиРС (ЛР) 230501-2 перенесено на 23.12.2025",
+                    0,
+                    "10:00",
+                    arrayListOf(),
+                    null,
+                    null,
+                    null,
+                    listOf(Employee(
+                        0,"Максим", "Шухман", "Юрьевич", "", "", "", "", ""
+                    )),                            "10.09.2025",
+                    "10.09.2025",
+                    "10.09.2025",
+                    true,
+                    false
+
+                )
+            )
+        }
+
     }
 }

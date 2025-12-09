@@ -11,14 +11,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.maximshuhman.bsuirschedule.presentation.viewModels.GroupScheduleUiState
 import com.maximshuhman.bsuirschedule.ui.theme.BSUIRScheduleTheme
 
 @Composable
-fun ScheduleViewError(innerPadding: PaddingValues, state: GroupScheduleUiState.Error) {
+fun ViewError(innerPadding: PaddingValues, message: String) {
 
     Box(modifier = Modifier.fillMaxSize().padding(innerPadding).padding(bottom = 50.dp)) {
-        Text( state.message,
+        Text(message,
             fontSize = 18.sp,
             modifier = Modifier.align(Alignment.Center))
     }
@@ -28,6 +27,6 @@ fun ScheduleViewError(innerPadding: PaddingValues, state: GroupScheduleUiState.E
 @Composable
 fun ScheduleViewErrorPreview(){
     BSUIRScheduleTheme {
-        ScheduleViewError(PaddingValues(0.dp), GroupScheduleUiState.Error("Расписание отсутствует!"))
+        ViewError(PaddingValues(0.dp), "Расписание отсутствует!")
     }
 }

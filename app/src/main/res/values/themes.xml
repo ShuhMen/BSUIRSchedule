@@ -16,6 +16,8 @@
         <item name="android:navigationBarColor">@color/BSUIR_blue</item>
         <item name="android:editTextColor">@android:color/white</item>
         <item name="android:colorControlNormal">@color/white</item>
+        <item name="android:dialogTheme">@style/Theme.DialogFullScreen</item>
+
     </style>
 
     <style name="Widget.App.BottomNavigationView" parent="Widget.MaterialComponents.BottomNavigationView.Colored">
@@ -95,5 +97,10 @@
         <item name="appWidgetRadius">@dimen/widget_corners</item>
         <item name="appWidgetInnerRadius">@dimen/widget_corners</item>
         <item name="appWidgetPadding">0dp</item>
+    </style>
+
+    <style name="Theme.DialogFullScreen" parent="@style/ThemeOverlay.MaterialComponents.Dialog.Alert">
+        <item name="android:windowMinWidthMajor">100%</item>
+        <item name="android:windowMinWidthMinor">100%</item>
     </style>
 </resources>

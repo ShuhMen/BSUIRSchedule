@@ -4,7 +4,7 @@ import com.maximshuhman.bsuirschedule.data.DataModule
 import com.maximshuhman.bsuirschedule.data.dto.Employee
 import com.maximshuhman.bsuirschedule.data.dto.Group
 import com.maximshuhman.bsuirschedule.data.repositories.ScheduleNetworkSourceImpl
-import com.maximshuhman.bsuirschedule.domain.models.ReadySchedule
+import com.maximshuhman.bsuirschedule.domain.models.GroupReadySchedule
 import com.maximshuhman.bsuirschedule.domain.useCases.GetEmployeeListUseCase
 import com.maximshuhman.bsuirschedule.domain.useCases.GetGroupListUseCase
 import com.maximshuhman.bsuirschedule.domain.useCases.GetGroupScheduleUseCase
@@ -40,7 +40,7 @@ class ExampleUnitTest {
             val source = ScheduleNetworkSourceImpl(service)
             val list = GetGroupScheduleUseCase(source, DataModule.provideUserDao())(23811)
 
-            assert(list is AppResult.Success<ReadySchedule>)
+            assert(list is AppResult.Success<GroupReadySchedule>)
         }
     }
 

@@ -63,11 +63,12 @@ dependencies {
 
     implementation("androidx.core:core-splashscreen:1.0.1")
 
-    implementation("androidx.room:room-runtime:2.8.2")
-    kapt("androidx.room:room-compiler:2.8.2")
-    annotationProcessor("androidx.room:room-compiler:2.8.2")
-    implementation("androidx.room:room-ktx:2.8.2")
-    testImplementation("androidx.room:room-testing:2.8.2")
+    implementation("androidx.room:room-runtime:2.8.4")
+    implementation 'androidx.compose.foundation:foundation-layout:1.8.2'
+    kapt("androidx.room:room-compiler:2.8.4")
+    annotationProcessor("androidx.room:room-compiler:2.8.4")
+    implementation("androidx.room:room-ktx:2.8.4")
+    testImplementation("androidx.room:room-testing:2.8.4")
 
 
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'

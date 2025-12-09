@@ -2,7 +2,6 @@
 
 package com.maximshuhman.bsuirschedule.presentation.views
 
-import Lesson
 import android.annotation.SuppressLint
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
@@ -26,7 +25,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -40,8 +38,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color.Companion.Transparent
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -49,7 +49,8 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.maximshuhman.bsuirschedule.R
 import com.maximshuhman.bsuirschedule.data.dto.Employee
-import com.maximshuhman.bsuirschedule.domain.models.GroupDayHeader
+import com.maximshuhman.bsuirschedule.data.dto.Lesson
+import com.maximshuhman.bsuirschedule.domain.models.ScheduleDayHeader
 import com.maximshuhman.bsuirschedule.presentation.viewModels.GroupScheduleUiState
 import com.maximshuhman.bsuirschedule.presentation.viewModels.GroupScheduleViewModel
 import com.maximshuhman.bsuirschedule.ui.theme.BSUIRScheduleTheme
@@ -67,10 +68,17 @@ fun GroupScheduleView(
     val favorites by viewModel.favorites.collectAsState()
 
     var bottomSheetVisible by remember { mutableStateOf(false) }
+    var examsDialogVisible by remember { mutableStateOf(false) }
 
     LaunchedEffect(groupId) {
         viewModel.loadSchedule(groupId)
         viewModel.getFavorites()
+    }
+
+    if (examsDialogVisible) {
+        ExamsView((uiState as GroupScheduleUiState.Success).schedule.exams!!) {
+            examsDialogVisible = false
+        }
     }
 
     Scaffold(
@@ -103,6 +111,18 @@ fun GroupScheduleView(
                 },
                 actions = {
                     if(uiState is GroupScheduleUiState.Success) {
+                        if ((uiState as GroupScheduleUiState.Success).schedule.exams != null)
+                        Surface(
+                            onClick = {
+                                examsDialogVisible = true
+                            },
+                            shape = MaterialTheme.shapes.small,
+                            color = Transparent
+                        ) {
+                            Text("ЭК", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+
+                        }
+
                         IconButton({
                             viewModel.clickSubgroup()
                         }) {
@@ -136,6 +156,7 @@ fun GroupScheduleView(
                             else
                                 Icon(painterResource(R.drawable.ic_baseline_favorite_border_24), stringResource(R.string.favorite_click))
                         }
+
                     }
                 }
             )
@@ -143,17 +164,13 @@ fun GroupScheduleView(
         modifier = Modifier.fillMaxSize()) { innerPadding ->
 
         if (bottomSheetVisible)
-            ModalBottomSheet({
+            FavoritesBottomSheet(navController, favorites) {
                 bottomSheetVisible = false
-            }) {
-                FavoritesBottomSheet(navController, favorites) {
-                    bottomSheetVisible = false
-                }
             }
 
         when (uiState) {
             is GroupScheduleUiState.Error -> {
-                ScheduleViewError(innerPadding, uiState as GroupScheduleUiState.Error)
+                ViewError(innerPadding, (uiState as GroupScheduleUiState.Error).message)
             }
 
             GroupScheduleUiState.Loading -> {
@@ -164,10 +181,15 @@ fun GroupScheduleView(
                 }
             }
 
-            is GroupScheduleUiState.Success -> ScheduleList(
-                (uiState as GroupScheduleUiState.Success),
-                innerPadding
-            )
+            is GroupScheduleUiState.Success -> {
+                    ScheduleList(
+                        (uiState as GroupScheduleUiState.Success),
+                        innerPadding
+                    )
+            }
+            is GroupScheduleUiState.NoConnection -> {
+                NoConnectionView(Modifier.padding(innerPadding).padding(bottom = 70.dp).fillMaxSize())
+            }
         }
 
     }
@@ -177,7 +199,7 @@ fun GroupScheduleView(
 fun ScheduleList(
     scheduleState: GroupScheduleUiState.Success,
     contentPaddingValues: PaddingValues
-){
+) {
 
     LazyColumn(
         Modifier
@@ -227,8 +249,7 @@ fun ScheduleList(
 }
 
 @Composable
-fun ScheduleDayItem(groupDay: GroupDayHeader) {
-
+fun ScheduleDayItem(groupDay: ScheduleDayHeader) {
     Text(
         groupDay.name,
         fontSize = 20.sp,
@@ -236,8 +257,6 @@ fun ScheduleDayItem(groupDay: GroupDayHeader) {
             .padding(15.dp, 7.dp, bottom = 3.dp)
             .fillMaxWidth()
     )
-
-
 }
 
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
@@ -273,12 +292,12 @@ fun bottomPreview(){
 
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-fun lessonCardPreview(){
+fun LessonCardSchedulePreview(){
     BSUIRScheduleTheme {
         Surface(Modifier) {
-
             Column {
-                ScheduleDayItem(GroupDayHeader("Пятница, 4 октября"))
+
+                ScheduleDayItem(ScheduleDayHeader("Пятница, 4 октября"))
 
                 Card(
                     Modifier
@@ -288,6 +307,7 @@ fun lessonCardPreview(){
                         containerColor = MaterialTheme.colorScheme.secondary
                     )
                 ) {
+                    Column {
 
                     LessonCard(
                         Lesson(
@@ -351,7 +371,9 @@ fun lessonCardPreview(){
                             "ОБПСвИТ",
                             "10:00",
                             arrayListOf(1),
-                            arrayListOf<Employee>(),
+                            listOf(Employee(
+                                0,"Максим", "Шухман", "Юрьевич", "", "", "", "", ""
+                            )),
                             "10.09.2025",
                             "10.09.2025",
                             "10.09.2025",
@@ -378,8 +400,9 @@ fun lessonCardPreview(){
                             null,
                             null,
                             null,
-                            arrayListOf<Employee>(),
-                            "10.09.2025",
+                            listOf(Employee(
+                                0,"Максим", "Шухман", "Юрьевич", "", "", "", "", ""
+                            )),                            "10.09.2025",
                             "10.09.2025",
                             "10.09.2025",
                             true,
@@ -389,7 +412,7 @@ fun lessonCardPreview(){
                     )
 
                 }
-
+}
             }
         }
     }

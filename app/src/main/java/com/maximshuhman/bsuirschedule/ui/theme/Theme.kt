@@ -118,9 +118,9 @@ val MulishTypography = Typography(
 
 
 private val DarkColorScheme = darkColorScheme(
-    primary = DarkColors.Blue,
+    primary = Blue,
     secondary = DarkColors.Gray,
-    tertiary = DarkColors.Blue,
+    tertiary = Blue,
     background = Black,
     onBackground = White,
     onSecondary = DarkColors.DarkGray,
@@ -132,9 +132,9 @@ private val DarkColorScheme = darkColorScheme(
     )
 
 private val LightColorScheme = lightColorScheme(
-    primary = LightColors.Blue,
+    primary = Blue,
     secondary = LightColors.Gray,
-    tertiary = LightColors.Blue,
+    tertiary = Blue,
     background = White,
     onBackground = Black,
     onSecondary = LightColors.DarkGray,

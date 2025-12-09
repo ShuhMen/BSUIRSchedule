@@ -2,6 +2,7 @@ package com.maximshuhman.bsuirschedule.data.repositories
 
 import com.maximshuhman.bsuirschedule.AppResult
 import com.maximshuhman.bsuirschedule.data.ScheduleSource
+import com.maximshuhman.bsuirschedule.data.SourceError
 import com.maximshuhman.bsuirschedule.data.dto.Employee
 import com.maximshuhman.bsuirschedule.data.sources.IISService
 import kotlinx.coroutines.flow.flow
@@ -9,11 +10,10 @@ import kotlinx.coroutines.flow.single
 import javax.inject.Inject
 
 
-sealed class NetError {
+sealed class NetError : SourceError() {
     data class ApiError(val message: String?, val code: ResponseCode) :NetError()
     object EmptyError: NetError()
     object NetworkError : NetError()
-    data class UnknownError(val error: Throwable) : NetError()
 }
 
 enum class ResponseCode{
@@ -30,7 +30,6 @@ class ScheduleNetworkSourceImpl @Inject constructor(
     override suspend fun getGroupsList() = flow {
 
         try {
-
             val response = apiService.getGroupsList()
 
             if (response.isSuccessful) {
@@ -56,9 +55,39 @@ class ScheduleNetworkSourceImpl @Inject constructor(
 
         if (response.isSuccessful) {
 
-            if (response.body() != null)
-                emit(AppResult.Success(response.body()!!))
+            if (response.body() != null) {
+
+                val schedule = response.body()!!
+
+                if(schedule.schedules != null)
+                    emit(AppResult.Success(schedule))
+                else
+                    emit(AppResult.ApiError(NetError.EmptyError))
+            } else
+                emit(AppResult.ApiError(NetError.EmptyError))
+        } else {
+            if(response.code() == 404)
+                emit(AppResult.ApiError(NetError.EmptyError))
             else
+                emit(AppResult.ApiError(NetError.ApiError(response.message(), ResponseCode.Error)))
+        }
+    }.single()
+
+    override suspend fun getEmployeeSchedule(employeeUrlId: String)= flow {
+
+        val response = apiService.getEmployeeSchedule(employeeUrlId)
+
+        if (response.isSuccessful) {
+
+            if (response.body() != null) {
+
+                val schedule = response.body()!!
+
+                if(schedule.schedules != null)
+                    emit(AppResult.Success(schedule))
+                else
+                    emit(AppResult.ApiError(NetError.EmptyError))
+            } else
                 emit(AppResult.ApiError(NetError.EmptyError))
         } else {
             if(response.code() == 404)

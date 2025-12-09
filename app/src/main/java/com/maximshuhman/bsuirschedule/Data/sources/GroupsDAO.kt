@@ -15,8 +15,11 @@ interface GroupsDAO {
     @Query("SELECT * FROM `Group` WHERE groupID = :groupId")
     suspend fun getById(groupId: Int): Group?
 
+    @Query("SELECT * FROM `Group` WHERE name = :name")
+    suspend fun getByName(name: String): Group?
+
     @Query("SELECT id FROM favorites WHERE type = 0")
-    suspend fun getFavoriteGroupIds(): List<Int>
+    suspend fun getFavoriteIds(): List<Int>
 
     @Upsert
     suspend fun upsertFavorite(favorite: FavoriteEntity)

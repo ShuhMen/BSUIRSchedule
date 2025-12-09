@@ -1,129 +1,102 @@
 package com.maximshuhman.bsuirschedule.domain.useCases
 
-import CommonSchedule
-import Lesson
 import com.maximshuhman.bsuirschedule.AppResult
 import com.maximshuhman.bsuirschedule.data.ScheduleSource
-import com.maximshuhman.bsuirschedule.data.repositories.NetError
+import com.maximshuhman.bsuirschedule.data.SourceError
+import com.maximshuhman.bsuirschedule.data.dto.CommonSchedule
+import com.maximshuhman.bsuirschedule.data.repositories.ScheduleDataBaseSourceImpl
 import com.maximshuhman.bsuirschedule.data.sources.GroupsDAO
-import com.maximshuhman.bsuirschedule.domain.models.GroupDay
-import com.maximshuhman.bsuirschedule.domain.models.GroupDayHeader
+import com.maximshuhman.bsuirschedule.data.sources.SettingsDAO
+import com.maximshuhman.bsuirschedule.domain.GetScheduleUseCase
+import com.maximshuhman.bsuirschedule.domain.NetworkStatus
+import com.maximshuhman.bsuirschedule.domain.NetworkStatusTracker
+import com.maximshuhman.bsuirschedule.domain.models.GroupReadySchedule
 import com.maximshuhman.bsuirschedule.domain.models.LogicError
-import com.maximshuhman.bsuirschedule.domain.models.ReadySchedule
 import com.maximshuhman.bsuirschedule.domain.models.toLogicError
-import java.time.DayOfWeek
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-import java.util.Locale
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
 class GetGroupScheduleUseCase @Inject constructor(
     private val repository: ScheduleSource,
     private val groupsSource: GroupsDAO,
-    //private val scheduleDAO: ScheduleDAO,
+    private val databaseRepository: ScheduleDataBaseSourceImpl,
+    private val networkStatusTracker: NetworkStatusTracker,
+    private val settingsDAO: SettingsDAO
+): GetScheduleUseCase(repository, networkStatusTracker, settingsDAO) {
 
-) {
-    suspend operator fun invoke(groupId: Int): AppResult<ReadySchedule, LogicError> {
+    operator fun invoke(groupId: Int): Flow<AppResult<GroupReadySchedule, LogicError>> = flow {
 
         val group = groupsSource.getById(groupId)
 
-        if (group == null)
-            return AppResult.ApiError(LogicError.Empty)
+        if (group == null) {
+            emit(AppResult.ApiError(LogicError.Empty))
+            return@flow
+        }
 
-        group.isFavorite = groupsSource.getFavoriteGroupIds().contains(group.id)
+        group.isFavorite = groupsSource.getFavoriteIds().contains(group.id)
+
+        var dbSchedule = databaseRepository.getGroupSchedule(group.name)
+
+        if(dbSchedule is AppResult.ApiError){
+            emit(AppResult.ApiError(dbSchedule.body.toLogicError()))
+        }else {
+
+            val configureResult = configureSchedule((dbSchedule as AppResult.Success).data)
+            val configureExams = configureExams(dbSchedule.data)
+
+            if(configureResult is AppResult.ApiError){
+                emit(configureResult)
+                return@flow
+            }
+
+            if(configureExams is AppResult.ApiError){
+                emit(configureExams)
+                return@flow
+            }
+
+            emit(AppResult.Success(GroupReadySchedule(group, (configureResult as AppResult.Success).data, (configureExams as AppResult.Success).data)))
+        }
+
+        if(networkStatusTracker.getCurrentNetworkStatus() is NetworkStatus.Unavailable){
+            emit(AppResult.ApiError(LogicError.NoInternetConnection))
+            return@flow
+        }
 
         val result = repository.getGroupSchedule(group.name)
 
-        if (result is AppResult.ApiError<NetError>)
-            return AppResult.ApiError(result.body.toLogicError())
-
-        val schedule = (result as AppResult.Success<CommonSchedule>).data
-
-        var week: Int
-        val weekResponse = repository.getCurrent()
-
-        when (weekResponse) {
-            is AppResult.ApiError<NetError> -> return AppResult.ApiError(weekResponse.body.toLogicError())
-            is AppResult.Success<Int> -> week = weekResponse.data
+        if (result is AppResult.ApiError<SourceError>) {
+            emit(AppResult.ApiError(result.body.toLogicError()))
+            return@flow
         }
 
-        val listDays = mutableListOf<GroupDay>()
+        val commonSchedule = (result as AppResult.Success<CommonSchedule>).data
 
-        val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
-        val prettyFormatter = DateTimeFormatter.ofPattern("EEEE, dd MMMM", Locale.getDefault())
+        databaseRepository.setGroupSchedule(commonSchedule)
 
-        val endDate = if(schedule.endDate != null){
-            LocalDate.parse(schedule.endDate, formatter)
-        }else{
-            LocalDate.now().plusWeeks(4)
+        dbSchedule = databaseRepository.getGroupSchedule(group.name)
+
+        if(dbSchedule is AppResult.ApiError){
+            emit(AppResult.ApiError(dbSchedule.body.toLogicError()))
+            return@flow
         }
 
-        var currentDate = LocalDate.now()
+        val configureResult = configureSchedule((dbSchedule as AppResult.Success).data)
+        val configureExams = configureExams(dbSchedule.data)
 
-        /*if(currentDate.dayOfWeek == DayOfWeek.SUNDAY)
-            week = (week + 3) % 4*/
-
-        while (currentDate.isBefore(endDate)) {
-
-            fun makeSchedule(rawList: List<Lesson>) {
-
-                if (rawList.any {
-                    it.weekNumber?.contains(week) ?: (currentDate == LocalDate.parse(it.dateLesson, formatter))
-                }) {
-
-                    val lessons = mutableListOf<Lesson>()
-
-                    for (lesson in rawList) {
-                        if (
-                            lesson.weekNumber?.contains(week) ?: (currentDate == LocalDate.parse(lesson.dateLesson, formatter))
-                        ) {
-                            lessons.add(lesson)
-                        }
-                    }
-
-                    listDays.add(GroupDay(GroupDayHeader(
-                        prettyFormatter.format(currentDate)
-                            .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
-                    ), lessons))
-                }
-            }
-
-            when (currentDate.dayOfWeek) {
-                DayOfWeek.MONDAY -> {
-                    makeSchedule(schedule.schedules.Monday)
-                }
-
-                DayOfWeek.TUESDAY -> {
-                    makeSchedule(schedule.schedules.Tuesday)
-                }
-
-                DayOfWeek.WEDNESDAY -> {
-                    makeSchedule(schedule.schedules.Wednesday)
-                }
-
-                DayOfWeek.THURSDAY -> {
-                    makeSchedule(schedule.schedules.Thursday)
-                }
-
-                DayOfWeek.FRIDAY -> {
-                    makeSchedule(schedule.schedules.Friday)
-                }
-
-                DayOfWeek.SATURDAY -> {
-                    makeSchedule(schedule.schedules.Saturday)
-                }
-
-                DayOfWeek.SUNDAY -> {
-                    week = (week % 4) + 1
-                }
-            }
-
-            currentDate = currentDate.plusDays(1)
+        if(configureResult is AppResult.ApiError){
+            emit(configureResult)
+            return@flow
         }
 
-        val readySchedule: ReadySchedule =
-            ReadySchedule(group, listDays)
+        if(configureExams is AppResult.ApiError){
+            emit(configureExams)
+            return@flow
+        }
 
-        return AppResult.Success(readySchedule)
+
+
+        emit(AppResult.Success(GroupReadySchedule(group, (configureResult as AppResult.Success).data, (configureExams as AppResult.Success).data)))
+
     }
 }

@@ -1,6 +1,6 @@
 package com.maximshuhman.bsuirschedule.data.sources
 
-import CommonSchedule
+import com.maximshuhman.bsuirschedule.data.dto.CommonSchedule
 import com.maximshuhman.bsuirschedule.data.dto.Employee
 import com.maximshuhman.bsuirschedule.data.dto.Group
 import com.maximshuhman.bsuirschedule.data.dto.LastUpdateDate
@@ -37,10 +37,10 @@ interface IISService {
         @Query("groupNumber") groupNumber: String
     ): Response<LastUpdateDate>
 
-    @GET("schedule/{id}")
+    @GET("employees/schedule/{id}")
     suspend fun getEmployeeSchedule(
-        @Path("id") emplId: String
-    ): Response<ResponseBody>
+        @Path("id") employeeUrlID: String
+    ): Response<CommonSchedule>
 
     @GET("last-update-date/employee?")
     suspend fun getEmployeeScheduleLastUpdate(

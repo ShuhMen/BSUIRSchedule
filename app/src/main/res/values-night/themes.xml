@@ -13,6 +13,8 @@
         <item name="android:statusBarColor" tools:targetApi="l">@color/black</item>
         <!-- Customize your theme here. -->
         <item name="bottomNavigationStyle">@style/Widget.App.BottomNavigationView</item>
+        <item name="android:dialogTheme">@style/Theme.DialogFullScreen</item>
+
     </style>
 
     <style name="Widget.App.BottomNavigationView" parent="Widget.MaterialComponents.BottomNavigationView.Colored">
@@ -51,6 +53,11 @@
 
         <item name="android:textColor">@android:color/white</item>
         <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="Theme.DialogFullScreen" parent="@style/ThemeOverlay.MaterialComponents.Dialog.Alert">
+        <item name="android:windowMinWidthMajor">100%</item>
+        <item name="android:windowMinWidthMinor">100%</item>
     </style>
 
 </resources>

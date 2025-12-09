@@ -5,19 +5,24 @@ import com.maximshuhman.bsuirschedule.data.ScheduleSource
 import com.maximshuhman.bsuirschedule.data.dto.Group
 import com.maximshuhman.bsuirschedule.data.repositories.NetError
 import com.maximshuhman.bsuirschedule.data.sources.GroupsDAO
+import com.maximshuhman.bsuirschedule.domain.NetworkStatus
+import com.maximshuhman.bsuirschedule.domain.NetworkStatusTracker
 import com.maximshuhman.bsuirschedule.domain.models.LogicError
+import com.maximshuhman.bsuirschedule.domain.models.toLogicError
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
 class GetGroupListUseCase @Inject constructor(
     private val repository: ScheduleSource,
-    private val groupsDAO: GroupsDAO
+    private val groupsDAO: GroupsDAO,
+    private val networkStatusTracker: NetworkStatusTracker,
 ) {
+
     operator fun invoke(): Flow<AppResult<List<Group>, LogicError>> = flow {
 
         val groupsDbList = groupsDAO.getAll()
-        val favoriteIds = groupsDAO.getFavoriteGroupIds().toSet()
+        val favoriteIds = groupsDAO.getFavoriteIds().toSet()
 
         groupsDbList.forEach { group ->
             group.isFavorite = group.id in favoriteIds
@@ -25,6 +30,11 @@ class GetGroupListUseCase @Inject constructor(
 
         if(groupsDbList.isNotEmpty())
             emit(AppResult.Success(groupsDbList))
+
+        if(networkStatusTracker.getCurrentNetworkStatus() is NetworkStatus.Unavailable){
+            emit(AppResult.ApiError(LogicError.NoInternetConnection))
+            return@flow
+        }
 
         val result = repository.getGroupsList()
 
@@ -50,14 +60,4 @@ class GetGroupListUseCase @Inject constructor(
 
     }
 
-    fun NetError.toLogicError(): LogicError {
-        return when (this) {
-            is NetError.ApiError -> LogicError.FetchDataError(this.message ?: "Ошибка запроса")
-            NetError.EmptyError -> LogicError.Empty
-            NetError.NetworkError -> LogicError.FetchDataError("Ошибка запроса")
-            is NetError.UnknownError -> LogicError.FetchDataError(
-                this.error.message ?: "Ошибка запроса"
-            )
-        }
-    }
 }

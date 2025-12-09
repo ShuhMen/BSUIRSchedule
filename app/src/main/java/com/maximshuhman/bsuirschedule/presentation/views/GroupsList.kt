@@ -84,7 +84,7 @@ fun GroupsScreen(
                     },
                     expanded = expanded,
                     onExpandedChange = { expanded = it },
-                    placeholder = { Text("Введи номер группы") },
+                    placeholder = { Text("Введите номер группы") },
                     trailingIcon = {
                         Icon(
                             modifier = Modifier.size(24.dp),
@@ -107,16 +107,23 @@ fun GroupsScreen(
 
         when (uiState) {
             is GroupsListUiState.Error -> {
-                Box {
+
+                ViewError(innerPadding,(uiState as GroupsListUiState.Error).message )
+
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text((uiState as GroupsListUiState.Error).message)
                 }
             }
             GroupsListUiState.Loading -> {
-                Box{
+                Box(modifier = Modifier.padding(innerPadding)){
                     LinearProgressIndicator(Modifier.fillMaxWidth())
                 }
             }
             is GroupsListUiState.Success -> GroupsList(navController,uiState as GroupsListUiState.Success, innerPadding)
+            GroupsListUiState.NoConnection -> {
+                NoConnectionView(Modifier.padding(innerPadding).padding(bottom = 70.dp).fillMaxSize())
+
+            }
         }
     }
 }

@@ -60,4 +60,13 @@ object DataModule {
 
     @Provides
     fun provideUserDao() = provideDatabase().groupsDAO()
+
+    @Provides
+    fun provideEmployeeDao() = provideDatabase().employeeDAO()
+
+    @Provides
+    fun provideScheduleDao() = provideDatabase().scheduleDAO()
+
+    @Provides
+    fun provideSettingsDao() = provideDatabase().settingsDAO()
 }

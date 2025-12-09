@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.maximshuhman.bsuirschedule.presentation.views
 
 import androidx.compose.foundation.layout.Arrangement
@@ -8,8 +10,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -27,90 +32,102 @@ import com.maximshuhman.bsuirschedule.domain.models.Favorites
 @Composable
 fun FavoritesBottomSheet(navController: NavController, favorites: Favorites, dismiss: () -> Unit){
 
-
-    Row(modifier = Modifier
-        .fillMaxWidth()
-        .padding(start = 15.dp, end = 15.dp, bottom = 10.dp)
-        , horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-        Text(
-            stringResource(R.string.favorite_screen),
-            modifier = Modifier.align(Alignment.CenterVertically),
-            fontSize = 24.sp
-        )
-
-        IconButton ({
-            dismiss()
-            navController.navigate(NavRoutes.Groups.route)
-        },
-            modifier = Modifier
-                .size(20.dp)
+    ModalBottomSheet(
+        dismiss,
+        containerColor = MaterialTheme.colorScheme.background
         ) {
-            Icon(
-                painterResource(R.drawable.edit_favorites),
-                stringResource(R.string.edit_favorites)
-            )
-        }
-    }
-    LazyColumn(Modifier.fillMaxSize().padding(horizontal = 5.dp)
-    ) {
 
-        if(favorites.groupsList.isNotEmpty() && favorites.employeeList.isNotEmpty()) {
-            item {
-                Text(
-                    stringResource(R.string.favorite_groups),
-                    modifier = Modifier.padding(
-                        start = 15.dp,
-                        end = 15.dp,
-                        bottom = 10.dp
-                    ),
-                    fontSize = 20.sp
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 15.dp, end = 15.dp, bottom = 10.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                stringResource(R.string.favorite_screen),
+                modifier = Modifier.align(Alignment.CenterVertically),
+                fontSize = 24.sp
+            )
+
+            IconButton(
+                {
+                    dismiss()
+                    navController.navigate(NavRoutes.PickEntity.route)
+                },
+                modifier = Modifier
+                    .size(20.dp)
+            ) {
+                Icon(
+                    painterResource(R.drawable.edit_favorites),
+                    stringResource(R.string.edit_favorites)
                 )
             }
         }
+        LazyColumn(
+            Modifier.fillMaxSize().padding(horizontal = 5.dp)
+        ) {
 
-        itemsIndexed(favorites.groupsList,
-            key = { index, group ->
-                Pair(group.id, 0)
-            }
-        ){ _,group ->
-
-            GroupCard(group){
-                dismiss()
-                navController.navigate("${NavRoutes.GroupSchedule.route}/${group.id}&${group.name}"){
-                    navOptions {
-                        restoreState = true
-                    }
-
-                    popUpTo(NavRoutes.GroupSchedule.route) {
-                        inclusive = true
-                    }
+            if (favorites.groupsList.isNotEmpty() && favorites.employeeList.isNotEmpty()) {
+                item {
+                    Text(
+                        stringResource(R.string.favorite_groups),
+                        modifier = Modifier.padding(
+                            start = 15.dp,
+                            end = 15.dp,
+                            bottom = 10.dp
+                        ),
+                        fontSize = 20.sp
+                    )
                 }
             }
 
-        }
+            itemsIndexed(
+                favorites.groupsList,
+                key = { index, group ->
+                    Pair(group.id, 0)
+                }
+            ) { _, group ->
 
-        if(favorites.groupsList.isNotEmpty() && favorites.employeeList.isNotEmpty()) {
-            item {
-                Text(
-                    stringResource(R.string.favorite_employees),
-                    modifier = Modifier.padding(
-                        start = 15.dp,
-                        end = 15.dp,
-                        bottom = 10.dp
-                    ),
-                    fontSize = 20.sp
-                )
+                GroupCard(group) {
+                    dismiss()
+                    navController.navigate("${NavRoutes.GroupSchedule.route}/${group.id}&${group.name}") {
+                        navOptions {
+                            restoreState = true
+                        }
+
+                        popUpTo(NavRoutes.GroupSchedule.route) {
+                            inclusive = true
+                        }
+                    }
+                }
+
             }
-        }
 
-        itemsIndexed(favorites.employeeList,
-            key = { index, employee ->
-                Pair(employee.id, 1)
+            if (favorites.groupsList.isNotEmpty() && favorites.employeeList.isNotEmpty()) {
+                item {
+                    Text(
+                        stringResource(R.string.favorite_employees),
+                        modifier = Modifier.padding(
+                            start = 15.dp,
+                            end = 15.dp,
+                            bottom = 10.dp
+                        ),
+                        fontSize = 20.sp
+                    )
+                }
             }
-        ){ _,employee ->
 
-            Text(employee.lastName)
+            itemsIndexed(
+                favorites.employeeList,
+                key = { index, employee ->
+                    Pair(employee.id, 1)
+                }
+            ) { _, employee ->
 
+                Text(employee.lastName)
+
+            }
         }
     }
 }
