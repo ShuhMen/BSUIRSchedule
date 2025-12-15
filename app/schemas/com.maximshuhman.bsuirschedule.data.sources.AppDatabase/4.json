@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 4,
-    "identityHash": "644bda8397ee9f50fe6cc3da9499dece",
+    "identityHash": "5e8cc08c0bbcff42729ac0541ffbe71e",
     "entities": [
       {
         "tableName": "Group",
@@ -532,11 +532,35 @@
             "employeeID"
           ]
         }
+      },
+      {
+        "tableName": "SubgroupEntity",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `subgroup` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "subgroup",
+            "columnName": "subgroup",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
       }
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '644bda8397ee9f50fe6cc3da9499dece')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '5e8cc08c0bbcff42729ac0541ffbe71e')"
     ]
   }
 }

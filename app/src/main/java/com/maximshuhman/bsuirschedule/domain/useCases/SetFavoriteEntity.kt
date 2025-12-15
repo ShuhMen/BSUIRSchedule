@@ -1,6 +1,6 @@
 package com.maximshuhman.bsuirschedule.domain.useCases
 
-import com.maximshuhman.bsuirschedule.data.dto.FavoriteEntity
+import com.maximshuhman.bsuirschedule.data.entities.FavoriteEntity
 import com.maximshuhman.bsuirschedule.data.sources.GroupsDAO
 import javax.inject.Inject
 

@@ -2,6 +2,7 @@ package com.maximshuhman.bsuirschedule.data
 
 import androidx.room.Room
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import com.maximshuhman.bsuirschedule.DataBase.MigrationCallback
 import com.maximshuhman.bsuirschedule.data.repositories.ScheduleNetworkSourceImpl
 import com.maximshuhman.bsuirschedule.data.sources.AppDatabase
 import com.maximshuhman.bsuirschedule.data.sources.IISService
@@ -55,11 +56,16 @@ object DataModule {
     @Singleton
     fun provideDatabase(): AppDatabase = Room.databaseBuilder(
         applicationContext!!,
-        AppDatabase::class.java, "database-name"
-    ).build()
+        AppDatabase::class.java, "RoomSchedule"
+    )
+        .addCallback(MigrationCallback(applicationContext!!))
+        .build()
 
     @Provides
-    fun provideUserDao() = provideDatabase().groupsDAO()
+    fun provideGroupsDao() = provideDatabase().groupsDAO()
+
+    @Provides
+    fun provideSubgroupDao() = provideDatabase().subgroupDAO()
 
     @Provides
     fun provideEmployeeDao() = provideDatabase().employeeDAO()

@@ -5,7 +5,7 @@ import androidx.room.Delete
 import androidx.room.Query
 import androidx.room.Upsert
 import com.maximshuhman.bsuirschedule.data.dto.Employee
-import com.maximshuhman.bsuirschedule.data.dto.FavoriteEntity
+import com.maximshuhman.bsuirschedule.data.entities.FavoriteEntity
 
 @Dao
 interface EmployeeDAO {

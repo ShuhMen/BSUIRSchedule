@@ -1,7 +1,5 @@
-package com.maximshuhman.bsuirschedule.domain.useCases
+package com.maximshuhman.bsuirschedule.domain
 
-import com.maximshuhman.bsuirschedule.domain.NetworkStatus
-import com.maximshuhman.bsuirschedule.domain.NetworkStatusTracker
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

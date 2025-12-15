@@ -1,4 +1,3 @@
-/*
 package com.maximshuhman.bsuirschedule.DataBase
 
 import android.provider.BaseColumns
@@ -198,4 +197,4 @@ object DBContract {
         const val widgetOpened = "widgetOpened"
     }
 
-}*/
+}

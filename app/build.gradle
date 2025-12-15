@@ -20,7 +20,7 @@ android {
         versionCode 57
         versionName "1.0.2.55"
 
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "dagger.hilt.android.testing.HiltTestRunner"
     }
 
     buildTypes {
@@ -60,6 +60,8 @@ android {
 }
 
 dependencies {
+    implementation("io.coil-kt.coil3:coil-network-okhttp:3.3.0")
+    implementation("io.coil-kt.coil3:coil-compose:3.3.0")
 
     implementation("androidx.core:core-splashscreen:1.0.1")
 
@@ -116,4 +118,6 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.7.0'
     androidTestImplementation platform('androidx.compose:compose-bom:2025.10.00')
     androidTestImplementation 'androidx.compose.ui:ui-test-junit4'
+    androidTestImplementation("com.google.dagger:hilt-android-testing:2.57.2")
+
 }
