@@ -3,8 +3,10 @@ package com.maximshuhman.bsuirschedule.presentation.viewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.maximshuhman.bsuirschedule.AppResult
-import com.maximshuhman.bsuirschedule.data.dto.FavoriteEntity
+import com.maximshuhman.bsuirschedule.data.entities.FavoriteEntity
+import com.maximshuhman.bsuirschedule.data.entities.SubgroupEntity
 import com.maximshuhman.bsuirschedule.data.sources.SettingsDAO
+import com.maximshuhman.bsuirschedule.data.sources.SubgroupDAO
 import com.maximshuhman.bsuirschedule.domain.NetworkStatus
 import com.maximshuhman.bsuirschedule.domain.collect
 import com.maximshuhman.bsuirschedule.domain.models.Favorites
@@ -31,6 +33,7 @@ class GroupScheduleViewModel @Inject constructor(
     private val setFavoriteEntity: SetFavoriteEntity,
     private val networkFlow: @JvmSuppressWildcards Flow<NetworkStatus>,
     private val settingsDAO: SettingsDAO,
+    private val subgroupDAO: SubgroupDAO,
     ): ViewModel() {
 
     private var lastLoadedId: Int = -1
@@ -69,9 +72,12 @@ class GroupScheduleViewModel @Inject constructor(
             getGroupSchedule(groupID).collect { result ->
                 when (result) {
                     is AppResult.Success<GroupReadySchedule> -> {
+
+                        val subgroup = subgroupDAO.getSubgroup(result.data.group.id)?.subgroup ?: 0
+
                         _uiState.value = GroupScheduleUiState.Success(
                             result.data,
-                            0,
+                            subgroup,
                             result.data.group.isFavorite
                         )
 
@@ -110,10 +116,18 @@ class GroupScheduleViewModel @Inject constructor(
 
     fun clickSubgroup() {
         viewModelScope.launch(Dispatchers.IO) {
-            if (uiState.value is GroupScheduleUiState.Success)
+            if (uiState.value is GroupScheduleUiState.Success) {
+                val subgroup = ((uiState.value as GroupScheduleUiState.Success).numSubgroup + 1) % 3
+
                 _uiState.value = (uiState.value as GroupScheduleUiState.Success).copy(
-                    numSubgroup = ((uiState.value as GroupScheduleUiState.Success).numSubgroup + 1) % 3
+                    numSubgroup = subgroup
                 )
+
+                subgroupDAO.insert(SubgroupEntity(
+                    (uiState.value as GroupScheduleUiState.Success).schedule.group.id,
+                    subgroup
+                ))
+            }
         }
     }
 

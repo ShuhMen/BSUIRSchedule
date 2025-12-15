@@ -41,13 +41,11 @@ import com.maximshuhman.bsuirschedule.ui.theme.Practic
 inline fun LessonCard(lesson: Lesson, crossinline onClick: () -> Unit = { }) {
 
     val dividerColor = when(lesson.lessonTypeAbbrev){
-        "Экзамен",
-        "ЛР" -> Labaratory
+        "Экзамен", "ЛР" -> Labaratory
 
-        "Консультация",
-        "ПЗ" -> Practic
+        "Консультация", "ПЗ","УПз" -> Practic
 
-        "УЛК","ЛК" -> Lecture
+        "УЛк", "ЛК" -> Lecture
         else -> if(lesson.announcement == true) Blue else Color.White
     }
 
@@ -55,7 +53,8 @@ inline fun LessonCard(lesson: Lesson, crossinline onClick: () -> Unit = { }) {
         modifier = Modifier
             .fillMaxWidth()
             .clickable {
-                onClick()
+                if(lesson.announcement != true)
+                    onClick()
             }
             .padding(horizontal = 10.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -251,17 +250,19 @@ fun AnnouncementCardPreview(){
                 Lesson(
                     null,
                     "11:00",
-                    null,
+                    "ПЗ",
                     "ССПОиРС (ЛР) 230501-2 перенесено на 23.12.2025",
                     0,
                     "10:00",
                     arrayListOf(),
+                    "АиПРП",
+                    "Администрирование и проектирования распределенных систем",
                     null,
-                    null,
-                    null,
-                    listOf(Employee(
-                        0,"Максим", "Шухман", "Юрьевич", "", "", "", "", ""
-                    )),                            "10.09.2025",
+                    listOf(
+                        Employee(
+                            0, "Максим", "Шухман", "Юрьевич", "", "", "", "", ""
+                        )
+                    ), "10.09.2025",
                     "10.09.2025",
                     "10.09.2025",
                     true,

@@ -50,6 +50,7 @@ import androidx.navigation.NavController
 import com.maximshuhman.bsuirschedule.R
 import com.maximshuhman.bsuirschedule.data.dto.Employee
 import com.maximshuhman.bsuirschedule.data.dto.Lesson
+import com.maximshuhman.bsuirschedule.domain.models.ScheduleDay
 import com.maximshuhman.bsuirschedule.domain.models.ScheduleDayHeader
 import com.maximshuhman.bsuirschedule.presentation.viewModels.GroupScheduleUiState
 import com.maximshuhman.bsuirschedule.presentation.viewModels.GroupScheduleViewModel
@@ -110,8 +111,8 @@ fun GroupScheduleView(
                     )
                 },
                 actions = {
-                    if(uiState is GroupScheduleUiState.Success) {
-                        if ((uiState as GroupScheduleUiState.Success).schedule.exams != null)
+                    if (uiState is GroupScheduleUiState.Success) {
+                        if((uiState as GroupScheduleUiState.Success).schedule.exams.isNotEmpty())
                         Surface(
                             onClick = {
                                 examsDialogVisible = true
@@ -151,17 +152,24 @@ fun GroupScheduleView(
                         IconButton({
                             viewModel.clickFavorite()
                         }) {
-                            if((uiState as GroupScheduleUiState.Success).isFavorite)
-                                Icon(painterResource(R.drawable.ic_baseline_favorite_24), stringResource(R.string.favorite_click))
+                            if ((uiState as GroupScheduleUiState.Success).isFavorite)
+                                Icon(
+                                    painterResource(R.drawable.ic_baseline_favorite_24),
+                                    stringResource(R.string.favorite_click)
+                                )
                             else
-                                Icon(painterResource(R.drawable.ic_baseline_favorite_border_24), stringResource(R.string.favorite_click))
+                                Icon(
+                                    painterResource(R.drawable.ic_baseline_favorite_border_24),
+                                    stringResource(R.string.favorite_click)
+                                )
                         }
 
                     }
                 }
             )
         },
-        modifier = Modifier.fillMaxSize()) { innerPadding ->
+        modifier = Modifier.fillMaxSize()
+    ) { innerPadding ->
 
         if (bottomSheetVisible)
             FavoritesBottomSheet(navController, favorites) {
@@ -175,20 +183,32 @@ fun GroupScheduleView(
 
             GroupScheduleUiState.Loading -> {
                 Box {
-                    LinearProgressIndicator(Modifier
-                        .fillMaxWidth()
-                        .padding(innerPadding))
+                    LinearProgressIndicator(
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(innerPadding)
+                    )
                 }
             }
 
             is GroupScheduleUiState.Success -> {
+                if((uiState as GroupScheduleUiState.Success).schedule.schedule.isEmpty())
+                    ExamsList((uiState as GroupScheduleUiState.Success).schedule.exams, innerPadding)
+                    else
                     ScheduleList(
-                        (uiState as GroupScheduleUiState.Success),
-                        innerPadding
-                    )
+                    (uiState as GroupScheduleUiState.Success).schedule.schedule,
+                    (uiState as GroupScheduleUiState.Success).numSubgroup,
+                    innerPadding
+                )
             }
+
             is GroupScheduleUiState.NoConnection -> {
-                NoConnectionView(Modifier.padding(innerPadding).padding(bottom = 70.dp).fillMaxSize())
+                NoConnectionView(
+                    Modifier
+                        .padding(innerPadding)
+                        .padding(bottom = 70.dp)
+                        .fillMaxSize()
+                )
             }
         }
 
@@ -197,54 +217,67 @@ fun GroupScheduleView(
 
 @Composable
 fun ScheduleList(
-    scheduleState: GroupScheduleUiState.Success,
+    scheduleList: List<ScheduleDay>,
+    numSubgroup: Int,
     contentPaddingValues: PaddingValues
 ) {
 
-    LazyColumn(
-        Modifier
-            .fillMaxSize()
-            .padding(horizontal = 5.dp),
-        contentPadding = contentPaddingValues
-    ) {
-        items(
-            scheduleState
-                .schedule.schedule
-                .filter { lesson ->
-                    lesson.list.any {
-                        scheduleState.numSubgroup == 0 || it.numSubgroup == 0 || it.numSubgroup == scheduleState.numSubgroup
+    var detailsVisible by remember { mutableStateOf(false) }
+    var lessonDetails by  remember { mutableStateOf<Lesson?>(null) }
+
+    Box {
+        LazyColumn(
+            Modifier
+                .fillMaxSize()
+                .padding(horizontal = 5.dp),
+            contentPadding = contentPaddingValues
+        ) {
+            items(
+                scheduleList
+                    .filter { lesson ->
+                        lesson.list.any {
+                            numSubgroup == 0 || it.numSubgroup == 0 || it.numSubgroup == numSubgroup
+                        }
                     }
-                }
-        ) { day ->
-            ScheduleDayItem(day.header)
+            ) { day ->
+                ScheduleDayItem(day.header)
 
-            Card(
-                Modifier
-                    .padding(5.dp, 3.dp)
-                    .fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.secondary
-                )
-            ) {
+                Card(
+                    Modifier
+                        .padding(5.dp, 3.dp)
+                        .fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.secondary
+                    )
+                ) {
 
-                val filteredLessons = day.list.asSequence()
-                    .filter {
-                        scheduleState.numSubgroup == 0 || it.numSubgroup == 0 || it.numSubgroup == scheduleState.numSubgroup
-                    }
-                    .toList()
+                    val filteredLessons = day.list.asSequence()
+                        .filter {
+                            numSubgroup == 0 || it.numSubgroup == 0 || it.numSubgroup == numSubgroup
+                        }
+                        .toList()
 
-                filteredLessons.forEachIndexed { index, lesson ->
+                    filteredLessons.forEachIndexed { index, lesson ->
 
-                    LessonCard(lesson) { }
-                    if (index < filteredLessons.size - 1) {
-                        HorizontalDivider(
-                            modifier = Modifier.padding(horizontal = 5.dp),
-                            thickness = 1.dp,
-                        )
+                        LessonCard(lesson) {
+                            lessonDetails = lesson
+                            detailsVisible = true
+                        }
+                        if (index < filteredLessons.size - 1) {
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = 5.dp),
+                                thickness = 1.dp,
+                            )
+                        }
                     }
                 }
             }
         }
+
+        if (detailsVisible)
+            DetailsDialogView(lessonDetails!!){
+                detailsVisible = false
+            }
     }
 }
 
@@ -261,21 +294,25 @@ fun ScheduleDayItem(groupDay: ScheduleDayHeader) {
 
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-fun bottomPreview(){
+fun bottomPreview() {
     BSUIRScheduleTheme {
         Surface(Modifier) {
-            Row(modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 15.dp, end = 15.dp, bottom = 10.dp)
-                , horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 15.dp, end = 15.dp, bottom = 10.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
                     stringResource(R.string.favorite_screen),
                     modifier = Modifier.align(Alignment.CenterVertically),
                     fontSize = 24.sp
                 )
 
-                IconButton ({
-                },
+                IconButton(
+                    {
+                    },
                     modifier = Modifier
                         .size(20.dp)
                 ) {
@@ -292,7 +329,7 @@ fun bottomPreview(){
 
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-fun LessonCardSchedulePreview(){
+fun LessonCardSchedulePreview() {
     BSUIRScheduleTheme {
         Surface(Modifier) {
             Column {
@@ -309,110 +346,114 @@ fun LessonCardSchedulePreview(){
                 ) {
                     Column {
 
-                    LessonCard(
-                        Lesson(
-                            arrayListOf("202-4к.", "302-4к."),
-                            "11:00",
-                            "ЛК",
-                            "",
-                            0,
-                            "10:00",
-                            arrayListOf(),
-                            "ОБПСвИТ",
-                            "10:00",
-                            arrayListOf(1),
-                            arrayListOf<Employee>(),
-                            "10.09.2025",
-                            "10.09.2025",
-                            "10.09.2025",
-                            false,
-                            false
+                        LessonCard(
+                            Lesson(
+                                arrayListOf("202-4к.", "302-4к."),
+                                "11:00",
+                                "ЛК",
+                                "",
+                                0,
+                                "10:00",
+                                arrayListOf(),
+                                "ОБПСвИТ",
+                                "10:00",
+                                arrayListOf(1),
+                                arrayListOf<Employee>(),
+                                "10.09.2025",
+                                "10.09.2025",
+                                "10.09.2025",
+                                false,
+                                false
 
+                            )
                         )
-                    )
-                    HorizontalDivider(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        thickness = 1.dp,
-                    )
-                    LessonCard(
-                        Lesson(
-                            arrayListOf("202-4к.", "302-4к."),
-                            "11:00",
-                            "ПЗ",
-                            "",
-                            1,
-                            "10:00",
-                            arrayListOf(),
-                            "ОБПСвИТ",
-                            "10:00",
-                            arrayListOf(1),
-                            arrayListOf<Employee>(),
-                            "10.09.2025",
-                            "10.09.2025",
-                            "10.09.2025",
-                            false,
-                            false
-
+                        HorizontalDivider(
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            thickness = 1.dp,
                         )
-                    )
-                    HorizontalDivider(
-                        modifier = Modifier.padding(horizontal = 5.dp),
-                        thickness = 1.dp,
-                    )
-                    LessonCard(
-                        Lesson(
-                            arrayListOf("202-4к.", "302-4к."),
-                            "11:00",
-                            "ЛР",
-                            "",
-                            2,
-                            "10:00",
-                            arrayListOf(),
-                            "ОБПСвИТ",
-                            "10:00",
-                            arrayListOf(1),
-                            listOf(Employee(
-                                0,"Максим", "Шухман", "Юрьевич", "", "", "", "", ""
-                            )),
-                            "10.09.2025",
-                            "10.09.2025",
-                            "10.09.2025",
-                            false,
-                            false
+                        LessonCard(
+                            Lesson(
+                                arrayListOf("202-4к.", "302-4к."),
+                                "11:00",
+                                "ПЗ",
+                                "",
+                                1,
+                                "10:00",
+                                arrayListOf(),
+                                "ОБПСвИТ",
+                                "10:00",
+                                arrayListOf(1),
+                                arrayListOf<Employee>(),
+                                "10.09.2025",
+                                "10.09.2025",
+                                "10.09.2025",
+                                false,
+                                false
 
+                            )
                         )
-                    )
-
-                    HorizontalDivider(
-                        modifier = Modifier.padding(horizontal = 5.dp),
-                        thickness = 1.dp,
-                    )
-
-                    LessonCard(
-                        Lesson(
-                            null,
-                            "11:00",
-                            null,
-                            "ССПОиРС (ЛР) 230501-2 перенесено на 23.12.2025",
-                            0,
-                            "10:00",
-                            arrayListOf(),
-                            null,
-                            null,
-                            null,
-                            listOf(Employee(
-                                0,"Максим", "Шухман", "Юрьевич", "", "", "", "", ""
-                            )),                            "10.09.2025",
-                            "10.09.2025",
-                            "10.09.2025",
-                            true,
-                            false
-
+                        HorizontalDivider(
+                            modifier = Modifier.padding(horizontal = 5.dp),
+                            thickness = 1.dp,
                         )
-                    )
+                        LessonCard(
+                            Lesson(
+                                arrayListOf("202-4к.", "302-4к."),
+                                "11:00",
+                                "ЛР",
+                                "",
+                                2,
+                                "10:00",
+                                arrayListOf(),
+                                "ОБПСвИТ",
+                                "10:00",
+                                arrayListOf(1),
+                                listOf(
+                                    Employee(
+                                        0, "Максим", "Шухман", "Юрьевич", "", "", "", "", ""
+                                    )
+                                ),
+                                "10.09.2025",
+                                "10.09.2025",
+                                "10.09.2025",
+                                false,
+                                false
 
+                            )
+                        )
+
+                        HorizontalDivider(
+                            modifier = Modifier.padding(horizontal = 5.dp),
+                            thickness = 1.dp,
+                        )
+
+                        LessonCard(
+                            Lesson(
+                                null,
+                                "11:00",
+                                "ПЗ",
+                                "ССПОиРС (ЛР) 230501-2 перенесено на 23.12.2025",
+                                0,
+                                "10:00",
+                                arrayListOf(),
+                                "АиПРП",
+                                "Администрирование и проектирования распределенных систем",
+                                null,
+                                listOf(
+                                    Employee(
+                                        0, "Максим", "Шухман", "Юрьевич", "", "", "", "", ""
+                                    )
+                                ), "10.09.2025",
+                                "10.09.2025",
+                                "10.09.2025",
+                                true,
+                                false
+
+                            )
+                        )
+
+                    }
                 }
-}
             }
         }
     }

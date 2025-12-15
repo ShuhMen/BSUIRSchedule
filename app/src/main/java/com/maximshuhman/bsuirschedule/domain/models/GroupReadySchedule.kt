@@ -7,13 +7,13 @@ import com.maximshuhman.bsuirschedule.data.dto.Lesson
 data class GroupReadySchedule (
     val group: Group,
     val schedule: List<ScheduleDay>,
-    val exams: List<ScheduleDay>? = null
+    val exams: List<ScheduleDay>
 )
 
 data class EmployeeReadySchedule (
     val employee: Employee,
     val schedule: List<ScheduleDay>,
-    val exams: List<ScheduleDay>? = null
+    val exams: List<ScheduleDay>
 )
 
 data class ScheduleDay(

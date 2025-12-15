@@ -24,6 +24,9 @@ abstract class GetScheduleUseCase(
 
     suspend fun configureExams(schedule: CommonSchedule): AppResult<List<ScheduleDay>, LogicError> {
 
+        if(schedule.exams == null)
+            return AppResult.Success(listOf())
+
         var week: Int
 
         val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
@@ -97,7 +100,6 @@ abstract class GetScheduleUseCase(
             }
 
 
-            schedule.schedules!!
             when (currentDate.dayOfWeek) {
 
                 DayOfWeek.SUNDAY -> {
@@ -105,7 +107,7 @@ abstract class GetScheduleUseCase(
                 }
 
                 else -> {
-                    makeSchedule(schedule.exams!!)
+                    makeSchedule(schedule.exams)
                 }
             }
 
@@ -117,6 +119,9 @@ abstract class GetScheduleUseCase(
     }
 
     suspend fun configureSchedule(schedule: CommonSchedule): AppResult<List<ScheduleDay>, LogicError> {
+
+        if(schedule.schedules == null)
+            return AppResult.Success(listOf())
 
         var week: Int
         var currentDate = LocalDate.now()
@@ -195,7 +200,6 @@ abstract class GetScheduleUseCase(
                 }
             }
 
-            schedule.schedules!!
             when (currentDate.dayOfWeek) {
 
                 DayOfWeek.MONDAY -> {

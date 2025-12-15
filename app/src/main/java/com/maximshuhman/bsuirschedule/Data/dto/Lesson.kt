@@ -25,6 +25,7 @@ data class Lesson(
 
     @Transient val groupId          : Int = -1,
     @Transient val employeeId       : Int = -1,
+    /**Это занятие преподавателя или группы**/
     @Transient val lessonType       : LessonType = LessonType.GROUP,
 
     )

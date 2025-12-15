@@ -3,7 +3,7 @@ package com.maximshuhman.bsuirschedule.presentation.viewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.maximshuhman.bsuirschedule.AppResult
-import com.maximshuhman.bsuirschedule.data.dto.FavoriteEntity
+import com.maximshuhman.bsuirschedule.data.entities.FavoriteEntity
 import com.maximshuhman.bsuirschedule.data.sources.SettingsDAO
 import com.maximshuhman.bsuirschedule.domain.NetworkStatus
 import com.maximshuhman.bsuirschedule.domain.collect

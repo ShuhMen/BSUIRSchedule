@@ -4,6 +4,7 @@ import com.maximshuhman.bsuirschedule.AppResult
 import com.maximshuhman.bsuirschedule.data.ScheduleSource
 import com.maximshuhman.bsuirschedule.data.SourceError
 import com.maximshuhman.bsuirschedule.data.dto.CommonSchedule
+import com.maximshuhman.bsuirschedule.data.dto.Group
 import com.maximshuhman.bsuirschedule.data.repositories.ScheduleDataBaseSourceImpl
 import com.maximshuhman.bsuirschedule.data.sources.GroupsDAO
 import com.maximshuhman.bsuirschedule.data.sources.SettingsDAO
@@ -98,5 +99,26 @@ class GetGroupScheduleUseCase @Inject constructor(
 
         emit(AppResult.Success(GroupReadySchedule(group, (configureResult as AppResult.Success).data, (configureExams as AppResult.Success).data)))
 
+    }
+
+    suspend inline fun analyseSchedule(group: Group, schedule: AppResult<CommonSchedule, SourceError>): AppResult<GroupReadySchedule, LogicError>  {
+
+        if(schedule is AppResult.ApiError){
+            return (AppResult.ApiError(schedule.body.toLogicError()))
+        }else {
+
+            val configureResult = configureSchedule((schedule as AppResult.Success).data)
+            val configureExams = configureExams(schedule.data)
+
+            if(configureResult is AppResult.ApiError){
+                return (configureResult)
+            }
+
+            if(configureExams is AppResult.ApiError){
+                return(configureExams)
+            }
+
+            return (AppResult.Success(GroupReadySchedule(group, (configureResult as AppResult.Success).data, (configureExams as AppResult.Success).data)))
+        }
     }
 }
