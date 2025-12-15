@@ -45,7 +45,6 @@ fun StartScreen(
         }
     }
 
-    // Пока идёт загрузка — можно показать прогресс или просто ничего
     if (uiState is MainActivityUiState.Loading) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator()
