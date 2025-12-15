@@ -1,7 +1,5 @@
 package com.maximshuhman.bsuirschedule
 
-import android.content.Context
-import android.net.ConnectivityManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -16,8 +14,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.maximshuhman.bsuirschedule.domain.NetworkStatusTracker
-import com.maximshuhman.bsuirschedule.domain.useCases.UseCaseModule
 import com.maximshuhman.bsuirschedule.presentation.viewModels.MainActivityUiState
 import com.maximshuhman.bsuirschedule.presentation.viewModels.MainViewModel
 import com.maximshuhman.bsuirschedule.presentation.views.EmployeeScheduleView
@@ -31,16 +27,10 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     private val viewModel: MainViewModel by viewModels()
-    lateinit var networkTracker : NetworkStatusTracker
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashscreen = installSplashScreen()
         super.onCreate(savedInstanceState)
-
-        networkTracker = NetworkStatusTracker(this.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager)
-
-        UseCaseModule.networkStatusTracker = networkTracker
 
         val state = viewModel.uiState
         splashscreen.setKeepOnScreenCondition { state.value is MainActivityUiState.Loading }

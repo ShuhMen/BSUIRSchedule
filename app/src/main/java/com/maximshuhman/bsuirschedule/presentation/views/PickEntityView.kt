@@ -1,12 +1,14 @@
 package com.maximshuhman.bsuirschedule.presentation.views
 
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -15,6 +17,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -32,12 +35,18 @@ fun PickEntityView(parentNavController: NavController) {
         modifier = Modifier.fillMaxSize(),
         bottomBar = {
             NavigationBar(
-                windowInsets = NavigationBarDefaults.windowInsets) {
+                windowInsets = NavigationBarDefaults.windowInsets,
+                containerColor = MaterialTheme.colorScheme.background,
+                tonalElevation = 5.dp
+            ) {
                 PickEntityRoutes.entries.forEachIndexed { index, destination ->
                     NavigationBarItem(
                         selected = selectedDestination == index,
                         onClick = {
-                            navController.navigate(route = destination.route)
+                            navController.navigate(destination.route) {
+                                launchSingleTop = true
+                                restoreState = true
+                            }
                             selectedDestination = index
                         },
                         icon = {
@@ -46,27 +55,32 @@ fun PickEntityView(parentNavController: NavController) {
                                 contentDescription = destination.contentDescription
                             )
                         },
-                        label = { Text(destination.label) }
+                        label = { androidx.compose.material3.Text(destination.label) },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedTextColor = MaterialTheme.colorScheme.onSecondary,
+                            unselectedTextColor = MaterialTheme.colorScheme.onSecondary,
+                            indicatorColor = MaterialTheme.colorScheme.secondary,
+                            selectedIconColor = MaterialTheme.colorScheme.onSecondary,
+                            unselectedIconColor = MaterialTheme.colorScheme.onSecondary
+                        )
                     )
                 }
             }
         }
-    ) { _ ->
+    ) { innerPadding ->
         NavHost(
-            navController,
-            startDestination = startDestination.route
+            navController = navController,
+            startDestination = startDestination.route,
+            modifier = Modifier.padding(innerPadding)
         ) {
-            PickEntityRoutes.entries.forEach { destination ->
-                composable(destination.route) {
-                    when (destination) {
-                        PickEntityRoutes.GROUPS -> GroupsScreen(parentNavController)
-                        PickEntityRoutes.EMPLOYEES -> EmployeeScreen(parentNavController)
-                    }
-                }
+            composable(PickEntityRoutes.GROUPS.route) {
+                GroupsScreen(parentNavController)
+            }
+            composable(PickEntityRoutes.EMPLOYEES.route) {
+                EmployeeScreen(parentNavController)
             }
         }
     }
-
 }
 
 enum class PickEntityRoutes(

@@ -3,47 +3,32 @@
 package com.maximshuhman.bsuirschedule.presentation.views
 
 import android.content.res.Configuration
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SearchBar
-import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.rememberSearchBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.navOptions
 import com.maximshuhman.bsuirschedule.NavRoutes
 import com.maximshuhman.bsuirschedule.R
 import com.maximshuhman.bsuirschedule.data.dto.Group
@@ -53,101 +38,44 @@ import com.maximshuhman.bsuirschedule.ui.theme.BSUIRScheduleTheme
 
 @Composable
 fun GroupsScreen(
-    navController: NavController,
-    modifier: Modifier = Modifier,
+    parentNavController: NavController,
     viewModel: GroupListViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-
     val textFieldState = rememberTextFieldState()
-    val searchBarState = rememberSearchBarState()
 
-    var expanded by rememberSaveable { mutableStateOf(false) }
+    val listState = when (uiState) {
+        is GroupsListUiState.Loading -> ListScreenState.Loading
+        is GroupsListUiState.Error -> ListScreenState.Error((uiState as GroupsListUiState.Error).message)
+        is GroupsListUiState.Success -> ListScreenState.Success((uiState as GroupsListUiState.Success).groupList)
+        GroupsListUiState.NoConnection -> ListScreenState.NoConnection
+    }
 
 
     LaunchedEffect(Unit) {
         viewModel.loadList()
     }
 
-    Scaffold(
-        topBar = {
-            SearchBar(
-                searchBarState,inputField = {
-                SearchBarDefaults.InputField(
-                    query = textFieldState.text.toString(),
-                    onQueryChange = {
-                        textFieldState.edit { replace(0, length, it) }
-                        viewModel.search(textFieldState.text.toString())
-                    },
-                    onSearch = {
-                        viewModel.search(textFieldState.text.toString())
-                    },
-                    expanded = expanded,
-                    onExpandedChange = { expanded = it },
-                    placeholder = { Text("Введите номер группы") },
-                    trailingIcon = {
-                        Icon(
-                            modifier = Modifier.size(24.dp),
-                            painter = painterResource(R.drawable.search),
-                            contentDescription = stringResource(R.string.search)
-                        )
-                    },
-                    colors = TextFieldDefaults.colors(
-                        unfocusedContainerColor = MaterialTheme.colorScheme.secondary
-                    )
-                )
-            },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .statusBarsPadding()
-                    .padding(horizontal = 5.dp)
-            )
-        }
-    ) { innerPadding ->
-
-        when (uiState) {
-            is GroupsListUiState.Error -> {
-
-                ViewError(innerPadding,(uiState as GroupsListUiState.Error).message )
-
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text((uiState as GroupsListUiState.Error).message)
-                }
-            }
-            GroupsListUiState.Loading -> {
-                Box(modifier = Modifier.padding(innerPadding)){
-                    LinearProgressIndicator(Modifier.fillMaxWidth())
-                }
-            }
-            is GroupsListUiState.Success -> GroupsList(navController,uiState as GroupsListUiState.Success, innerPadding)
-            GroupsListUiState.NoConnection -> {
-                NoConnectionView(Modifier.padding(innerPadding).padding(bottom = 70.dp).fillMaxSize())
-
-            }
-        }
-    }
-}
-
-@Composable
-fun GroupsList(
-    navController: NavController,
-    state: GroupsListUiState.Success,
-    paddingValues: PaddingValues
-){
-    LazyColumn(
-        Modifier.fillMaxSize().padding(start = 5.dp, top = 5.dp, end = 5.dp),
-        contentPadding = paddingValues
+    SearchableListScreen(
+        query = textFieldState.text.toString(),
+        onQueryChange = { newText ->
+            textFieldState.edit { replace(0, length, newText) }
+            viewModel.search(newText)
+        },
+        onSearch = { viewModel.search(it) },
+        placeholder = "Введите номер группы",
+        state = listState,
+        contentPadding = PaddingValues(
+            horizontal = 5.dp,
+            vertical = 5.dp
+        )
     ) {
-        itemsIndexed(state.groupList) { _, group ->
+        if(uiState is GroupsListUiState.Success)
+        items((uiState as GroupsListUiState.Success).groupList) { group ->
             GroupCard(group) {
-                navController.navigate("${NavRoutes.GroupSchedule.route}/${group.id}&${group.name}"){
-                    navOptions {
-                        restoreState = true
-                    }
-
-                    popUpTo(NavRoutes.GroupSchedule.route) {
-                        inclusive = true
-                    }
+                parentNavController.navigate("${NavRoutes.GroupSchedule.route}/${group.id}&${group.name}") {
+                    restoreState = true
+                    popUpTo(NavRoutes.GroupSchedule.route) { inclusive = true }
                 }
             }
         }
@@ -156,9 +84,9 @@ fun GroupsList(
 
 
 @Composable
-inline fun GroupCard(group: Group, crossinline onClick: () -> Unit = { },) {
+inline fun GroupCard(group: Group, crossinline onClick: () -> Unit = { }) {
     Card(
-        onClick ={ onClick() },
+        onClick = { onClick() },
         Modifier
             .padding(5.dp, 3.dp)
             .fillMaxWidth(),
@@ -167,7 +95,7 @@ inline fun GroupCard(group: Group, crossinline onClick: () -> Unit = { },) {
         )
     ) {
 
-        Row(modifier = Modifier.padding(10.dp), verticalAlignment = Alignment.CenterVertically ) {
+        Row(modifier = Modifier.padding(10.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
 
             Column(
                 modifier = Modifier
@@ -175,6 +103,18 @@ inline fun GroupCard(group: Group, crossinline onClick: () -> Unit = { },) {
                 Text(group.name, fontSize = 20.sp)
                 Text(group.facultyAbbrev + ", " + group.specialityAbbrev, fontSize = 16.sp)
             }
+
+            if(group.isFavorite)
+                Image(
+                    painterResource(R.drawable.ic_baseline_favorite_24),
+                    contentDescription = null
+                )
+            else
+                Image(
+                    painterResource(R.drawable.ic_baseline_favorite_border_24),
+                    contentDescription = null
+                )
+
         }
     }
 }
@@ -198,7 +138,7 @@ fun GroupCardPreview() {
                 "",
                 0
             )
-        ){
+        ) {
 
         }
     }
