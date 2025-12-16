@@ -43,7 +43,6 @@ import androidx.navigation.NavController
 import com.maximshuhman.bsuirschedule.R
 import com.maximshuhman.bsuirschedule.presentation.viewModels.EmployeeScheduleUiState
 import com.maximshuhman.bsuirschedule.presentation.viewModels.EmployeeScheduleViewModel
-import com.maximshuhman.bsuirschedule.presentation.viewModels.GroupScheduleUiState
 
 @SuppressLint("RestrictedApi")
 @Composable
@@ -66,7 +65,7 @@ fun EmployeeScheduleView(
     }
 
     if (examsDialogVisible) {
-        ExamsView ((uiState as EmployeeScheduleUiState.Success).schedule.exams) {
+        ExamsView((uiState as EmployeeScheduleUiState.Success).schedule.exams) {
             examsDialogVisible = false
         }
     }
@@ -100,33 +99,39 @@ fun EmployeeScheduleView(
                     )
                 },
                 actions = {
-                    if(uiState is EmployeeScheduleUiState.Success) {
-                        if((uiState as GroupScheduleUiState.Success).schedule.exams.isNotEmpty())
+                    if (uiState is EmployeeScheduleUiState.Success) {
+                        if ((uiState as EmployeeScheduleUiState.Success).schedule.exams.isNotEmpty())
+                            Surface(
+                                onClick = {
+                                    examsDialogVisible = true
+                                },
+                                shape = MaterialTheme.shapes.small,
+                                color = Transparent
+                            ) {
+                                Text("ЭК", fontSize = 18.sp, fontWeight = FontWeight.Bold)
 
-                        Surface(
-                            onClick = {
-                                examsDialogVisible = true
-                            },
-                            shape = MaterialTheme.shapes.small,
-                            color = Transparent
-                        ) {
-                            Text("ЭК", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-
-                        }
+                            }
 
                         IconButton({
                             viewModel.clickFavorite()
                         }) {
-                            if((uiState as EmployeeScheduleUiState.Success).isFavorite)
-                                Icon(painterResource(R.drawable.ic_baseline_favorite_24), stringResource(R.string.favorite_click))
+                            if ((uiState as EmployeeScheduleUiState.Success).isFavorite)
+                                Icon(
+                                    painterResource(R.drawable.ic_baseline_favorite_24),
+                                    stringResource(R.string.favorite_click)
+                                )
                             else
-                                Icon(painterResource(R.drawable.ic_baseline_favorite_border_24), stringResource(R.string.favorite_click))
+                                Icon(
+                                    painterResource(R.drawable.ic_baseline_favorite_border_24),
+                                    stringResource(R.string.favorite_click)
+                                )
                         }
                     }
                 }
             )
         },
-        modifier = Modifier.fillMaxSize()) { innerPadding ->
+        modifier = Modifier.fillMaxSize()
+    ) { innerPadding ->
 
         if (bottomSheetVisible)
             FavoritesBottomSheet(navController, favorites) {
@@ -140,23 +145,34 @@ fun EmployeeScheduleView(
 
             EmployeeScheduleUiState.Loading -> {
                 Box {
-                    LinearProgressIndicator(Modifier
-                        .fillMaxWidth()
-                        .padding(innerPadding))
+                    LinearProgressIndicator(
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(innerPadding)
+                    )
                 }
             }
 
             is EmployeeScheduleUiState.Success -> {
-                if((uiState as EmployeeScheduleUiState.Success).schedule.schedule.isEmpty())
-                    ExamsList((uiState as EmployeeScheduleUiState.Success).schedule.exams, innerPadding)
+                if ((uiState as EmployeeScheduleUiState.Success).schedule.schedule.isEmpty())
+                    ExamsList(
+                        (uiState as EmployeeScheduleUiState.Success).schedule.exams,
+                        innerPadding
+                    )
                 else
                     ScheduleList(
                         (uiState as EmployeeScheduleUiState.Success),
                         innerPadding
                     )
             }
+
             is EmployeeScheduleUiState.NoConnection -> {
-                NoConnectionView(Modifier.padding(innerPadding).padding(bottom = 70.dp).fillMaxSize())
+                NoConnectionView(
+                    Modifier
+                        .padding(innerPadding)
+                        .padding(bottom = 70.dp)
+                        .fillMaxSize()
+                )
             }
         }
 
@@ -167,7 +183,7 @@ fun EmployeeScheduleView(
 fun ScheduleList(
     scheduleState: EmployeeScheduleUiState.Success,
     contentPaddingValues: PaddingValues
-){
+) {
 
     LazyColumn(
         Modifier

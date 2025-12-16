@@ -40,9 +40,6 @@ class GroupListViewModel @Inject constructor(
 
     var groupsList = listOf<Group>()
 
-    private val _connectionLabel = MutableStateFlow(false)
-    val connectionLabel: StateFlow<Boolean> = _connectionLabel
-
     private val _uiState = MutableStateFlow<GroupsListUiState>(GroupsListUiState.Loading)
     val uiState: StateFlow<GroupsListUiState> = _uiState
 
@@ -54,7 +51,7 @@ class GroupListViewModel @Inject constructor(
                 when(result)
                 {
                     is AppResult.Success<List<Group>> -> {
-                        groupsList = result.data.sortedBy { it.isFavorite }
+                        groupsList = result.data.sortedByDescending { it.isFavorite }
 
                         _uiState.value = GroupsListUiState.Success(groupsList)
                     }
@@ -71,7 +68,6 @@ class GroupListViewModel @Inject constructor(
                             LogicError.NoInternetConnection -> {
                                 if(_uiState.value !is GroupsListUiState.Success)
                                     _uiState.value = GroupsListUiState.NoConnection
-                                //_connectionLabel.value = true
                             }
                         }
                     }

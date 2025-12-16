@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 7,
-    "identityHash": "cc950d0a62427e7ec955eede4c234859",
+    "identityHash": "a0b9fc508ea5ad0fa22f5ec231e051ed",
     "entities": [
       {
         "tableName": "Group",
@@ -99,7 +99,7 @@
       },
       {
         "tableName": "common_schedule",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`groupId` INTEGER NOT NULL, `employeeId` INTEGER NOT NULL, `startDate` TEXT, `endDate` TEXT, `startExamsDate` TEXT NOT NULL, `endExamsDate` TEXT NOT NULL, `currentTerm` TEXT, `currentPeriod` TEXT, `employeeDtoId` INTEGER, `firstName` TEXT, `middleName` TEXT, `lastName` TEXT, `photoLink` TEXT, `degree` TEXT, `degreeAbbrev` TEXT, `rank` TEXT, `email` TEXT, `urlId` TEXT, `employeeCalendarId` TEXT, `jobPositions` TEXT, `chief` INTEGER, `name` TEXT, `facultyId` INTEGER, `facultyAbbrev` TEXT, `specialityDepartmentEducationFormId` INTEGER, `specialityName` TEXT, `specialityAbbrev` TEXT, `course` INTEGER, `id` INTEGER, `calendarId` TEXT, `educationDegree` INTEGER, PRIMARY KEY(`groupId`, `employeeId`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`groupId` INTEGER NOT NULL, `employeeId` INTEGER NOT NULL, `startDate` TEXT, `endDate` TEXT, `startExamsDate` TEXT, `endExamsDate` TEXT, `currentTerm` TEXT, `currentPeriod` TEXT, `employeeDtoId` INTEGER, `firstName` TEXT, `middleName` TEXT, `lastName` TEXT, `photoLink` TEXT, `degree` TEXT, `degreeAbbrev` TEXT, `rank` TEXT, `email` TEXT, `urlId` TEXT, `employeeCalendarId` TEXT, `jobPositions` TEXT, `chief` INTEGER, `name` TEXT, `facultyId` INTEGER, `facultyAbbrev` TEXT, `specialityDepartmentEducationFormId` INTEGER, `specialityName` TEXT, `specialityAbbrev` TEXT, `course` INTEGER, `id` INTEGER, `calendarId` TEXT, `educationDegree` INTEGER, PRIMARY KEY(`groupId`, `employeeId`))",
         "fields": [
           {
             "fieldPath": "groupId",
@@ -126,14 +126,12 @@
           {
             "fieldPath": "startExamsDate",
             "columnName": "startExamsDate",
-            "affinity": "TEXT",
-            "notNull": true
+            "affinity": "TEXT"
           },
           {
             "fieldPath": "endExamsDate",
             "columnName": "endExamsDate",
-            "affinity": "TEXT",
-            "notNull": true
+            "affinity": "TEXT"
           },
           {
             "fieldPath": "currentTerm",
@@ -471,7 +469,7 @@
       },
       {
         "tableName": "Employee",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`employeeID` INTEGER NOT NULL, `firstName` TEXT NOT NULL, `lastName` TEXT NOT NULL, `middleName` TEXT, `degree` TEXT NOT NULL, `rank` TEXT, `photoLink` TEXT NOT NULL, `calendarId` TEXT NOT NULL, `urlId` TEXT NOT NULL, PRIMARY KEY(`employeeID`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`employeeID` INTEGER NOT NULL, `firstName` TEXT NOT NULL, `lastName` TEXT NOT NULL, `middleName` TEXT, `degree` TEXT, `rank` TEXT, `photoLink` TEXT, `calendarId` TEXT, `urlId` TEXT NOT NULL, PRIMARY KEY(`employeeID`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -499,8 +497,7 @@
           {
             "fieldPath": "degree",
             "columnName": "degree",
-            "affinity": "TEXT",
-            "notNull": true
+            "affinity": "TEXT"
           },
           {
             "fieldPath": "rank",
@@ -510,14 +507,12 @@
           {
             "fieldPath": "photoLink",
             "columnName": "photoLink",
-            "affinity": "TEXT",
-            "notNull": true
+            "affinity": "TEXT"
           },
           {
             "fieldPath": "calendarId",
             "columnName": "calendarId",
-            "affinity": "TEXT",
-            "notNull": true
+            "affinity": "TEXT"
           },
           {
             "fieldPath": "urlId",
@@ -573,7 +568,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'cc950d0a62427e7ec955eede4c234859')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'a0b9fc508ea5ad0fa22f5ec231e051ed')"
     ]
   }
 }

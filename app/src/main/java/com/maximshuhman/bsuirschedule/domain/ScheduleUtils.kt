@@ -22,98 +22,41 @@ abstract class GetScheduleUseCase(
     private val settingsDAO: SettingsDAO
 ) {
 
-    suspend fun configureExams(schedule: CommonSchedule): AppResult<List<ScheduleDay>, LogicError> {
+    fun configureExams(schedule: CommonSchedule): AppResult<List<ScheduleDay>, LogicError> {
 
         if(schedule.exams == null)
             return AppResult.Success(listOf())
 
-        var week: Int
-
         val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
-        var currentDate = LocalDate.parse(schedule.startExamsDate, formatter)
-
-        if (networkStatusTracker.getCurrentNetworkStatus() is NetworkStatus.Unavailable) {
-
-            val settings = settingsDAO.getSettings()
-
-            if(settings == null || settings.week == null){
-                return AppResult.ApiError(LogicError.NoInternetConnection)
-            }
-
-            val lastUpdateDate = LocalDate.parse(settings.lastWeekUpdate, formatter)
-
-            var diff = ChronoUnit.WEEKS.between(lastUpdateDate, currentDate).toInt()
-
-            if(currentDate.dayOfWeek.value < lastUpdateDate.dayOfWeek.value  )
-                diff++
-
-            week = settings.week + diff
-
-            if(week > 4)
-                week = week % 4 + 1
-
-        } else {
-            val weekResponse = repository.getCurrent()
-
-            when (weekResponse) {
-                is AppResult.ApiError<NetError> -> return AppResult.ApiError(weekResponse.body.toLogicError())
-                is AppResult.Success<Int> -> week = weekResponse.data
-            }
-
-            settingsDAO.setCurrentWeek(formatter.format(LocalDate.now()) ,week)
-        }
+        val prettyFormatter = DateTimeFormatter.ofPattern("EEEE, dd MMMM", Locale.getDefault())
 
         val listDays = mutableListOf<ScheduleDay>()
 
-        val prettyFormatter = DateTimeFormatter.ofPattern("EEEE, dd MMMM", Locale.getDefault())
-
-        val endDate = LocalDate.parse(schedule.endExamsDate, formatter)
-
-        while (currentDate.isBefore(endDate)) {
-
-            fun makeSchedule(rawList: List<Lesson>) {
-
-                if (rawList.any {
-                        currentDate == LocalDate.parse(it.dateLesson, formatter)
-                    }) {
-
-                    val lessons = mutableListOf<Lesson>()
-
-                    for (lesson in rawList) {
-                        if (
-                            currentDate == LocalDate.parse(
-                                lesson.dateLesson,
-                                formatter
-                            )
-                        ) {
-                            lessons.add(lesson)
-                        }
-                    }
-
-                    listDays.add(
-                        ScheduleDay(
-                            ScheduleDayHeader(
-                                prettyFormatter.format(currentDate)
-                                    .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
-                            ), lessons))
-                }
+        val exams = schedule.exams
+            .asSequence()
+            .groupBy { LocalDate.parse(it.dateLesson, formatter) }
+            .toSortedMap { o1, o2 ->
+                 if (o1.isAfter(o2))
+                     1
+                 else
+                     -1
             }
 
+        exams.forEach { (date, exams) ->
 
-            when (currentDate.dayOfWeek) {
+            val lessons = mutableListOf<Lesson>()
 
-                DayOfWeek.SUNDAY -> {
-                    week = (week % 4) + 1
-                }
-
-                else -> {
-                    makeSchedule(schedule.exams)
-                }
+            for (lesson in exams) {
+                lessons.add(lesson)
             }
 
-            currentDate = currentDate.plusDays(1)
+            listDays.add(
+                ScheduleDay(
+                    ScheduleDayHeader(
+                        prettyFormatter.format(date)
+                            .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+                    ), exams))
         }
-
 
         return AppResult.Success(listDays)
     }

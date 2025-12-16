@@ -16,8 +16,8 @@ data class CommonScheduleEntity(
     val employeeId        : Int = -1,
     val startDate         : String?,
     val endDate           : String?,
-    val startExamsDate    : String,
-    val endExamsDate      : String,
+    val startExamsDate    : String?,
+    val endExamsDate      : String?,
     @Embedded
     val employeeDto       : EmployeeDto?,
     @Embedded

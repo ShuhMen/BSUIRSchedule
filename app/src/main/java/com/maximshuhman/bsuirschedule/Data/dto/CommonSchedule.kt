@@ -6,8 +6,8 @@ import kotlinx.serialization.Serializable
 data class CommonSchedule(
     val startDate         : String?,
     val endDate           : String?,
-    val startExamsDate    : String,
-    val endExamsDate      : String,
+    val startExamsDate    : String?,
+    val endExamsDate      : String?,
     val employeeDto       : EmployeeDto?,
     val studentGroupDto   : StudentGroupDto?,
     val schedules         : Schedules?,

@@ -16,10 +16,10 @@ data class Employee(
     val firstName          : String           ,
     val lastName           : String           ,
     val middleName         : String?          ,
-    val degree             : String           ,
+    val degree             : String?           ,
     val rank               : String?          ,
-    val photoLink          : String           ,
-    val calendarId         : String           ,
+    val photoLink          : String?           ,
+    val calendarId         : String?           ,
     val urlId              : String           ,
 ){
     @Transient

@@ -60,9 +60,9 @@ fun GroupsScreen(
         query = textFieldState.text.toString(),
         onQueryChange = { newText ->
             textFieldState.edit { replace(0, length, newText) }
-            viewModel.search(newText)
+            //viewModel.search(newText)
         },
-        onSearch = { viewModel.search(it) },
+        onSearch = {/* viewModel.search(it)*/ },
         placeholder = "Введите номер группы",
         state = listState,
         contentPadding = PaddingValues(
@@ -71,7 +71,7 @@ fun GroupsScreen(
         )
     ) {
         if(uiState is GroupsListUiState.Success)
-        items((uiState as GroupsListUiState.Success).groupList) { group ->
+        items((uiState as GroupsListUiState.Success).groupList.filter { it.name.contains(textFieldState.text) }) { group ->
             GroupCard(group) {
                 parentNavController.navigate("${NavRoutes.GroupSchedule.route}/${group.id}&${group.name}") {
                     restoreState = true
@@ -109,11 +109,11 @@ inline fun GroupCard(group: Group, crossinline onClick: () -> Unit = { }) {
                     painterResource(R.drawable.ic_baseline_favorite_24),
                     contentDescription = null
                 )
-            else
+            /*else
                 Image(
                     painterResource(R.drawable.ic_baseline_favorite_border_24),
                     contentDescription = null
-                )
+                )*/
 
         }
     }
