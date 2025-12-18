@@ -11,6 +11,7 @@
     <color name="laboratories">#D50000</color>
     <color name="practical_lesson">#FFD600</color>
     <color name="background">#151515</color>
+    <color name="on_secondary">#FFDADADA</color>
     <color name="background_dialog">#1E1E1E</color>
     <color name="widget_text_color">#D1D1D1</color>
 </resources>

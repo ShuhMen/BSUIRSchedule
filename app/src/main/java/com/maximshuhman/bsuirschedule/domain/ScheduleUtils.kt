@@ -109,8 +109,12 @@ abstract class GetScheduleUseCase(
         val endDate = if (schedule.endDate != null) {
             LocalDate.parse(schedule.endDate, formatter)
         } else {
-            LocalDate.now().plusWeeks(4)
+            currentDate.plusWeeks(4)
         }
+
+        if(currentDate.isAfter(endDate))
+            return AppResult.ApiError(LogicError.ConfigureError("Занятия закночились!"))
+
 
         while (currentDate.isBefore(endDate)) {
 

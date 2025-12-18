@@ -77,8 +77,8 @@ class EmployeeScheduleViewModel @Inject constructor(
                     is AppResult.ApiError<LogicError> -> {
 
                         when (result.body) {
-                            LogicError.ConfigureError -> _uiState.value =
-                                EmployeeScheduleUiState.Error("Не удалось извлечь расписание!")
+                            is LogicError.ConfigureError -> _uiState.value =
+                                EmployeeScheduleUiState.Error(result.body.message)
 
                             LogicError.Empty -> _uiState.value =
                                 EmployeeScheduleUiState.Error("Расписание отсутствует!")
@@ -112,7 +112,7 @@ class EmployeeScheduleViewModel @Inject constructor(
                     isFavorite = !state.isFavorite
                 )
 
-                setFavoriteEntity(FavoriteEntity(state.schedule.employee.id, 0), !state.isFavorite)
+                setFavoriteEntity(FavoriteEntity(state.schedule.employee.id, 1), !state.isFavorite)
 
                 if(!state.isFavorite)
                     settingsDAO.setLastOpenedId(lastLoadedId, 1)

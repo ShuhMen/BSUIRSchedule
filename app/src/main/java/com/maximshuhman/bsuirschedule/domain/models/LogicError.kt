@@ -8,7 +8,7 @@ sealed class LogicError {
     object NoInternetConnection:  LogicError()
     object Empty:  LogicError()
     object NoCriticalError: LogicError()
-    object ConfigureError: LogicError()
+    data class ConfigureError(val message: String): LogicError()
     data class FetchDataError(val message: String): LogicError()
 }
 

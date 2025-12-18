@@ -50,7 +50,7 @@ class EmployeeListViewModel @Inject constructor(
                 when(result)
                 {
                     is AppResult.Success<List<Employee>> -> {
-                        employeeList = result.data.sortedBy { it.isFavorite }
+                        employeeList = result.data.sortedByDescending { it.isFavorite }
 
                         _uiState.value = EmployeeListUiState.Success(employeeList)
 
@@ -58,7 +58,7 @@ class EmployeeListViewModel @Inject constructor(
                     is AppResult.ApiError<LogicError> -> {
 
                         when(result.body){
-                            LogicError.ConfigureError ->  _uiState.value = Error("Не удалось извлечь расписание!")
+                            is LogicError.ConfigureError ->  _uiState.value = Error(result.body.message)
 
                             LogicError.Empty -> _uiState.value = Error("Отсутствуют данные!")
                             is LogicError.FetchDataError -> _uiState.value = Error(result.body.message)

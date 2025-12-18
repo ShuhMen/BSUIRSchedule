@@ -58,7 +58,7 @@ class GroupListViewModel @Inject constructor(
                     is AppResult.ApiError<LogicError> -> {
 
                         when(result.body){
-                            LogicError.ConfigureError ->  _uiState.value = Error("Не удалось извлечь расписание!")
+                            is LogicError.ConfigureError ->  _uiState.value = Error(result.body.message)
 
                             LogicError.Empty -> _uiState.value = Error("Отсутствуют данные!")
                             is LogicError.FetchDataError -> _uiState.value = Error(result.body.message)

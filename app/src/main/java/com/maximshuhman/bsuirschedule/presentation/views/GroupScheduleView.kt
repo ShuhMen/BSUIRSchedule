@@ -4,11 +4,9 @@ package com.maximshuhman.bsuirschedule.presentation.views
 
 import android.annotation.SuppressLint
 import android.content.res.Configuration
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -36,7 +34,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color.Companion.Transparent
 import androidx.compose.ui.res.painterResource
@@ -291,41 +288,6 @@ fun ScheduleDayItem(groupDay: ScheduleDayHeader) {
             .fillMaxWidth()
     )
 }
-
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
-@Composable
-fun bottomPreview() {
-    BSUIRScheduleTheme {
-        Surface(Modifier) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 15.dp, end = 15.dp, bottom = 10.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    stringResource(R.string.favorite_screen),
-                    modifier = Modifier.align(Alignment.CenterVertically),
-                    fontSize = 24.sp
-                )
-
-                IconButton(
-                    {
-                    },
-                    modifier = Modifier
-                        .size(20.dp)
-                ) {
-                    Icon(
-                        painterResource(R.drawable.edit_favorites),
-                        stringResource(R.string.edit_favorites)
-                    )
-                }
-            }
-        }
-    }
-}
-
 
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable

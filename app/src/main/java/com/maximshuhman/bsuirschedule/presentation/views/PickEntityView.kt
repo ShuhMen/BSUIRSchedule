@@ -43,11 +43,13 @@ fun PickEntityView(parentNavController: NavController) {
                     NavigationBarItem(
                         selected = selectedDestination == index,
                         onClick = {
-                            navController.navigate(destination.route) {
-                                launchSingleTop = true
-                                restoreState = true
+                            if(selectedDestination != index) {
+                                navController.navigate(destination.route) {
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                                selectedDestination = index
                             }
-                            selectedDestination = index
                         },
                         icon = {
                             Icon(

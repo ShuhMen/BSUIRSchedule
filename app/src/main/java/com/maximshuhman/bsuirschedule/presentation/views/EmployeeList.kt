@@ -2,33 +2,23 @@
 
 package com.maximshuhman.bsuirschedule.presentation.views
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.input.rememberTextFieldState
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.navOptions
 import com.maximshuhman.bsuirschedule.NavRoutes
-import com.maximshuhman.bsuirschedule.data.dto.Employee
 import com.maximshuhman.bsuirschedule.presentation.viewModels.EmployeeListUiState
 import com.maximshuhman.bsuirschedule.presentation.viewModels.EmployeeListViewModel
 
@@ -110,50 +100,3 @@ fun EmployeeList(
 }
 
 
-@Composable
-inline fun EmployeeCard(employee: Employee, crossinline onClick: () -> Unit = { },) {
-    Card(
-        onClick ={ onClick() },
-        Modifier
-            .padding(5.dp, 3.dp)
-            .fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.secondary
-        )
-    ) {
-
-        Row(modifier = Modifier.padding(10.dp), verticalAlignment = Alignment.CenterVertically ) {
-
-            Column(
-                modifier = Modifier
-            ) {
-                Text(employee.fio, fontSize = 20.sp)
-            }
-        }
-    }
-}
-/*
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
-@Composable
-fun EmployeeCardPreview() {
-    BSUIRScheduleTheme {
-        EmployeeCard(
-            Employee(
-                0,
-                "220601",
-                0,
-                "ФИТУ",
-                "",
-                0,
-                "",
-                "АСОИ",
-
-                0,
-                "",
-                0
-            )
-        ){
-
-        }
-    }
-}*/

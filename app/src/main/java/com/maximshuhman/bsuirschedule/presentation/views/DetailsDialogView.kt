@@ -207,7 +207,8 @@ fun DetailsDialogView(
 
                                 Card(
                                     Modifier
-                                        .fillMaxWidth(),
+                                        .fillMaxWidth()
+                                        .padding(vertical = 2.5.dp),
                                     colors = CardDefaults.cardColors(
                                         containerColor = MaterialTheme.colorScheme.secondary
                                     )
@@ -221,11 +222,17 @@ fun DetailsDialogView(
                                                 .listener(
                                                     onError = { _, throwable ->
                                                         println("Image load error: ${throwable.throwable.message}")
+                                                    },
+                                                    onSuccess = { request, result ->
+
+                                                        result.image.height
+
                                                     }
                                                 )
                                                 .crossfade(true)
                                                 .build(),
                                             placeholder = painterResource(R.drawable.person_circle),
+                                            error = painterResource(R.drawable.person_circle),
                                             contentDescription = null,
                                             modifier = Modifier
                                                 .padding(5.dp)
@@ -236,18 +243,22 @@ fun DetailsDialogView(
                                         Column(
                                             verticalArrangement = Arrangement.SpaceAround,
                                             modifier = Modifier.padding(
-                                                horizontal = 2.5.dp)
+                                                horizontal = 5.dp
+                                            )
                                         ) {
                                             Text(
                                                 "$lastName $firstName ${if (!middleName.isNullOrBlank()) middleName else ""}",
-                                                modifier = Modifier.padding(bottom = 2.dp)
+                                                modifier = Modifier.padding(
+                                                    bottom = 2.dp,
+                                                    start = 5.dp,
+                                                )
                                             )
 
                                             if (!degree.isNullOrEmpty())
                                                 Text(
                                                     degree,
                                                     modifier = Modifier.padding(
-                                                        start = 10.dp,
+                                                        start = 5.dp,
                                                         bottom = 2.dp
                                                     )
                                                 )
