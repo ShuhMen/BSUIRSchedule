@@ -53,7 +53,7 @@ inline fun LessonCard(lesson: Lesson, crossinline onClick: () -> Unit = { }) {
         modifier = Modifier
             .fillMaxWidth()
             .clickable {
-                if(lesson.announcement != true)
+                if(lesson.announcement == false || lesson.announcement == null)
                     onClick()
             }
             .padding(horizontal = 10.dp, vertical = 8.dp),

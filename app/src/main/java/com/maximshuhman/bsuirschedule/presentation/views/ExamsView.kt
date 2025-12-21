@@ -23,11 +23,13 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.DialogWindowProvider
 import com.maximshuhman.bsuirschedule.R
+import com.maximshuhman.bsuirschedule.data.dto.Lesson
 import com.maximshuhman.bsuirschedule.domain.models.ScheduleDay
 
 @Composable
 fun ExamsView(
     exams: List<ScheduleDay>,
+    onItemClick: (Lesson) -> Unit,
     onDismissRequest: () -> Unit,
 ) {
 
@@ -73,7 +75,9 @@ fun ExamsView(
             modifier = Modifier.fillMaxSize()
         ) { innerPadding ->
 
-            ExamsList(exams, innerPadding)
+            ExamsList(exams, innerPadding) { lesson ->
+                    onItemClick(lesson)
+            }
 
         }
     }

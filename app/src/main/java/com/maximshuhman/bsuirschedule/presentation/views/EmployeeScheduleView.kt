@@ -4,18 +4,12 @@ package com.maximshuhman.bsuirschedule.presentation.views
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -40,7 +34,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.navigation.navOptions
+import com.maximshuhman.bsuirschedule.NavRoutes
 import com.maximshuhman.bsuirschedule.R
+import com.maximshuhman.bsuirschedule.data.dto.Employee
+import com.maximshuhman.bsuirschedule.data.dto.Lesson
 import com.maximshuhman.bsuirschedule.presentation.viewModels.EmployeeScheduleUiState
 import com.maximshuhman.bsuirschedule.presentation.viewModels.EmployeeScheduleViewModel
 
@@ -59,13 +57,22 @@ fun EmployeeScheduleView(
     var bottomSheetVisible by remember { mutableStateOf(false) }
     var examsDialogVisible by remember { mutableStateOf(false) }
 
+    var detailsVisible by remember { mutableStateOf(false) }
+    var lessonDetails by remember { mutableStateOf<Lesson?>(null) }
+
+    var employeeDetailsVisible by remember { mutableStateOf(false) }
+    var selectedEmployee by remember { mutableStateOf<Employee?>(null) }
+
     LaunchedEffect(employeeId) {
         viewModel.loadSchedule(employeeId)
         viewModel.getFavorites()
     }
 
     if (examsDialogVisible) {
-        ExamsView((uiState as EmployeeScheduleUiState.Success).schedule.exams) {
+        ExamsView((uiState as EmployeeScheduleUiState.Success).schedule.exams,  {lesson ->
+            lessonDetails = lesson
+            detailsVisible = true
+        }) {
             examsDialogVisible = false
         }
     }
@@ -100,7 +107,7 @@ fun EmployeeScheduleView(
                 },
                 actions = {
                     if (uiState is EmployeeScheduleUiState.Success) {
-                        if ((uiState as EmployeeScheduleUiState.Success).schedule.exams.isNotEmpty())
+                        if ((uiState as EmployeeScheduleUiState.Success).schedule.exams.isNotEmpty() && (uiState as EmployeeScheduleUiState.Success).schedule.schedule.isNotEmpty())
                             Surface(
                                 onClick = {
                                     examsDialogVisible = true
@@ -154,16 +161,59 @@ fun EmployeeScheduleView(
             }
 
             is EmployeeScheduleUiState.Success -> {
-                if ((uiState as EmployeeScheduleUiState.Success).schedule.schedule.isEmpty())
-                    ExamsList(
-                        (uiState as EmployeeScheduleUiState.Success).schedule.exams,
-                        innerPadding
-                    )
-                else
-                    ScheduleList(
-                        (uiState as EmployeeScheduleUiState.Success),
-                        innerPadding
-                    )
+
+
+                Box {
+                    if ((uiState as EmployeeScheduleUiState.Success).schedule.schedule.isEmpty())
+                        ExamsList(
+                            (uiState as EmployeeScheduleUiState.Success).schedule.exams,
+                            innerPadding
+                        ) { lesson ->
+                            lessonDetails = lesson
+                            detailsVisible = true
+                        }
+                    else
+                        ScheduleList(
+                            (uiState as EmployeeScheduleUiState.Success).schedule.schedule,
+                            0,
+                            innerPadding,
+                        ) { lesson ->
+                            lessonDetails = lesson
+                            detailsVisible = true
+                        }
+
+                    if (detailsVisible && lessonDetails != null) {
+                        DetailsDialogView(
+                            lesson = lessonDetails!!,
+                            onDismissRequest = { detailsVisible = false },
+                            onEmployeeClick = { emp ->
+                                selectedEmployee = emp
+                                employeeDetailsVisible = true
+                                detailsVisible = false
+                            }
+                        )
+                    }
+
+                    if (employeeDetailsVisible && selectedEmployee != null) {
+                        EmployeeDetailsDialog(
+                            employee = selectedEmployee!!,
+                            onDismiss = { employeeDetailsVisible = false },
+                            onEnter = { employee ->
+
+                                navController.navigate("${NavRoutes.EmployeeSchedule.route}/${employee.id}&${employee.fio}"){
+                                    navOptions {
+                                        restoreState = true
+                                    }
+
+                                    popUpTo(NavRoutes.EmployeeSchedule.route) {
+                                        inclusive = true
+                                    }
+                                }
+                            }
+                        )
+                    }
+
+                }
             }
 
             is EmployeeScheduleUiState.NoConnection -> {
@@ -179,46 +229,91 @@ fun EmployeeScheduleView(
     }
 }
 
+/*
 @Composable
 fun ScheduleList(
     scheduleState: EmployeeScheduleUiState.Success,
-    contentPaddingValues: PaddingValues
+    contentPaddingValues: PaddingValues,
+    navController: NavController
 ) {
 
-    LazyColumn(
-        Modifier
-            .fillMaxSize()
-            .padding(horizontal = 5.dp),
-        contentPadding = contentPaddingValues
-    ) {
-        items(
-            scheduleState
-                .schedule.schedule
-        ) { day ->
-            ScheduleDayItem(day.header)
+    var detailsVisible by remember { mutableStateOf(false) }
+    var lessonDetails by remember { mutableStateOf<Lesson?>(null) }
 
-            Card(
-                Modifier
-                    .padding(5.dp, 3.dp)
-                    .fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.secondary
-                )
-            ) {
+    var employeeDetailsVisible by remember { mutableStateOf(false) }
+    var selectedEmployee by remember { mutableStateOf<Employee?>(null) }
 
-                val filteredLessons = day.list
+    Box {
+        LazyColumn(
+            Modifier
+                .fillMaxSize()
+                .padding(horizontal = 5.dp),
+            contentPadding = contentPaddingValues
+        ) {
+            items(
+                scheduleState
+                    .schedule.schedule
+            ) { day ->
+                ScheduleDayItem(day.header)
 
-                filteredLessons.forEachIndexed { index, lesson ->
+                Card(
+                    Modifier
+                        .padding(5.dp, 3.dp)
+                        .fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.secondary
+                    )
+                ) {
 
-                    LessonCard(lesson) { }
-                    if (index < filteredLessons.size - 1) {
-                        HorizontalDivider(
-                            modifier = Modifier.padding(horizontal = 5.dp),
-                            thickness = 1.dp,
-                        )
+                    val filteredLessons = day.list
+
+                    filteredLessons.forEachIndexed { index, lesson ->
+
+                        LessonCard(lesson) {
+                            detailsVisible = true
+                            lessonDetails = lesson
+                        }
+                        if (index < filteredLessons.size - 1) {
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = 5.dp),
+                                thickness = 1.dp,
+                            )
+                        }
                     }
                 }
             }
         }
+
+        if (detailsVisible && lessonDetails != null) {
+            DetailsDialogView(
+                lesson = lessonDetails!!,
+                onDismissRequest = { detailsVisible = false },
+                onEmployeeClick = { emp ->
+                    selectedEmployee = emp
+                    employeeDetailsVisible = true
+                    detailsVisible = false
+                }
+            )
+        }
+
+        if (employeeDetailsVisible && selectedEmployee != null) {
+            EmployeeDetailsDialog(
+                employee = selectedEmployee!!,
+                onDismiss = { employeeDetailsVisible = false },
+                onEnter = { employee ->
+
+                    navController.navigate("${NavRoutes.EmployeeSchedule.route}/${employee.id}&${employee.fio}"){
+                        navOptions {
+                            restoreState = true
+                        }
+
+                        popUpTo(NavRoutes.EmployeeSchedule.route) {
+                            inclusive = true
+                        }
+                    }
+                }
+            )
+        }
+
     }
-}
+}*/

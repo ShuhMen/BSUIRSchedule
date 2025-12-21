@@ -3,6 +3,7 @@ package com.maximshuhman.bsuirschedule.presentation.views
 import android.content.res.Configuration
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -45,235 +46,239 @@ import java.util.Locale
 @Composable
 fun DetailsDialogView(
     lesson: Lesson,
-    onDismissRequest: () -> Unit
-    //viewModel: DetailsDialogViewModel
+    onDismissRequest: () -> Unit,
+    onEmployeeClick: (Employee) -> Unit
 ) {
+
     Dialog(
         onDismissRequest,
     ) {
-        BSUIRScheduleTheme {
 
-            Card(
-                Modifier
-                    .padding(15.dp)
-                    .fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.background
-                )
-            ) {
-                Column(Modifier.padding(12.dp)) {
+        Card(
+            Modifier
+                .padding(15.dp)
+                .fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.background
+            )
+        ) {
+            Column(Modifier.padding(12.dp)) {
 
-                    lesson.apply {
+                lesson.apply {
 
-                        Row(
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 2.5.dp)
-                        ) {
-                            Text(
-                                subjectFullName.toString(),
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.weight(2f)
-                            )
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 2.5.dp)
+                    ) {
+                        Text(
+                            subjectFullName.toString(),
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.weight(2f)
+                        )
 
-                            if (!auditories.isNullOrEmpty())
-                                Column(Modifier.padding(start = 5.dp)) {
-                                    auditories.forEach {
-                                        Text(
-                                            it,
-                                            textAlign = TextAlign.End
-                                        )
-                                    }
+                        if (!auditories.isNullOrEmpty())
+                            Column(Modifier.padding(start = 5.dp)) {
+                                auditories.forEach {
+                                    Text(
+                                        it,
+                                        textAlign = TextAlign.End
+                                    )
                                 }
-
-                        }
-
-                        Row(
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 2.5.dp)
-
-                        ) {
-
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                val dividerColor = when (lesson.lessonTypeAbbrev) {
-                                    "Экзамен", "ЛР" -> Labaratory
-
-                                    "Консультация", "ПЗ", "УПз" -> Practic
-
-                                    "УЛк", "ЛК" -> Lecture
-                                    else -> if (lesson.announcement == true) Blue else Color.White
-                                }
-
-                                Canvas(Modifier.size(18.dp).padding(end = 5.dp)) {
-                                    drawCircle(dividerColor)
-                                }
-
-
-                                Text(
-                                    when (lessonTypeAbbrev) {
-                                        "ЛК", "УЛк" -> "Лекция"
-                                        "ПЗ", "УПз" -> "Практическое занятие"
-                                        "ЛР", "УЛр" -> "Лабораторная"
-                                        else -> "Событие"
-                                    }
-                                )
                             }
 
-                            Text(
-                                "c $startLessonTime до $endLessonTime",
-                            )
-                        }
+                    }
 
-                        Row(
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 2.5.dp)
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 2.5.dp)
 
-                        ) {
-
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                Image(
-                                    painterResource(R.drawable.subgroup_all),
-                                    contentDescription = null,
-                                    Modifier.size(18.dp).padding(end = 5.dp),
-                                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
-                                )
-
-                                Text(
-                                    when (numSubgroup) {
-                                        0 -> "Для всей группы"
-                                        else -> "Для ${numSubgroup} подгруппы"
-                                    }
-                                )
-                            }
-
-                            if (!weekNumber.isNullOrEmpty())
-                                Text(
-                                    "на ${weekNumber.joinToString(", ")} нед.",
-                                )
-
-                        }
+                    ) {
 
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 2.5.dp, bottom = 5.dp)
-
                         ) {
-                            val prettyFormatter =
-                                DateTimeFormatter.ofPattern("dd MMMM", Locale.getDefault())
-                            val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
+                            val dividerColor = when (lesson.lessonTypeAbbrev) {
+                                "Экзамен", "ЛР" -> Labaratory
 
+                                "Консультация", "ПЗ", "УПз" -> Practic
+
+                                "УЛк", "ЛК" -> Lecture
+                                else -> if (lesson.announcement == true) Blue else Color.White
+                            }
+
+                            Canvas(Modifier.size(18.dp).padding(end = 5.dp)) {
+                                drawCircle(dividerColor)
+                            }
+
+
+                            Text(
+                                when (lessonTypeAbbrev) {
+                                    "ЛК", "УЛк" -> "Лекция"
+                                    "ПЗ", "УПз" -> "Практическое занятие"
+                                    "ЛР", "УЛр" -> "Лабораторная"
+                                    else -> "Событие"
+                                }
+                            )
+                        }
+
+                        Text(
+                            "c $startLessonTime до $endLessonTime",
+                        )
+                    }
+
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 2.5.dp)
+
+                    ) {
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
                             Image(
-                                painterResource(R.drawable.calendar),
+                                painterResource(R.drawable.subgroup_all),
                                 contentDescription = null,
                                 Modifier.size(18.dp).padding(end = 5.dp),
                                 colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
                             )
 
                             Text(
-                                "С ${
-                                    prettyFormatter.format(
-                                        LocalDate.parse(
-                                            startLessonDate,
-                                            formatter
-                                        )
-                                    )
-                                } по ${
-                                    prettyFormatter.format(
-                                        LocalDate.parse(
-                                            endLessonDate,
-                                            formatter
-                                        )
-                                    )
-                                } ",
+                                when (numSubgroup) {
+                                    0 -> "Для всей группы"
+                                    else -> "Для ${numSubgroup} подгруппы"
+                                }
                             )
+                        }
+
+                        if (!weekNumber.isNullOrEmpty())
+                            Text(
+                                "на ${weekNumber.joinToString(", ")} нед.",
+                            )
+
+                    }
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 2.5.dp, bottom = 5.dp)
+
+                    ) {
+                        val prettyFormatter =
+                            DateTimeFormatter.ofPattern("dd MMMM", Locale.getDefault())
+                        val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
+
+                        Image(
+                            painterResource(R.drawable.calendar),
+                            contentDescription = null,
+                            Modifier.size(18.dp).padding(end = 5.dp),
+                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
+                        )
+                        if(startLessonDate != null && endLessonDate != null)
+                        Text(
+                            "С ${
+                                prettyFormatter.format(
+                                    LocalDate.parse(
+                                        startLessonDate,
+                                        formatter
+                                    )
+                                )
+                            } по ${
+                                prettyFormatter.format(
+                                    LocalDate.parse(
+                                        endLessonDate,
+                                        formatter
+                                    )
+                                )
+                            } ",
+                        )
+
+                    }
+                }
+
+                if (!lesson.employees.isNullOrEmpty())
+                    lesson.employees.forEach { employee ->
+                        employee.apply {
+
+                            Card(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 2.5.dp)
+                                    .clickable {
+                                        onEmployeeClick(employee)
+                                        onDismissRequest()
+                                    },
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.secondary
+                                )
+                            ) {
+
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+
+                                    AsyncImage(
+                                        ImageRequest.Builder(LocalContext.current)
+                                            .data(employee.photoLink)
+                                            .listener(
+                                                onError = { _, throwable ->
+                                                    println("Image load error: ${throwable.throwable.message}")
+                                                },
+                                                onSuccess = { request, result ->
+
+                                                    result.image.height
+
+                                                }
+                                            )
+                                            .crossfade(true)
+                                            .build(),
+                                        placeholder = painterResource(R.drawable.person_circle),
+                                        error = painterResource(R.drawable.person_circle),
+                                        contentDescription = null,
+                                        modifier = Modifier
+                                            .padding(5.dp)
+                                            .size(48.dp)
+                                            .clip(CircleShape)
+                                    )
+
+                                    Column(
+                                        verticalArrangement = Arrangement.SpaceAround,
+                                        modifier = Modifier.padding(
+                                            horizontal = 5.dp
+                                        )
+                                    ) {
+                                        Text(
+                                            "$lastName $firstName ${if (!middleName.isNullOrBlank()) middleName else ""}",
+                                            modifier = Modifier.padding(
+                                                bottom = 2.dp,
+                                                start = 5.dp,
+                                            )
+                                        )
+
+                                        if (!degree.isNullOrEmpty())
+                                            Text(
+                                                degree,
+                                                modifier = Modifier.padding(
+                                                    start = 5.dp,
+                                                    bottom = 2.dp
+                                                )
+                                            )
+
+
+                                    }
+                                }
+                            }
 
                         }
                     }
 
-                    if (!lesson.employees.isNullOrEmpty())
-                        lesson.employees.forEach { employee ->
-                            employee.apply {
-
-                                Card(
-                                    Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 2.5.dp),
-                                    colors = CardDefaults.cardColors(
-                                        containerColor = MaterialTheme.colorScheme.secondary
-                                    )
-                                ) {
-
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-
-                                        AsyncImage(
-                                            ImageRequest.Builder(LocalContext.current)
-                                                .data(employee.photoLink)
-                                                .listener(
-                                                    onError = { _, throwable ->
-                                                        println("Image load error: ${throwable.throwable.message}")
-                                                    },
-                                                    onSuccess = { request, result ->
-
-                                                        result.image.height
-
-                                                    }
-                                                )
-                                                .crossfade(true)
-                                                .build(),
-                                            placeholder = painterResource(R.drawable.person_circle),
-                                            error = painterResource(R.drawable.person_circle),
-                                            contentDescription = null,
-                                            modifier = Modifier
-                                                .padding(5.dp)
-                                                .size(48.dp)
-                                                .clip(CircleShape)
-                                        )
-
-                                        Column(
-                                            verticalArrangement = Arrangement.SpaceAround,
-                                            modifier = Modifier.padding(
-                                                horizontal = 5.dp
-                                            )
-                                        ) {
-                                            Text(
-                                                "$lastName $firstName ${if (!middleName.isNullOrBlank()) middleName else ""}",
-                                                modifier = Modifier.padding(
-                                                    bottom = 2.dp,
-                                                    start = 5.dp,
-                                                )
-                                            )
-
-                                            if (!degree.isNullOrEmpty())
-                                                Text(
-                                                    degree,
-                                                    modifier = Modifier.padding(
-                                                        start = 5.dp,
-                                                        bottom = 2.dp
-                                                    )
-                                                )
-
-
-                                        }
-                                    }
-                                }
-
-                            }
-                        }
-
-                }
             }
         }
+
     }
 }
 
@@ -314,7 +319,10 @@ fun DetailsPreview() {
                 true,
                 false
 
-            )
+            ),
+            onDismissRequest = {
+
+            }
         ) {}
     }
 }

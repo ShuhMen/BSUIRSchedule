@@ -13,12 +13,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.maximshuhman.bsuirschedule.data.dto.Lesson
 import com.maximshuhman.bsuirschedule.domain.models.ScheduleDay
 
 @Composable
 inline fun ExamsList(
     exams: List<ScheduleDay>,
-    innerPadding: PaddingValues
+    innerPadding: PaddingValues,
+    crossinline onItemClick: (Lesson) -> Unit
 ){
     LazyColumn(
         Modifier
@@ -44,7 +46,9 @@ inline fun ExamsList(
 
                 filteredLessons.forEachIndexed { index, lesson ->
 
-                    LessonCard(lesson) { }
+                    LessonCard(lesson) {
+                        onItemClick(lesson)
+                    }
                     if (index < filteredLessons.size - 1) {
                         HorizontalDivider(
                             modifier = Modifier.padding(horizontal = 5.dp),

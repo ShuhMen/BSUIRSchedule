@@ -44,6 +44,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.navigation.navOptions
+import com.maximshuhman.bsuirschedule.NavRoutes
 import com.maximshuhman.bsuirschedule.R
 import com.maximshuhman.bsuirschedule.data.dto.Employee
 import com.maximshuhman.bsuirschedule.data.dto.Lesson
@@ -68,13 +70,23 @@ fun GroupScheduleView(
     var bottomSheetVisible by remember { mutableStateOf(false) }
     var examsDialogVisible by remember { mutableStateOf(false) }
 
+
+    var detailsVisible by remember { mutableStateOf(false) }
+    var lessonDetails by remember { mutableStateOf<Lesson?>(null) }
+
+    var employeeDetailsVisible by remember { mutableStateOf(false) }
+    var selectedEmployee by remember { mutableStateOf<Employee?>(null) }
+
     LaunchedEffect(groupId) {
         viewModel.loadSchedule(groupId)
         viewModel.getFavorites()
     }
 
     if (examsDialogVisible) {
-        ExamsView((uiState as GroupScheduleUiState.Success).schedule.exams!!) {
+        ExamsView((uiState as GroupScheduleUiState.Success).schedule.exams, { lesson ->
+            lessonDetails = lesson
+            detailsVisible = true
+        }) {
             examsDialogVisible = false
         }
     }
@@ -109,17 +121,17 @@ fun GroupScheduleView(
                 },
                 actions = {
                     if (uiState is GroupScheduleUiState.Success) {
-                        if((uiState as GroupScheduleUiState.Success).schedule.exams.isNotEmpty())
-                        Surface(
-                            onClick = {
-                                examsDialogVisible = true
-                            },
-                            shape = MaterialTheme.shapes.small,
-                            color = Transparent
-                        ) {
-                            Text("ЭК", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                        if ((uiState as GroupScheduleUiState.Success).schedule.exams.isNotEmpty() && (uiState as GroupScheduleUiState.Success).schedule.schedule.isNotEmpty())
+                            Surface(
+                                onClick = {
+                                    examsDialogVisible = true
+                                },
+                                shape = MaterialTheme.shapes.small,
+                                color = Transparent
+                            ) {
+                                Text("ЭК", fontSize = 18.sp, fontWeight = FontWeight.Bold)
 
-                        }
+                            }
 
                         IconButton({
                             viewModel.clickSubgroup()
@@ -189,14 +201,58 @@ fun GroupScheduleView(
             }
 
             is GroupScheduleUiState.Success -> {
-                if((uiState as GroupScheduleUiState.Success).schedule.schedule.isEmpty())
-                    ExamsList((uiState as GroupScheduleUiState.Success).schedule.exams, innerPadding)
+
+                Box {
+
+                    if ((uiState as GroupScheduleUiState.Success).schedule.schedule.isEmpty())
+                        ExamsList(
+                            (uiState as GroupScheduleUiState.Success).schedule.exams,
+                            innerPadding
+                        ){ lesson ->
+                            lessonDetails = lesson
+                            detailsVisible = true
+                        }
                     else
-                    ScheduleList(
-                    (uiState as GroupScheduleUiState.Success).schedule.schedule,
-                    (uiState as GroupScheduleUiState.Success).numSubgroup,
-                    innerPadding
-                )
+                        ScheduleList(
+                            (uiState as GroupScheduleUiState.Success).schedule.schedule,
+                            (uiState as GroupScheduleUiState.Success).numSubgroup,
+                            innerPadding,
+                        ){ lesson ->
+                            lessonDetails = lesson
+                            detailsVisible = true
+                        }
+
+                    if (detailsVisible && lessonDetails != null) {
+                        DetailsDialogView(
+                            lesson = lessonDetails!!,
+                            onDismissRequest = { detailsVisible = false },
+                            onEmployeeClick = { emp ->
+                                selectedEmployee = emp
+                                employeeDetailsVisible = true
+                                detailsVisible = false
+                            }
+                        )
+                    }
+
+                    if (employeeDetailsVisible && selectedEmployee != null) {
+                        EmployeeDetailsDialog(
+                            employee = selectedEmployee!!,
+                            onDismiss = { employeeDetailsVisible = false },
+                            onEnter = { employee ->
+
+                                navController.navigate("${NavRoutes.EmployeeSchedule.route}/${employee.id}&${employee.fio}"){
+                                    navOptions {
+                                        restoreState = true
+                                    }
+
+                                    popUpTo(NavRoutes.EmployeeSchedule.route) {
+                                        inclusive = true
+                                    }
+                                }
+                            }
+                        )
+                    }
+                }
             }
 
             is GroupScheduleUiState.NoConnection -> {
@@ -213,14 +269,13 @@ fun GroupScheduleView(
 }
 
 @Composable
-fun ScheduleList(
+inline fun ScheduleList(
     scheduleList: List<ScheduleDay>,
     numSubgroup: Int,
-    contentPaddingValues: PaddingValues
+    contentPaddingValues: PaddingValues,
+    crossinline onItemClick: (Lesson) -> Unit
 ) {
 
-    var detailsVisible by remember { mutableStateOf(false) }
-    var lessonDetails by  remember { mutableStateOf<Lesson?>(null) }
 
     Box {
         LazyColumn(
@@ -257,8 +312,7 @@ fun ScheduleList(
                     filteredLessons.forEachIndexed { index, lesson ->
 
                         LessonCard(lesson) {
-                            lessonDetails = lesson
-                            detailsVisible = true
+                           onItemClick(lesson)
                         }
                         if (index < filteredLessons.size - 1) {
                             HorizontalDivider(
@@ -271,10 +325,7 @@ fun ScheduleList(
             }
         }
 
-        if (detailsVisible)
-            DetailsDialogView(lessonDetails!!){
-                detailsVisible = false
-            }
+
     }
 }
 
