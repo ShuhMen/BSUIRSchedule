@@ -1,6 +1,14 @@
+/*
 package com.maximshuhman.bsuirschedule
 
-import android.graphics.*
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffXfermode
+import android.graphics.Rect
+import android.graphics.RectF
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -74,7 +82,9 @@ class LessonInfDialog : DialogFragment() {
                 if (arguments?.getString(FIO).toString() != "  ") arguments?.getString(FIO)
                     .toString() else "Информация отсутствует"
 
-            if (arguments?.getByteArray(PHOTO) != null) {
+            if (arguments?.getByteArray(PHOTO) != null && arguments?.getByteArray(PHOTO)!!
+                    .isNotEmpty()
+            ) {
                 val imageBytes = arguments?.getByteArray(PHOTO)
 
                 var decodedImage =
@@ -127,28 +137,30 @@ class LessonInfDialog : DialogFragment() {
         return view
     }
 
+    */
 /*
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        activity?.let {
-            val builder = AlertDialog.Builder(it, R.style.BaseBottomSheetDialog)
-            // Get the layout inflater
-            val inflater = requireActivity().layoutInflater
+        override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+            activity?.let {
+                val builder = AlertDialog.Builder(it, R.style.BaseBottomSheetDialog)
+                // Get the layout inflater
+                val inflater = requireActivity().layoutInflater
 
-            val view = inflater.inflate(R.layout.lesson_inform_dialog, null)
-
-
+                val view = inflater.inflate(R.layout.lesson_inform_dialog, null)
 
 
-            //fioText.text = "dsdsdsdsds"
-            // Inflate and set the layout for the dialog
-            // Pass null as the parent view because its going in the dialog layout
-            builder.setView(view)
 
-                // Add action buttons
 
-            return builder.create()
-        } ?: throw IllegalStateException("Activity cannot be null")
-    }
+                //fioText.text = "dsdsdsdsds"
+                // Inflate and set the layout for the dialog
+                // Pass null as the parent view because its going in the dialog layout
+                builder.setView(view)
 
-*/
-}
+                    // Add action buttons
+
+                return builder.create()
+            } ?: throw IllegalStateException("Activity cannot be null")
+        }
+
+    *//*
+
+}*/

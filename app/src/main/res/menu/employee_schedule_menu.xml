@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/favorites"
+        android:checkable="true"
+        android:icon="@drawable/favorite_selector"
+        android:title="Избранное"
+        app:showAsAction="ifRoom|collapseActionView" />
+
+    <item
+        android:id="@+id/exams"
+        android:checkable="true"
+        android:icon="@drawable/exams"
+        android:title="Экзамены"
+        android:visible="false"
+        app:showAsAction="ifRoom|collapseActionView" />
+</menu>

@@ -14,4 +14,21 @@
     <string name="update_schedule">Даступна абнова раскладу. Абнавиць?</string>
     <string name="yes">Так</string>
     <string name="no">Не</string>
+    <string name="up_button">Вверх</string>
+    <string name="groups">Групы</string>
+    <string name="appwidget_text">EXAMPLE</string>
+    <string name="add_widget">Add widget</string>
+    <string name="app_widget_description">This is an app widget description</string>
+    <string name="widget_choose_schedule">Выберыце расклад</string>
+    <string name="search_button">Пошук</string>
+    <string name="go_back">Перайсцi паперад</string>
+    <string name="subgroup1">Падгрупа 1</string>
+    <string name="subgroup2">Падгрупа 2</string>
+    <string name="subgroupAll">Усе падгрупы</string>
+    <string name="favorite_click">"Зрабіць каханым "</string>
+    <string name="menu_button">Выклікаць меню</string>
+    <string name="favorite_screen">Абраныя</string>
+    <string name="favorite_groups">Групы</string>
+    <string name="favorite_employees">выкладчыкi</string>
+    <string name="edit_favorites">Змянiць абраныя</string>
 </resources>

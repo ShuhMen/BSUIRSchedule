@@ -4,15 +4,17 @@
         <!-- Primary brand color. -->
         <item name="colorPrimary">@color/BSUIR_blue</item>
         <item name="colorPrimaryVariant">@color/BSUIR_light_blue</item>
-        <item name="colorOnPrimary">@color/black</item>
+        <item name="colorOnPrimary">#ECECEC</item>
         <!-- Secondary brand color. -->
         <item name="colorSecondary">@color/BSUIR_blue</item>
         <item name="colorSecondaryVariant">@color/BSUIR_light_blue</item>
-        <item name="colorOnSecondary">@color/black</item>
+        <item name="colorOnSecondary">@color/white</item>
         <!-- Status bar color. -->
         <item name="android:statusBarColor" tools:targetApi="l">@color/black</item>
         <!-- Customize your theme here. -->
         <item name="bottomNavigationStyle">@style/Widget.App.BottomNavigationView</item>
+        <item name="android:dialogTheme">@style/Theme.DialogFullScreen</item>
+
     </style>
 
     <style name="Widget.App.BottomNavigationView" parent="Widget.MaterialComponents.BottomNavigationView.Colored">
@@ -51,6 +53,11 @@
 
         <item name="android:textColor">@android:color/white</item>
         <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="Theme.DialogFullScreen" parent="@style/ThemeOverlay.MaterialComponents.Dialog.Alert">
+        <item name="android:windowMinWidthMajor">100%</item>
+        <item name="android:windowMinWidthMinor">100%</item>
     </style>
 
 </resources>

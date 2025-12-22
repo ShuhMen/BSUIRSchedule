@@ -9,12 +9,12 @@
     app:layoutDescription="@xml/item_group_view_scene">
 
     <androidx.cardview.widget.CardView
+        android:id="@+id/group_card_view"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
 
+        android:layout_weight="1"
         app:cardBackgroundColor="#E3E3E3"
-        app:cardCornerRadius="5dp"
         app:cardElevation="0dp">
 
         <TextView

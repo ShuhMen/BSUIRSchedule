@@ -1,47 +1,102 @@
 package com.maximshuhman.bsuirschedule
 
-import android.database.Cursor
 import android.os.Bundle
-import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
-import androidx.navigation.findNavController
-import androidx.navigation.ui.setupWithNavController
-import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.maximshuhman.bsuirschedule.DataBase.DBContract
-import com.maximshuhman.bsuirschedule.DataBase.DbHelper
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.maximshuhman.bsuirschedule.presentation.viewModels.MainActivityUiState
+import com.maximshuhman.bsuirschedule.presentation.viewModels.MainViewModel
+import com.maximshuhman.bsuirschedule.presentation.views.EmployeeScheduleView
+import com.maximshuhman.bsuirschedule.presentation.views.GroupScheduleView
+import com.maximshuhman.bsuirschedule.presentation.views.PickEntityView
+import com.maximshuhman.bsuirschedule.presentation.views.StartScreen
+import com.maximshuhman.bsuirschedule.ui.theme.BSUIRScheduleTheme
+import dagger.hilt.android.AndroidEntryPoint
 
-class MainActivity : AppCompatActivity() {
+@AndroidEntryPoint
+class MainActivity : ComponentActivity() {
 
-    lateinit var bottomNavigationView: BottomNavigationView
+    private val viewModel: MainViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val splashscreen = installSplashScreen()
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        try {
-            bottomNavigationView = findViewById(R.id.bottom_navigating_view)
-        } catch (e: Exception) {
-            Toast.makeText(
-                this.applicationContext,
-                "Ошибка открытия приложения",
-                Toast.LENGTH_SHORT
-            ).show()
-            this.recreate()
+
+        val state = viewModel.uiState
+        splashscreen.setKeepOnScreenCondition { state.value is MainActivityUiState.Loading }
+
+        viewModel.getLastScreen()
+
+        enableEdgeToEdge()
+        setContent {
+            BSUIRScheduleTheme {
+                Main(viewModel)
+            }
+        }
+    }
+}
+
+@Composable
+fun Main(viewModel: MainViewModel) {
+    val navController = rememberNavController()
+    val uiState by viewModel.uiState.collectAsState()
+
+        NavHost(
+            navController = navController,
+            startDestination = NavRoutes.Start.route
+        ) {
+            composable(NavRoutes.Start.route) {
+                StartScreen(uiState, navController)
+            }
+
+            composable(NavRoutes.PickEntity.route) {
+                PickEntityView(
+                    navController
+                )
+            }
+
+            composable(
+                "${NavRoutes.GroupSchedule.route}/{groupId}&{groupName}",
+                arguments = listOf(
+                    navArgument("groupId") { type = NavType.IntType },
+                    navArgument("groupName") { type = NavType.StringType }
+                )
+            ) { backStackEntry ->
+                val groupId = backStackEntry.arguments?.getInt("groupId")!!
+                val groupName = backStackEntry.arguments?.getString("groupName")!!
+                GroupScheduleView(navController, groupId, groupName)
+            }
+
+            composable(
+                "${NavRoutes.EmployeeSchedule.route}/{employeeId}&{employeeFIO}",
+                arguments = listOf(
+                    navArgument("employeeId") { type = NavType.IntType },
+                    navArgument("employeeFIO") { type = NavType.StringType }
+                )
+            ) { backStackEntry ->
+                val employeeId = backStackEntry.arguments?.getInt("employeeId")!!
+                val employeeFIO = backStackEntry.arguments?.getString("employeeFIO")!!
+                EmployeeScheduleView(navController, employeeId, employeeFIO)
+            }
         }
 
-        val navController = findNavController(R.id.nav_fragment)
 
-        bottomNavigationView.setupWithNavController(navController)
+}
 
-        val dbHelper = DbHelper(this.applicationContext)
-        val db = dbHelper.writableDatabase
-        val c: Cursor = db.rawQuery(
-            "SELECT COUNT(*) as cnt FROM ${DBContract.Favorites.TABLE_NAME}",
-            null
-        )
-        c.moveToFirst()
 
-        if (c.getInt(0) != 0)
-            bottomNavigationView.selectedItemId = R.id.favoritesFragment
-
-    }
+sealed class NavRoutes(val route: String) {
+    object Start : NavRoutes("start")
+    object GroupSchedule : NavRoutes("group_schedule")
+    object EmployeeSchedule : NavRoutes("employee_schedule")
+    object PickEntity : NavRoutes("pick_entity")
 }
