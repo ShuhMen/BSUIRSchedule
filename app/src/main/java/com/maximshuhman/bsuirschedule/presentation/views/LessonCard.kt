@@ -40,20 +40,20 @@ import com.maximshuhman.bsuirschedule.ui.theme.Practic
 @Composable
 inline fun LessonCard(lesson: Lesson, crossinline onClick: () -> Unit = { }) {
 
-    val dividerColor = when(lesson.lessonTypeAbbrev){
-        "Экзамен", "ЛР" -> Labaratory
+    val dividerColor = when (lesson.lessonTypeAbbrev) {
+        "Экзамен", "ЛР", "Зачет" -> Labaratory
 
-        "Консультация", "ПЗ","УПз" -> Practic
+        "Консультация", "ПЗ", "УПз" -> Practic
 
         "УЛк", "ЛК" -> Lecture
-        else -> if(lesson.announcement == true) Blue else Color.White
+        else -> if (lesson.announcement == true) Blue else Color.White
     }
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable {
-                if(lesson.announcement == false || lesson.announcement == null)
+                if (lesson.announcement == false || lesson.announcement == null)
                     onClick()
             }
             .padding(horizontal = 10.dp, vertical = 8.dp),
@@ -89,23 +89,23 @@ inline fun LessonCard(lesson: Lesson, crossinline onClick: () -> Unit = { }) {
 
         )
 
-        if(lesson.announcement?: false){
+        if (lesson.announcement ?: false) {
             AnnouncementPart(lesson)
-        }else{
+        } else {
             LessonPart(lesson)
         }
     }
 }
 
 @Composable
-fun AnnouncementPart(lesson: Lesson){
+fun AnnouncementPart(lesson: Lesson) {
 
     Row(
         modifier = Modifier
             .padding(horizontal = 10.dp)
     ) {
         Text(
-            text = lesson.employees?.joinToString(", "){ it -> "${it.lastName} ${it.firstName.first()}. ${if (!it.middleName.isNullOrBlank()) it.middleName.first() + "." else ""}" } +  " : ${lesson.note}",
+            text = lesson.employees?.joinToString(", ") { it -> "${it.lastName} ${it.firstName.first()}. ${if (!it.middleName.isNullOrBlank()) it.middleName.first() + "." else ""}" } + " : ${lesson.note}",
             fontSize = 16.sp
         )
 
@@ -130,7 +130,7 @@ fun AnnouncementPart(lesson: Lesson){
 }
 
 @Composable
-fun LessonPart(lesson: Lesson){
+fun LessonPart(lesson: Lesson) {
     Column(
         modifier = Modifier
             .padding(horizontal = 10.dp)
@@ -165,24 +165,42 @@ fun LessonPart(lesson: Lesson){
 
 
         if (lesson.auditories != null)
-            Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 Text(
                     text = lesson.auditories.joinToString(", "),
                     fontSize = 16.sp
                 )
 
 
-                if(lesson.lessonType == LessonType.GROUP && !lesson.employees.isNullOrEmpty()) {
+                if (lesson.lessonType == LessonType.GROUP && !lesson.employees.isNullOrEmpty()) {
+
                     Text(
-                        text = lesson.employees.joinToString(", "){ it -> "${it.lastName} ${it.firstName.first()}. ${if (!it.middleName.isNullOrBlank()) it.middleName.first() + "." else ""}" },
+                        text = "${lesson.employees[0].lastName} ${lesson.employees[0].firstName.first()}. ${if (!(lesson.employees[0].middleName.isNullOrBlank())) lesson.employees[0].middleName!!.first() + "." else ""}${if (lesson.employees.size > 1) " и ещё ${lesson.employees.size - 1}" else ""}",
                         fontSize = 14.sp,
                         textAlign = TextAlign.End
                     )
+
+                    /*Text(
+                        text = lesson.employees.joinToString(", ") { it -> "${it.lastName} ${it.firstName.first()}. ${if (!it.middleName.isNullOrBlank()) it.middleName.first() + "." else ""}" },
+                        fontSize = 14.sp,
+                        textAlign = TextAlign.End
+                    )*/
                 }
 
-                if(lesson.lessonType == LessonType.EMPLOYEE && !lesson.studentGroups.isNullOrEmpty()) {
+                if (lesson.lessonType == LessonType.EMPLOYEE && !lesson.studentGroups.isNullOrEmpty()) {
+
+
+/*                    Text(
+                        text = lesson.studentGroups.joinToString(", ") { it -> it.name.toString() },
+                        fontSize = 14.sp,
+                        textAlign = TextAlign.End
+                    )*/
+
                     Text(
-                        text = lesson.studentGroups.joinToString(", "){ it -> it.name.toString() },
+                        text = "${lesson.studentGroups[0].name}${if(lesson.studentGroups.size > 1) " и ещё ${lesson.studentGroups.size - 1}" else ""}",
                         fontSize = 14.sp,
                         textAlign = TextAlign.End
                     )
@@ -202,12 +220,12 @@ fun LessonPart(lesson: Lesson){
 
 @Preview(showBackground = true)
 @Composable
-fun LessonCardPreview(){
+fun LessonCardPreview() {
 
     BSUIRScheduleTheme {
 
         Box(
-            Modifier.background( MaterialTheme.colorScheme.secondary)
+            Modifier.background(MaterialTheme.colorScheme.secondary)
         ) {
             LessonCard(
                 Lesson(
@@ -240,7 +258,7 @@ fun LessonCardPreview(){
 
 @Preview
 @Composable
-fun AnnouncementCardPreview(){
+fun AnnouncementCardPreview() {
 
     BSUIRScheduleTheme {
         Box(
