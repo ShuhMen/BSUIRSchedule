@@ -30,4 +30,7 @@
     <string name="favorite_groups">Группы</string>
     <string name="favorite_employees">Преподаватели</string>
     <string name="edit_favorites">Изменить избранное</string>
+    <string name="settings">Настройки</string>
+    <string name="default_logo">Стандартная</string>
+    <string name="christmas_logo">Новогодняя</string>
 </resources>

@@ -19,6 +19,7 @@ import com.maximshuhman.bsuirschedule.presentation.viewModels.MainViewModel
 import com.maximshuhman.bsuirschedule.presentation.views.EmployeeScheduleView
 import com.maximshuhman.bsuirschedule.presentation.views.GroupScheduleView
 import com.maximshuhman.bsuirschedule.presentation.views.PickEntityView
+import com.maximshuhman.bsuirschedule.presentation.views.SettingsView
 import com.maximshuhman.bsuirschedule.presentation.views.StartScreen
 import com.maximshuhman.bsuirschedule.ui.theme.BSUIRScheduleTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -57,6 +58,10 @@ fun Main(viewModel: MainViewModel) {
         ) {
             composable(NavRoutes.Start.route) {
                 StartScreen(uiState, navController)
+            }
+
+            composable(NavRoutes.Settings.route) {
+                SettingsView(navController)
             }
 
             composable(NavRoutes.PickEntity.route) {
@@ -99,4 +104,5 @@ sealed class NavRoutes(val route: String) {
     object GroupSchedule : NavRoutes("group_schedule")
     object EmployeeSchedule : NavRoutes("employee_schedule")
     object PickEntity : NavRoutes("pick_entity")
+    object Settings : NavRoutes("settings")
 }
