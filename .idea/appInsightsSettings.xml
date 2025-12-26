@@ -39,14 +39,14 @@
               <option name="versions">
                 <list>
                   <VersionSetting>
+                    <option name="buildVersion" value="59" />
+                    <option name="displayName" value="2.0.0.1 (59)" />
+                    <option name="displayVersion" value="2.0.0.1" />
+                  </VersionSetting>
+                  <VersionSetting>
                     <option name="buildVersion" value="58" />
                     <option name="displayName" value="2.0.0.0 (58)" />
                     <option name="displayVersion" value="2.0.0.0" />
-                    <option name="tracks">
-                      <list>
-                        <option value="PRODUCTION" />
-                      </list>
-                    </option>
                   </VersionSetting>
                 </list>
               </option>

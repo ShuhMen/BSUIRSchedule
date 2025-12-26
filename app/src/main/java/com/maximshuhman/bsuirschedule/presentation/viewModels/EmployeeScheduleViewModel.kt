@@ -65,6 +65,12 @@ class EmployeeScheduleViewModel @Inject constructor(
             getEmployeeSchedule(employeeID).collect { result ->
                 when (result) {
                     is AppResult.Success<EmployeeReadySchedule> -> {
+
+                        if (result.data.schedule.isEmpty() && result.data.exams.isEmpty()) {
+                            _uiState.value =
+                                EmployeeScheduleUiState.Error("Занятия закончились!")
+                            return@collect
+                        }
                         _uiState.value = EmployeeScheduleUiState.Success(
                             result.data,
                             result.data.employee.isFavorite
