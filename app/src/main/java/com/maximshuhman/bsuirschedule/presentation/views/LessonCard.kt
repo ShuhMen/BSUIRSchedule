@@ -20,7 +20,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -31,23 +30,11 @@ import com.maximshuhman.bsuirschedule.data.dto.Employee
 import com.maximshuhman.bsuirschedule.data.dto.Lesson
 import com.maximshuhman.bsuirschedule.data.dto.LessonType
 import com.maximshuhman.bsuirschedule.ui.theme.BSUIRScheduleTheme
-import com.maximshuhman.bsuirschedule.ui.theme.Blue
-import com.maximshuhman.bsuirschedule.ui.theme.Labaratory
-import com.maximshuhman.bsuirschedule.ui.theme.Lecture
-import com.maximshuhman.bsuirschedule.ui.theme.Practic
 
 
 @Composable
 inline fun LessonCard(lesson: Lesson, crossinline onClick: () -> Unit = { }) {
 
-    val dividerColor = when (lesson.lessonTypeAbbrev) {
-        "Экзамен", "ЛР", "Зачет" -> Labaratory
-
-        "Консультация", "ПЗ", "УПз" -> Practic
-
-        "УЛк", "ЛК" -> Lecture
-        else -> if (lesson.announcement == true) Blue else Color.White
-    }
 
     Row(
         modifier = Modifier
@@ -82,7 +69,7 @@ inline fun LessonCard(lesson: Lesson, crossinline onClick: () -> Unit = { }) {
         Box(
             modifier = Modifier
                 .clip(CircleShape)
-                .background(dividerColor)
+                .background(lesson.getLessonColor())
                 .width(10.dp)
                 .height(60.dp)
 
