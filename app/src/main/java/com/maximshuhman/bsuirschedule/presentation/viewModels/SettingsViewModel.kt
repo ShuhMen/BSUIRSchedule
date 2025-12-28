@@ -1,9 +1,24 @@
 package com.maximshuhman.bsuirschedule.presentation.viewModels
 
+import android.annotation.SuppressLint
+import android.content.ComponentName
+import android.content.Context
+import android.content.pm.PackageManager
+import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.google.firebase.Firebase
+import com.google.firebase.crashlytics.crashlytics
+import com.maximshuhman.bsuirschedule.LauncherIcons
+import com.maximshuhman.bsuirschedule.data.entities.Settings
 import com.maximshuhman.bsuirschedule.data.sources.SettingsDAO
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
@@ -11,10 +26,65 @@ class SettingsViewModel @Inject constructor(
 ) : ViewModel() {
 
 
+    private val _settings = MutableStateFlow(Settings())
+    val settings : StateFlow<Settings> = _settings
+
     init {
+        viewModelScope.launch(Dispatchers.IO) {
+
+            val settingsDB = settingsDAO.getSettings()
+            if(settingsDB != null)
+                _settings.value = settingsDB
+
+
+        }
 
     }
 
+    @SuppressLint("QueryPermissionsNeeded")
+    fun setIcon(context: Context, launcherIcon: LauncherIcons) {
 
+        Log.d("IconSwitch", "Changing icon: ${settings.value.iconInstalled} → ${launcherIcon.name}")
+
+        if (settings.value.iconInstalled == launcherIcon) return
+
+/*
+        val intent = Intent(Intent.ACTION_MAIN)
+        intent.addCategory(Intent.CATEGORY_LAUNCHER)
+        val resolveInfos = context.packageManager.queryIntentActivities(intent, MATCH_ALL)
+        Log.d("IconSwitch", "Launchers: ${resolveInfos.map { it.activityInfo.name }}")
+*/
+
+        try {
+            setComponentEnabled(
+                launcherIcon.name,
+                context,
+                PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+            )
+
+            setComponentEnabled(
+                settings.value.iconInstalled.name,
+                context,
+                PackageManager.COMPONENT_ENABLED_STATE_DISABLED
+            )
+
+            viewModelScope.launch(Dispatchers.IO) {
+                settingsDAO.setIcon(launcherIcon)
+            }
+            _settings.value = settings.value.copy(iconInstalled = launcherIcon)
+        } catch (e: PackageManager.NameNotFoundException) {
+            Firebase.crashlytics.recordException(e)
+        }
+    }
+
+    private fun setComponentEnabled(componentShortName: String, context: Context, state: Int) {
+        val componentName = ComponentName(context, context.packageName + "." + componentShortName)
+
+        context.packageManager.setComponentEnabledSetting(
+            componentName,
+            state,
+            PackageManager.DONT_KILL_APP
+        )
+    }
 
 }

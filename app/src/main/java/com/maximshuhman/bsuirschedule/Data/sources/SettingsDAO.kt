@@ -3,6 +3,7 @@ package com.maximshuhman.bsuirschedule.data.sources
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Upsert
+import com.maximshuhman.bsuirschedule.LauncherIcons
 import com.maximshuhman.bsuirschedule.data.entities.Settings
 
 @Dao
@@ -22,5 +23,10 @@ abstract class SettingsDAO {
     fun setLastOpenedId(lastOpenedID: Int, type: Int) {
         val settings = getSettings() ?: Settings()
         upsertSettings(settings.copy(lastOpenedID = lastOpenedID, openedType = type))
+    }
+
+    fun setIcon(launcherIcon: LauncherIcons){
+        val settings = getSettings() ?: Settings()
+        upsertSettings(settings.copy(iconInstalled = launcherIcon))
     }
 }
