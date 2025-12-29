@@ -1,6 +1,11 @@
 package com.maximshuhman.bsuirschedule.data.dto
 
+import androidx.compose.ui.graphics.Color
 import com.maximshuhman.bsuirschedule.data.entities.LessonTable
+import com.maximshuhman.bsuirschedule.ui.theme.Blue
+import com.maximshuhman.bsuirschedule.ui.theme.Labaratory
+import com.maximshuhman.bsuirschedule.ui.theme.Lecture
+import com.maximshuhman.bsuirschedule.ui.theme.Practic
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
@@ -28,7 +33,22 @@ data class Lesson(
     /**Это занятие преподавателя или группы**/
     @Transient val lessonType       : LessonType = LessonType.GROUP,
 
-    )
+    ){
+
+    fun getLessonColor(): Color {
+        return  when (this.lessonTypeAbbrev) {
+            "Экзамен", "ЛР", "Зачет" -> Labaratory
+
+            "Консультация", "ПЗ", "УПз" -> Practic
+
+            "УЛк", "ЛК" -> Lecture
+            else -> if (this.announcement == true) Blue else Color.White
+        }
+    }
+
+}
+
+
 enum class LessonType(){
     GROUP,
     EMPLOYEE

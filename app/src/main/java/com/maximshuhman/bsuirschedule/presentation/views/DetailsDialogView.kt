@@ -19,7 +19,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -34,11 +33,9 @@ import coil3.request.crossfade
 import com.maximshuhman.bsuirschedule.R
 import com.maximshuhman.bsuirschedule.data.dto.Employee
 import com.maximshuhman.bsuirschedule.data.dto.Lesson
+import com.maximshuhman.bsuirschedule.data.dto.LessonType
+import com.maximshuhman.bsuirschedule.data.dto.StudentGroups
 import com.maximshuhman.bsuirschedule.ui.theme.BSUIRScheduleTheme
-import com.maximshuhman.bsuirschedule.ui.theme.Blue
-import com.maximshuhman.bsuirschedule.ui.theme.Labaratory
-import com.maximshuhman.bsuirschedule.ui.theme.Lecture
-import com.maximshuhman.bsuirschedule.ui.theme.Practic
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -101,17 +98,11 @@ fun DetailsDialogView(
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            val dividerColor = when (lesson.lessonTypeAbbrev) {
-                                "Экзамен", "ЛР" -> Labaratory
 
-                                "Консультация", "ПЗ", "УПз" -> Practic
-
-                                "УЛк", "ЛК" -> Lecture
-                                else -> if (lesson.announcement == true) Blue else Color.White
-                            }
-
-                            Canvas(Modifier.size(18.dp).padding(end = 5.dp)) {
-                                drawCircle(dividerColor)
+                            Canvas(Modifier
+                                .size(18.dp)
+                                .padding(end = 5.dp)) {
+                                drawCircle(lesson.getLessonColor())
                             }
 
 
@@ -120,7 +111,8 @@ fun DetailsDialogView(
                                     "ЛК", "УЛк" -> "Лекция"
                                     "ПЗ", "УПз" -> "Практическое занятие"
                                     "ЛР", "УЛр" -> "Лабораторная"
-                                    else -> "Событие"
+                                    null -> "Событие"
+                                    else -> lessonTypeAbbrev
                                 }
                             )
                         }
@@ -144,7 +136,9 @@ fun DetailsDialogView(
                             Image(
                                 painterResource(R.drawable.subgroup_all),
                                 contentDescription = null,
-                                Modifier.size(18.dp).padding(end = 5.dp),
+                                Modifier
+                                    .size(18.dp)
+                                    .padding(end = 5.dp),
                                 colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
                             )
 
@@ -162,47 +156,49 @@ fun DetailsDialogView(
                             )
 
                     }
+                    if (startLessonDate != null && endLessonDate != null)
 
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 2.5.dp, bottom = 5.dp)
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 2.5.dp, bottom = 5.dp)
 
-                    ) {
-                        val prettyFormatter =
-                            DateTimeFormatter.ofPattern("dd MMMM", Locale.getDefault())
-                        val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
+                        ) {
+                            val prettyFormatter =
+                                DateTimeFormatter.ofPattern("dd MMMM", Locale.getDefault())
+                            val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
 
-                        Image(
-                            painterResource(R.drawable.calendar),
-                            contentDescription = null,
-                            Modifier.size(18.dp).padding(end = 5.dp),
-                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
-                        )
-                        if(startLessonDate != null && endLessonDate != null)
-                        Text(
-                            "С ${
-                                prettyFormatter.format(
-                                    LocalDate.parse(
-                                        startLessonDate,
-                                        formatter
+                            Image(
+                                painterResource(R.drawable.calendar),
+                                contentDescription = null,
+                                Modifier
+                                    .size(18.dp)
+                                    .padding(end = 5.dp),
+                                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
+                            )
+                            Text(
+                                "С ${
+                                    prettyFormatter.format(
+                                        LocalDate.parse(
+                                            startLessonDate,
+                                            formatter
+                                        )
                                     )
-                                )
-                            } по ${
-                                prettyFormatter.format(
-                                    LocalDate.parse(
-                                        endLessonDate,
-                                        formatter
+                                } по ${
+                                    prettyFormatter.format(
+                                        LocalDate.parse(
+                                            endLessonDate,
+                                            formatter
+                                        )
                                     )
-                                )
-                            } ",
-                        )
+                                } ",
+                            )
 
-                    }
+                        }
                 }
 
-                if (!lesson.employees.isNullOrEmpty())
+                if (!lesson.employees.isNullOrEmpty() && lesson.lessonType == LessonType.GROUP)
                     lesson.employees.forEach { employee ->
                         employee.apply {
 
@@ -276,6 +272,55 @@ fun DetailsDialogView(
                         }
                     }
 
+                if (!lesson.studentGroups.isNullOrEmpty() && lesson.lessonType == LessonType.EMPLOYEE)
+                    lesson.studentGroups.forEach { studentGroup ->
+                        studentGroup.apply {
+
+                            Card(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 5.dp)
+                                /*.clickable {
+                                    onEmployeeClick(studentGroup)
+                                    onDismissRequest()
+                                }*/,
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.secondary
+                                )
+                            ) {
+                                Column(
+                                    verticalArrangement = Arrangement.SpaceAround,
+                                    modifier = Modifier.padding(
+                                        horizontal = 10.dp,
+                                        vertical = 2.5.dp
+                                    )
+                                ) {
+
+
+                                    Row(
+                                        Modifier
+                                            .fillMaxWidth()
+                                            .padding(
+                                                bottom = 2.dp,
+                                            ),
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+
+                                        Text(name.toString())
+
+                                        if (numberOfStudents != null)
+                                            Text("$numberOfStudents студентов")
+
+                                    }
+                                    if (!specialityName.isNullOrEmpty())
+                                        Text(specialityName)
+                                }
+
+                            }
+
+                        }
+                    }
+
             }
         }
 
@@ -288,38 +333,47 @@ fun DetailsDialogView(
 fun DetailsPreview() {
 
     BSUIRScheduleTheme {
+        val lesson = Lesson(
+            arrayListOf("202-4к.", "302-4к."),
+            "11:00",
+            "ПЗ",
+            "ССПОиРС (ЛР) 230501-2 перенесено на 23.12.2025",
+            0,
+            "10:00",
+            arrayListOf(
+                StudentGroups(
+                    "Автоматизированные системы обработки информации",
+                    "01-02",
+                    30,
+                    "220601",
+                    1
+                )
+            ),
+            "АиПРП",
+            "Администрирование и проектирования распределенных систем",
+            null,
+            listOf(
+                Employee(
+                    0,
+                    "Максим",
+                    "Шухман",
+                    "Юрьевич",
+                    "кандидат физико-математических наук",
+                    "",
+                    "https://iis.bsuir.by/api/v1/employees/photo/500245",
+                    "",
+                    ""
+                )
+            ), "10.09.2025",
+            "10.09.2025",
+            "10.09.2025",
+            true,
+            false,
+            lessonType = LessonType.EMPLOYEE
+        )
 
         DetailsDialogView(
-            Lesson(
-                arrayListOf("202-4к.", "302-4к."),
-                "11:00",
-                "ПЗ",
-                "ССПОиРС (ЛР) 230501-2 перенесено на 23.12.2025",
-                0,
-                "10:00",
-                arrayListOf(),
-                "АиПРП",
-                "Администрирование и проектирования распределенных систем",
-                null,
-                listOf(
-                    Employee(
-                        0,
-                        "Максим",
-                        "Шухман",
-                        "Юрьевич",
-                        "кандидат физико-математических наук",
-                        "",
-                        "https://iis.bsuir.by/api/v1/employees/photo/500245",
-                        "",
-                        ""
-                    )
-                ), "10.09.2025",
-                "10.09.2025",
-                "10.09.2025",
-                true,
-                false
-
-            ),
+            lesson,
             onDismissRequest = {
 
             }

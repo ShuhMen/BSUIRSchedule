@@ -3,6 +3,8 @@ package com.maximshuhman.bsuirschedule.DataBase
 import android.content.Context
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.google.firebase.Firebase
+import com.google.firebase.crashlytics.crashlytics
 
 class MigrationCallback(
     private val context: Context
@@ -33,7 +35,11 @@ class MigrationCallback(
             cursor.close()
 
             db.setTransactionSuccessful()
-        } finally {
+        }catch(e : Exception){
+            Firebase.crashlytics.log("Error migrate favorites")
+            Firebase.crashlytics.recordException(e)
+        }
+        finally {
             db.endTransaction()
         }
 
@@ -51,7 +57,11 @@ class MigrationCallback(
             }
             cursorSub.close()
             db.setTransactionSuccessful()
-        } finally {
+        }catch(e : Exception){
+            Firebase.crashlytics.log("Error migrate subgroup")
+            Firebase.crashlytics.recordException(e)
+        }
+        finally {
             db.endTransaction()
         }
 
@@ -86,7 +96,11 @@ class MigrationCallback(
             }
             cursorSettings.close()
             db.setTransactionSuccessful()
-        } finally {
+        }catch(e : Exception){
+            Firebase.crashlytics.log("Error migrate settings")
+            Firebase.crashlytics.recordException(e)
+        }
+        finally {
             db.endTransaction()
         }
 

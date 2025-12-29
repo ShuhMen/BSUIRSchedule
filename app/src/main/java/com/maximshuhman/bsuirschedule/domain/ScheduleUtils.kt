@@ -64,12 +64,19 @@ abstract class GetScheduleUseCase(
     suspend fun configureSchedule(schedule: CommonSchedule): AppResult<List<ScheduleDay>, LogicError> {
 
         if(schedule.schedules == null)
-            return AppResult.Success(listOf())
+            return AppResult.ApiError(LogicError.Empty)
 
         var week: Int
-        var currentDate = LocalDate.now()
 
         val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
+
+        var currentDate =
+            if (schedule.startDate != null && LocalDate.now().isBefore(LocalDate.parse(schedule.startDate, formatter))) {
+                LocalDate.parse(schedule.startDate, formatter)
+            } else {
+                LocalDate.now()
+            }
+
 
         if (networkStatusTracker.getCurrentNetworkStatus() is NetworkStatus.Unavailable) {
 
@@ -113,10 +120,10 @@ abstract class GetScheduleUseCase(
         }
 
         if(currentDate.isAfter(endDate))
-            return AppResult.ApiError(LogicError.ConfigureError("Занятия закночились!"))
+            return AppResult.Success(listDays)
 
 
-        while (currentDate.isBefore(endDate)) {
+        while (!endDate.isBefore(currentDate)) {
 
             fun makeSchedule(rawList: List<Lesson>) {
 

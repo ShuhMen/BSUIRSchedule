@@ -72,7 +72,11 @@ class GroupScheduleViewModel @Inject constructor(
             getGroupSchedule(groupID).collect { result ->
                 when (result) {
                     is AppResult.Success<GroupReadySchedule> -> {
-
+                        if (result.data.schedule.isEmpty() && result.data.exams.isEmpty()) {
+                            _uiState.value =
+                                Error("Занятия закончились!")
+                            return@collect
+                        }
                         val subgroup = subgroupDAO.getSubgroup(result.data.group.id)?.subgroup ?: 0
 
                         _uiState.value = GroupScheduleUiState.Success(
