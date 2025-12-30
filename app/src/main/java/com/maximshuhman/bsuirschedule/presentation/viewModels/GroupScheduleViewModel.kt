@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.maximshuhman.bsuirschedule.AppResult
 import com.maximshuhman.bsuirschedule.data.entities.FavoriteEntity
 import com.maximshuhman.bsuirschedule.data.entities.SubgroupEntity
-import com.maximshuhman.bsuirschedule.data.sources.SettingsDAO
+import com.maximshuhman.bsuirschedule.data.repositories.SettingsRepository
 import com.maximshuhman.bsuirschedule.data.sources.SubgroupDAO
 import com.maximshuhman.bsuirschedule.domain.NetworkStatus
 import com.maximshuhman.bsuirschedule.domain.collect
@@ -32,14 +32,11 @@ class GroupScheduleViewModel @Inject constructor(
     private val getFavoritesUseCase: GetFavoritesUseCase,
     private val setFavoriteEntity: SetFavoriteEntity,
     private val networkFlow: @JvmSuppressWildcards Flow<NetworkStatus>,
-    private val settingsDAO: SettingsDAO,
+    private val settingsRepository: SettingsRepository,
     private val subgroupDAO: SubgroupDAO,
     ): ViewModel() {
 
     private var lastLoadedId: Int = -1
-
-    private val _connectionLabel = MutableStateFlow(false)
-    val connectionLabel: StateFlow<Boolean> = _connectionLabel
 
     private val _uiState = MutableStateFlow<GroupScheduleUiState>(GroupScheduleUiState.Loading)
     val uiState: StateFlow<GroupScheduleUiState> = _uiState
@@ -86,7 +83,7 @@ class GroupScheduleViewModel @Inject constructor(
                         )
 
                         if(result.data.group.isFavorite)
-                            settingsDAO.setLastOpenedId(lastLoadedId, 0)
+                            settingsRepository.setLastOpenedId(lastLoadedId, 0)
                     }
 
                     is AppResult.ApiError<LogicError> -> {
@@ -148,7 +145,7 @@ class GroupScheduleViewModel @Inject constructor(
                 setFavoriteEntity(FavoriteEntity(state.schedule.group.id, 0), !state.isFavorite)
 
                 if(!state.isFavorite)
-                    settingsDAO.setLastOpenedId(lastLoadedId, 0)
+                    settingsRepository.setLastOpenedId(lastLoadedId, 0)
 
                 getFavorites()
             }

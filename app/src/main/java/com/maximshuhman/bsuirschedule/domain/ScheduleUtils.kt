@@ -5,11 +5,12 @@ import com.maximshuhman.bsuirschedule.data.ScheduleSource
 import com.maximshuhman.bsuirschedule.data.dto.CommonSchedule
 import com.maximshuhman.bsuirschedule.data.dto.Lesson
 import com.maximshuhman.bsuirschedule.data.repositories.NetError
-import com.maximshuhman.bsuirschedule.data.sources.SettingsDAO
+import com.maximshuhman.bsuirschedule.data.repositories.SettingsRepository
 import com.maximshuhman.bsuirschedule.domain.models.LogicError
 import com.maximshuhman.bsuirschedule.domain.models.ScheduleDay
 import com.maximshuhman.bsuirschedule.domain.models.ScheduleDayHeader
 import com.maximshuhman.bsuirschedule.domain.models.toLogicError
+import kotlinx.coroutines.flow.first
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -19,7 +20,7 @@ import java.util.Locale
 abstract class GetScheduleUseCase(
     private val repository: ScheduleSource,
     private val networkStatusTracker: NetworkStatusTracker,
-    private val settingsDAO: SettingsDAO
+    private val settingsRepository: SettingsRepository
 ) {
 
     fun configureExams(schedule: CommonSchedule): AppResult<List<ScheduleDay>, LogicError> {
@@ -80,9 +81,9 @@ abstract class GetScheduleUseCase(
 
         if (networkStatusTracker.getCurrentNetworkStatus() is NetworkStatus.Unavailable) {
 
-            val settings = settingsDAO.getSettings()
+            val settings = settingsRepository.settings.first()
 
-            if(settings == null || settings.week == null){
+            if(settings.week == null){
                 return AppResult.ApiError(LogicError.NoInternetConnection)
             }
 
@@ -99,14 +100,12 @@ abstract class GetScheduleUseCase(
                 week = week % 4 + 1
 
         } else {
-            val weekResponse = repository.getCurrent()
-
-            when (weekResponse) {
+            when (val weekResponse = repository.getCurrent()) {
                 is AppResult.ApiError<NetError> -> return AppResult.ApiError(weekResponse.body.toLogicError())
                 is AppResult.Success<Int> -> week = weekResponse.data
             }
 
-            settingsDAO.setCurrentWeek(formatter.format(LocalDate.now()) ,week)
+            settingsRepository.setCurrentWeek(formatter.format(LocalDate.now()) ,week)
         }
 
         val listDays = mutableListOf<ScheduleDay>()

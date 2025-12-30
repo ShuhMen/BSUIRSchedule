@@ -6,15 +6,15 @@ import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import com.maximshuhman.bsuirschedule.ApplicationThemes
 import com.maximshuhman.bsuirschedule.R
 
-
-// Загрузка шрифтов из ресурсов
 private val mulishFontFamily = FontFamily(
     Font(R.font.mulish_regular),
     Font(R.font.mulish_medium, FontWeight.Medium),
@@ -140,7 +140,22 @@ private val LightColorScheme = lightColorScheme(
     onSecondary = LightColors.DarkGray,
     onPrimary = White,
     outlineVariant = LightColors.dividerColor,
-    surface = LightColors.Gray,
+    surface = Blue,
+    onTertiary = White,
+    onSurface = LightColors.DarkGray,
+)
+
+
+private val PancakeColorScheme = lightColorScheme(
+    primary = Blue,
+    secondary = LightColors.Gray,
+    tertiary = Blue,
+    background = White,
+    onBackground = Black,
+    onSecondary = LightColors.DarkGray,
+    onPrimary = White,
+    outlineVariant = LightColors.dividerColor,
+    surface = Blue,
     onTertiary = White,
     onSurface = LightColors.DarkGray,
 )
@@ -148,19 +163,40 @@ private val LightColorScheme = lightColorScheme(
 
 @Composable
 fun BSUIRScheduleTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
+    theme: ApplicationThemes = ApplicationThemes.SystemTheme,
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+    val colorScheme = when(theme) {
+        ApplicationThemes.SystemTheme -> if(isSystemInDarkTheme()) DarkColorScheme else LightColorScheme
+        ApplicationThemes.DarkTheme -> DarkColorScheme
+        ApplicationThemes.LightTheme -> LightColorScheme
+        ApplicationThemes.PancakesTheme -> PancakeColorScheme
     }
+    /*val view = LocalView.current
+
+    val isLightTheme = when(theme) {
+        ApplicationThemes.SystemTheme -> !isSystemInDarkTheme()
+        ApplicationThemes.LightTheme, ApplicationThemes.PancakesTheme -> true
+        ApplicationThemes.DarkTheme -> false
+    }
+
+    SideEffect {
+        val window = (view.context as Activity).window
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        val insetsController = WindowInsetsControllerCompat(window, view)
+        insetsController.isAppearanceLightStatusBars = !isLightTheme
+
+    }*/
 
     MaterialTheme(
         colorScheme = colorScheme,
         typography = MulishTypography,
         content = content
     )
+}
+
+fun Color.isLight(): Boolean {
+    val luminance = (0.299 * red + 0.587 * green + 0.114 * blue)
+    return luminance > 0.5
 }

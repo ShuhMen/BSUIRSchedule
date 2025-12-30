@@ -5,8 +5,8 @@ import com.maximshuhman.bsuirschedule.data.ScheduleSource
 import com.maximshuhman.bsuirschedule.data.SourceError
 import com.maximshuhman.bsuirschedule.data.dto.CommonSchedule
 import com.maximshuhman.bsuirschedule.data.repositories.ScheduleDataBaseSourceImpl
+import com.maximshuhman.bsuirschedule.data.repositories.SettingsRepository
 import com.maximshuhman.bsuirschedule.data.sources.EmployeeDAO
-import com.maximshuhman.bsuirschedule.data.sources.SettingsDAO
 import com.maximshuhman.bsuirschedule.domain.GetScheduleUseCase
 import com.maximshuhman.bsuirschedule.domain.NetworkStatus
 import com.maximshuhman.bsuirschedule.domain.NetworkStatusTracker
@@ -22,8 +22,8 @@ class GetEmployeeScheduleUseCase @Inject constructor(
     private val employeeDAO: EmployeeDAO,
     private val databaseRepository: ScheduleDataBaseSourceImpl,
     private val networkStatusTracker: NetworkStatusTracker,
-    private val settingsDAO: SettingsDAO
-): GetScheduleUseCase(repository, networkStatusTracker, settingsDAO) {
+    private val settingsRepository: SettingsRepository
+): GetScheduleUseCase(repository, networkStatusTracker, settingsRepository) {
 
     operator fun invoke(groupId: Int): Flow<AppResult<EmployeeReadySchedule, LogicError>> = flow {
 

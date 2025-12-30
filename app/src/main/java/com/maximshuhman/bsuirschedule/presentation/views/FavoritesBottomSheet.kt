@@ -39,7 +39,6 @@ import com.maximshuhman.bsuirschedule.ui.theme.BSUIRScheduleTheme
 @Composable
 fun FavoritesBottomSheet(navController: NavController, favorites: Favorites, dismiss: () -> Unit){
 
-//    val expanded = rememberBottomSheetState(BottomSheetValue.Expanded)
 
     ModalBottomSheet(
         dismiss,

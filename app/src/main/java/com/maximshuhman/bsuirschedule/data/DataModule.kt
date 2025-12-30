@@ -4,8 +4,10 @@ import androidx.room.Room
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.maximshuhman.bsuirschedule.DataBase.MigrationCallback
 import com.maximshuhman.bsuirschedule.data.repositories.ScheduleNetworkSourceImpl
+import com.maximshuhman.bsuirschedule.data.repositories.SettingsRepository
 import com.maximshuhman.bsuirschedule.data.sources.AppDatabase
 import com.maximshuhman.bsuirschedule.data.sources.IISService
+import com.maximshuhman.bsuirschedule.data.sources.SettingsDAO
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -75,4 +77,9 @@ object DataModule {
 
     @Provides
     fun provideSettingsDao() = provideDatabase().settingsDAO()
+
+    @Provides
+    @Singleton
+    fun provideSettingsRepository(settingsDAO: SettingsDAO): SettingsRepository =
+        SettingsRepository(settingsDAO)
 }

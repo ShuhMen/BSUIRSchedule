@@ -43,6 +43,15 @@ inline fun <T> SearchableListScreen(
 ) {
     val searchBarState = rememberSearchBarState()
     var expanded by rememberSaveable { mutableStateOf(false) }
+    /*val view = LocalView.current
+    val isLight = MaterialTheme.colorScheme.surface.luminance() < 0.5
+
+    SideEffect {
+        val window = (view.context as Activity).window
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        val insetsController = WindowInsetsControllerCompat(window, view)
+        insetsController.isAppearanceLightStatusBars = isLight
+    }*/
 
     Column(modifier = Modifier.fillMaxSize()) {
         SearchBar(

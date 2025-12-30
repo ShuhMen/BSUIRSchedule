@@ -9,37 +9,25 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.Firebase
 import com.google.firebase.crashlytics.crashlytics
+import com.maximshuhman.bsuirschedule.ApplicationThemes
 import com.maximshuhman.bsuirschedule.LauncherIcons
 import com.maximshuhman.bsuirschedule.data.entities.Settings
-import com.maximshuhman.bsuirschedule.data.sources.SettingsDAO
+import com.maximshuhman.bsuirschedule.data.repositories.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    private val settingsDAO: SettingsDAO
+    private val settingsRepository: SettingsRepository,
 ) : ViewModel() {
 
 
-    private val _settings = MutableStateFlow(Settings())
-    val settings : StateFlow<Settings> = _settings
+    val settings: StateFlow<Settings> = settingsRepository.settings
 
-    init {
-        viewModelScope.launch(Dispatchers.IO) {
-
-            val settingsDB = settingsDAO.getSettings()
-            if(settingsDB != null)
-                _settings.value = settingsDB
-
-
-        }
-
-    }
 
     @SuppressLint("QueryPermissionsNeeded")
     fun setIcon(context: Context, launcherIcon: LauncherIcons) {
@@ -69,9 +57,9 @@ class SettingsViewModel @Inject constructor(
             )
 
             viewModelScope.launch(Dispatchers.IO) {
-                settingsDAO.setIcon(launcherIcon)
+                settingsRepository.setIcon(launcherIcon)
             }
-            _settings.value = settings.value.copy(iconInstalled = launcherIcon)
+            //_settings.value = settings.value.copy(iconInstalled = launcherIcon)
         } catch (e: PackageManager.NameNotFoundException) {
             Firebase.crashlytics.recordException(e)
         }
@@ -85,6 +73,17 @@ class SettingsViewModel @Inject constructor(
             state,
             PackageManager.DONT_KILL_APP
         )
+    }
+
+    fun setTheme(theme: ApplicationThemes){
+
+        if(settings.value.theme == theme)
+            return
+
+        viewModelScope.launch(Dispatchers.IO) {
+            settingsRepository.setTheme(theme)
+        }
+       // _settings.value = settings.value.copy(theme = theme)
     }
 
 }

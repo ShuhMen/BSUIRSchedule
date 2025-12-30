@@ -4,6 +4,7 @@ package com.maximshuhman.bsuirschedule.presentation.views
 
 import android.annotation.SuppressLint
 import android.content.res.Configuration
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -141,19 +142,22 @@ fun GroupScheduleView(
                                     Icon(
                                         painterResource(R.drawable.subgroup_all),
                                         stringResource(R.string.subgroupAll),
+                                        tint = MaterialTheme.colorScheme.onPrimary,
                                         modifier = Modifier.height(36.dp)
                                     )
 
                                 1 ->
                                     Icon(
                                         painterResource(R.drawable.subgroup1),
-                                        stringResource(R.string.subgroup1)
+                                        stringResource(R.string.subgroup1),
+                                        tint = MaterialTheme.colorScheme.onPrimary
                                     )
 
                                 2 ->
                                     Icon(
                                         painterResource(R.drawable.subgroup2),
-                                        stringResource(R.string.subgroup2)
+                                        stringResource(R.string.subgroup2),
+                                        tint = MaterialTheme.colorScheme.onPrimary
                                     )
                             }
                         }
@@ -162,12 +166,12 @@ fun GroupScheduleView(
                             viewModel.clickFavorite()
                         }) {
                             if ((uiState as GroupScheduleUiState.Success).isFavorite)
-                                Icon(
+                                Image(
                                     painterResource(R.drawable.ic_baseline_favorite_24),
-                                    stringResource(R.string.favorite_click)
+                                    stringResource(R.string.favorite_click),
                                 )
                             else
-                                Icon(
+                                Image(
                                     painterResource(R.drawable.ic_baseline_favorite_border_24),
                                     stringResource(R.string.favorite_click)
                                 )

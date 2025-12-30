@@ -33,4 +33,8 @@
     <string name="settings">Настройки</string>
     <string name="default_logo">Стандартная</string>
     <string name="christmas_logo">Новогодняя</string>
+    <string name="system_theme">Системная</string>
+    <string name="dark_theme">Темная</string>
+    <string name="light_theme">Светлая</string>
+    <string name="panckakes_theme">Блины</string>
 </resources>

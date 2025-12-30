@@ -36,11 +36,11 @@ class MainActivity : ComponentActivity() {
         val state = viewModel.uiState
         splashscreen.setKeepOnScreenCondition { state.value is MainActivityUiState.Loading }
 
-        viewModel.getLastScreen()
-
         enableEdgeToEdge()
         setContent {
-            BSUIRScheduleTheme {
+            val settings by viewModel.settings.collectAsState()
+
+            BSUIRScheduleTheme(settings.theme) {
                 Main(viewModel)
             }
         }

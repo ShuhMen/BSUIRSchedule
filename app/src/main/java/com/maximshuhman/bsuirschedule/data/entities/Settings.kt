@@ -3,6 +3,7 @@ package com.maximshuhman.bsuirschedule.data.entities
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.maximshuhman.bsuirschedule.ApplicationThemes
 import com.maximshuhman.bsuirschedule.LauncherIcons
 
 
@@ -15,6 +16,7 @@ data class Settings(
     val widgetID: Int? = null,
     val widgetOpened: Int? = null,
     @ColumnInfo(defaultValue = "DefaultIcon") val iconInstalled: LauncherIcons = LauncherIcons.DefaultIcon,
+    @ColumnInfo(defaultValue = "SystemTheme") val theme: ApplicationThemes = ApplicationThemes.SystemTheme,
     @PrimaryKey
    val id: Int = 1
 )

@@ -15,6 +15,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -30,6 +31,16 @@ fun PickEntityView(parentNavController: NavController) {
     val navController = rememberNavController()
     val startDestination = PickEntityRoutes.GROUPS
     var selectedDestination by rememberSaveable { mutableIntStateOf(startDestination.ordinal) }
+
+    LocalView.current
+   /* val isLight = MaterialTheme.colorScheme.surface.luminance() < 0.5
+
+    SideEffect {
+        val window = (view.context as Activity).window
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        val insetsController = WindowInsetsControllerCompat(window, view)
+        insetsController.isAppearanceLightStatusBars = isLight
+    }*/
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),

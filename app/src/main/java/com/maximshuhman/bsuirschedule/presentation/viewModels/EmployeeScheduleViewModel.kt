@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.maximshuhman.bsuirschedule.AppResult
 import com.maximshuhman.bsuirschedule.data.entities.FavoriteEntity
-import com.maximshuhman.bsuirschedule.data.sources.SettingsDAO
+import com.maximshuhman.bsuirschedule.data.repositories.SettingsRepository
 import com.maximshuhman.bsuirschedule.domain.NetworkStatus
 import com.maximshuhman.bsuirschedule.domain.collect
 import com.maximshuhman.bsuirschedule.domain.models.EmployeeReadySchedule
@@ -29,7 +29,7 @@ class EmployeeScheduleViewModel @Inject constructor(
     private val getFavoritesUseCase: GetFavoritesUseCase,
     private val setFavoriteEntity: SetFavoriteEntity,
     private val networkFlow: @JvmSuppressWildcards Flow<NetworkStatus>,
-    private val settingsDAO: SettingsDAO,
+    private val settingsRepository: SettingsRepository,
 ): ViewModel() {
 
     private var lastLoadedId: Int = -1
@@ -77,7 +77,7 @@ class EmployeeScheduleViewModel @Inject constructor(
                         )
 
                         if(result.data.employee.isFavorite)
-                            settingsDAO.setLastOpenedId(employeeID, 1)
+                            settingsRepository.setLastOpenedId(employeeID, 1)
                     }
 
                     is AppResult.ApiError<LogicError> -> {
@@ -121,7 +121,7 @@ class EmployeeScheduleViewModel @Inject constructor(
                 setFavoriteEntity(FavoriteEntity(state.schedule.employee.id, 1), !state.isFavorite)
 
                 if(!state.isFavorite)
-                    settingsDAO.setLastOpenedId(lastLoadedId, 1)
+                    settingsRepository.setLastOpenedId(lastLoadedId, 1)
 
                 getFavorites()
             }
