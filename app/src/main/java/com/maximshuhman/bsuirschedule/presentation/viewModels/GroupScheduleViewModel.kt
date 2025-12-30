@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.maximshuhman.bsuirschedule.AppResult
 import com.maximshuhman.bsuirschedule.data.entities.FavoriteEntity
+import com.maximshuhman.bsuirschedule.data.entities.Settings
 import com.maximshuhman.bsuirschedule.data.entities.SubgroupEntity
 import com.maximshuhman.bsuirschedule.data.repositories.SettingsRepository
 import com.maximshuhman.bsuirschedule.data.sources.SubgroupDAO
@@ -40,6 +41,8 @@ class GroupScheduleViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow<GroupScheduleUiState>(GroupScheduleUiState.Loading)
     val uiState: StateFlow<GroupScheduleUiState> = _uiState
+
+    val settings: StateFlow<Settings> = settingsRepository.settings
 
     init{
         viewModelScope.launch {

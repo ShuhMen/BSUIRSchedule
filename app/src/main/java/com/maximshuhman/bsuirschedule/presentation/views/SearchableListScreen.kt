@@ -1,5 +1,6 @@
 package com.maximshuhman.bsuirschedule.presentation.views
 
+import android.app.Activity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -19,15 +20,19 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberSearchBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.core.view.WindowInsetsControllerCompat
 import com.maximshuhman.bsuirschedule.R
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -43,15 +48,20 @@ inline fun <T> SearchableListScreen(
 ) {
     val searchBarState = rememberSearchBarState()
     var expanded by rememberSaveable { mutableStateOf(false) }
-    /*val view = LocalView.current
-    val isLight = MaterialTheme.colorScheme.surface.luminance() < 0.5
+    val view = LocalView.current
+    val isLightBackground =
+        MaterialTheme.colorScheme.background.luminance() > 0.5f
 
-    SideEffect {
+    DisposableEffect(isLightBackground) {
         val window = (view.context as Activity).window
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-        val insetsController = WindowInsetsControllerCompat(window, view)
-        insetsController.isAppearanceLightStatusBars = isLight
-    }*/
+        val controller = WindowInsetsControllerCompat(window, view)
+
+        controller.isAppearanceLightStatusBars = isLightBackground
+
+        onDispose {
+            controller.isAppearanceLightStatusBars = false
+        }
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
         SearchBar(

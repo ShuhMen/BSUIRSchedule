@@ -150,42 +150,44 @@ class ScheduleDataBaseSourceImpl @Inject constructor(
         scheduleDAO.deleteEmployeeLessons(schedule.employeeDto!!.id)
 
         scheduleDAO.setLessons(buildList {
-            addAll(schedule.schedules!!.Monday.map {
-                it.toEmployeeLesson(
-                    schedule.employeeDto.id,
-                    DayOfWeek.MONDAY
-                )
-            })
-            addAll(schedule.schedules.Tuesday.map {
-                it.toEmployeeLesson(
-                    schedule.employeeDto.id,
-                    DayOfWeek.TUESDAY
-                )
-            })
-            addAll(schedule.schedules.Wednesday.map {
-                it.toEmployeeLesson(
-                    schedule.employeeDto.id,
-                    DayOfWeek.WEDNESDAY
-                )
-            })
-            addAll(schedule.schedules.Thursday.map {
-                it.toEmployeeLesson(
-                    schedule.employeeDto.id,
-                    DayOfWeek.THURSDAY
-                )
-            })
-            addAll(schedule.schedules.Friday.map {
-                it.toEmployeeLesson(
-                    schedule.employeeDto.id,
-                    DayOfWeek.FRIDAY
-                )
-            })
-            addAll(schedule.schedules.Saturday.map {
-                it.toEmployeeLesson(
-                    schedule.employeeDto.id,
-                    DayOfWeek.SATURDAY
-                )
-            })
+            if (schedule.schedules != null) {
+                addAll(schedule.schedules.Monday.map {
+                    it.toEmployeeLesson(
+                        schedule.employeeDto.id,
+                        DayOfWeek.MONDAY
+                    )
+                })
+                addAll(schedule.schedules.Tuesday.map {
+                    it.toEmployeeLesson(
+                        schedule.employeeDto.id,
+                        DayOfWeek.TUESDAY
+                    )
+                })
+                addAll(schedule.schedules.Wednesday.map {
+                    it.toEmployeeLesson(
+                        schedule.employeeDto.id,
+                        DayOfWeek.WEDNESDAY
+                    )
+                })
+                addAll(schedule.schedules.Thursday.map {
+                    it.toEmployeeLesson(
+                        schedule.employeeDto.id,
+                        DayOfWeek.THURSDAY
+                    )
+                })
+                addAll(schedule.schedules.Friday.map {
+                    it.toEmployeeLesson(
+                        schedule.employeeDto.id,
+                        DayOfWeek.FRIDAY
+                    )
+                })
+                addAll(schedule.schedules.Saturday.map {
+                    it.toEmployeeLesson(
+                        schedule.employeeDto.id,
+                        DayOfWeek.SATURDAY
+                    )
+                })
+            }
             addAll(schedule.exams?.map {
                 it.toEmployeeLesson(
                     schedule.employeeDto.id,

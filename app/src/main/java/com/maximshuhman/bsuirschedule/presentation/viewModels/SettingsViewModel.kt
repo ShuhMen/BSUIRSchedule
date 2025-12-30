@@ -36,13 +36,6 @@ class SettingsViewModel @Inject constructor(
 
         if (settings.value.iconInstalled == launcherIcon) return
 
-/*
-        val intent = Intent(Intent.ACTION_MAIN)
-        intent.addCategory(Intent.CATEGORY_LAUNCHER)
-        val resolveInfos = context.packageManager.queryIntentActivities(intent, MATCH_ALL)
-        Log.d("IconSwitch", "Launchers: ${resolveInfos.map { it.activityInfo.name }}")
-*/
-
         try {
             setComponentEnabled(
                 launcherIcon.name,

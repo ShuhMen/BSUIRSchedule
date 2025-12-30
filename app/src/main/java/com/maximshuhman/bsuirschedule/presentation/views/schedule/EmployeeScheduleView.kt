@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
 
-package com.maximshuhman.bsuirschedule.presentation.views
+package com.maximshuhman.bsuirschedule.presentation.views.schedule
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Box
@@ -41,6 +41,13 @@ import com.maximshuhman.bsuirschedule.data.dto.Employee
 import com.maximshuhman.bsuirschedule.data.dto.Lesson
 import com.maximshuhman.bsuirschedule.presentation.viewModels.EmployeeScheduleUiState
 import com.maximshuhman.bsuirschedule.presentation.viewModels.EmployeeScheduleViewModel
+import com.maximshuhman.bsuirschedule.presentation.views.DetailsDialogView
+import com.maximshuhman.bsuirschedule.presentation.views.EmployeeDetailsDialog
+import com.maximshuhman.bsuirschedule.presentation.views.ExamsList
+import com.maximshuhman.bsuirschedule.presentation.views.ExamsView
+import com.maximshuhman.bsuirschedule.presentation.views.FavoritesBottomSheet
+import com.maximshuhman.bsuirschedule.presentation.views.NoConnectionView
+import com.maximshuhman.bsuirschedule.presentation.views.ViewError
 
 @SuppressLint("RestrictedApi")
 @Composable
@@ -69,7 +76,7 @@ fun EmployeeScheduleView(
     }
 
     if (examsDialogVisible) {
-        ExamsView((uiState as EmployeeScheduleUiState.Success).schedule.exams,  {lesson ->
+        ExamsView((uiState as EmployeeScheduleUiState.Success).schedule.exams, { lesson ->
             lessonDetails = lesson
             detailsVisible = true
         }) {
@@ -83,6 +90,8 @@ fun EmployeeScheduleView(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
                 ),
                 navigationIcon = {
                     IconButton({
@@ -92,7 +101,6 @@ fun EmployeeScheduleView(
                             painterResource(R.drawable.burger_menu),
                             contentDescription = stringResource(R.string.menu_button),
                             modifier = Modifier.size(24.dp),
-                            tint = MaterialTheme.colorScheme.onPrimary
                         )
                     }
                 },
@@ -119,25 +127,16 @@ fun EmployeeScheduleView(
 
                             }
 
-                        IconButton({
+                        FavoriteButton((uiState as EmployeeScheduleUiState.Success).isFavorite){
                             viewModel.clickFavorite()
-                        }) {
-                            if ((uiState as EmployeeScheduleUiState.Success).isFavorite)
-                                Icon(
-                                    painterResource(R.drawable.ic_baseline_favorite_24),
-                                    stringResource(R.string.favorite_click)
-                                )
-                            else
-                                Icon(
-                                    painterResource(R.drawable.ic_baseline_favorite_border_24),
-                                    stringResource(R.string.favorite_click)
-                                )
                         }
                     }
                 }
             )
         },
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
+        containerColor = Transparent
+
     ) { innerPadding ->
 
         if (bottomSheetVisible)
@@ -200,7 +199,7 @@ fun EmployeeScheduleView(
                             onDismiss = { employeeDetailsVisible = false },
                             onEnter = { employee ->
 
-                                navController.navigate("${NavRoutes.EmployeeSchedule.route}/${employee.id}&${employee.fio}"){
+                                navController.navigate("${NavRoutes.EmployeeSchedule.route}/${employee.id}&${employee.fio}") {
                                     navOptions {
                                         restoreState = true
                                     }

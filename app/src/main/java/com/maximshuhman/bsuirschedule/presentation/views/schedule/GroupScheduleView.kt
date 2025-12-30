@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
 
-package com.maximshuhman.bsuirschedule.presentation.views
+package com.maximshuhman.bsuirschedule.presentation.views.schedule
 
 import android.annotation.SuppressLint
 import android.content.res.Configuration
@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -54,6 +53,14 @@ import com.maximshuhman.bsuirschedule.domain.models.ScheduleDay
 import com.maximshuhman.bsuirschedule.domain.models.ScheduleDayHeader
 import com.maximshuhman.bsuirschedule.presentation.viewModels.GroupScheduleUiState
 import com.maximshuhman.bsuirschedule.presentation.viewModels.GroupScheduleViewModel
+import com.maximshuhman.bsuirschedule.presentation.views.DetailsDialogView
+import com.maximshuhman.bsuirschedule.presentation.views.EmployeeDetailsDialog
+import com.maximshuhman.bsuirschedule.presentation.views.ExamsList
+import com.maximshuhman.bsuirschedule.presentation.views.ExamsView
+import com.maximshuhman.bsuirschedule.presentation.views.FavoritesBottomSheet
+import com.maximshuhman.bsuirschedule.presentation.views.LessonCard
+import com.maximshuhman.bsuirschedule.presentation.views.NoConnectionView
+import com.maximshuhman.bsuirschedule.presentation.views.ViewError
 import com.maximshuhman.bsuirschedule.ui.theme.BSUIRScheduleTheme
 
 @SuppressLint("RestrictedApi")
@@ -63,7 +70,7 @@ fun GroupScheduleView(
     groupId: Int,
     groupName: String,
     modifier: Modifier = Modifier,
-    viewModel: GroupScheduleViewModel = hiltViewModel()
+    viewModel: GroupScheduleViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val favorites by viewModel.favorites.collectAsState()
@@ -98,6 +105,9 @@ fun GroupScheduleView(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
+
                 ),
                 navigationIcon = {
                     IconButton({
@@ -107,7 +117,6 @@ fun GroupScheduleView(
                             painterResource(R.drawable.burger_menu),
                             contentDescription = stringResource(R.string.menu_button),
                             modifier = Modifier.size(24.dp),
-                            tint = MaterialTheme.colorScheme.onPrimary
                         )
                     }
                 },
@@ -143,45 +152,31 @@ fun GroupScheduleView(
                                         painterResource(R.drawable.subgroup_all),
                                         stringResource(R.string.subgroupAll),
                                         tint = MaterialTheme.colorScheme.onPrimary,
-                                        modifier = Modifier.height(36.dp)
                                     )
 
                                 1 ->
                                     Icon(
                                         painterResource(R.drawable.subgroup1),
                                         stringResource(R.string.subgroup1),
-                                        tint = MaterialTheme.colorScheme.onPrimary
                                     )
 
                                 2 ->
                                     Icon(
                                         painterResource(R.drawable.subgroup2),
                                         stringResource(R.string.subgroup2),
-                                        tint = MaterialTheme.colorScheme.onPrimary
                                     )
                             }
                         }
 
-                        IconButton({
+                        FavoriteButton((uiState as GroupScheduleUiState.Success).isFavorite){
                             viewModel.clickFavorite()
-                        }) {
-                            if ((uiState as GroupScheduleUiState.Success).isFavorite)
-                                Image(
-                                    painterResource(R.drawable.ic_baseline_favorite_24),
-                                    stringResource(R.string.favorite_click),
-                                )
-                            else
-                                Image(
-                                    painterResource(R.drawable.ic_baseline_favorite_border_24),
-                                    stringResource(R.string.favorite_click)
-                                )
                         }
-
                     }
                 }
             )
         },
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
+        containerColor = Transparent
     ) { innerPadding ->
 
         if (bottomSheetVisible)
@@ -212,7 +207,7 @@ fun GroupScheduleView(
                         ExamsList(
                             (uiState as GroupScheduleUiState.Success).schedule.exams,
                             innerPadding
-                        ){ lesson ->
+                        ) { lesson ->
                             lessonDetails = lesson
                             detailsVisible = true
                         }
@@ -244,7 +239,7 @@ fun GroupScheduleView(
                             onDismiss = { employeeDetailsVisible = false },
                             onEnter = { employee ->
 
-                                navController.navigate("${NavRoutes.EmployeeSchedule.route}/${employee.id}&${employee.fio}"){
+                                navController.navigate("${NavRoutes.EmployeeSchedule.route}/${employee.id}&${employee.fio}") {
                                     navOptions {
                                         restoreState = true
                                     }
@@ -269,6 +264,23 @@ fun GroupScheduleView(
             }
         }
 
+    }
+}
+
+@Composable
+fun FavoriteButton(isFavorite: Boolean, onClick: () -> Unit){
+
+    IconButton(onClick) {
+        if (isFavorite)
+            Image(
+                painterResource(R.drawable.ic_baseline_favorite_24),
+                stringResource(R.string.favorite_click),
+            )
+        else
+            Image(
+                painterResource(R.drawable.ic_baseline_favorite_border_24),
+                stringResource(R.string.favorite_click)
+            )
     }
 }
 
@@ -316,7 +328,7 @@ inline fun ScheduleList(
                     filteredLessons.forEachIndexed { index, lesson ->
 
                         LessonCard(lesson) {
-                           onItemClick(lesson)
+                            onItemClick(lesson)
                         }
                         if (index < filteredLessons.size - 1) {
                             HorizontalDivider(
@@ -340,7 +352,8 @@ fun ScheduleDayItem(groupDay: ScheduleDayHeader) {
         fontSize = 20.sp,
         modifier = Modifier
             .padding(15.dp, 7.dp, bottom = 3.dp)
-            .fillMaxWidth()
+            .fillMaxWidth(),
+        color = MaterialTheme.colorScheme.onBackground
     )
 }
 

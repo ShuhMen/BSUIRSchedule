@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.maximshuhman.bsuirschedule.data.dto.Lesson
 import com.maximshuhman.bsuirschedule.domain.models.ScheduleDay
+import com.maximshuhman.bsuirschedule.presentation.views.schedule.ScheduleDayItem
 
 @Composable
 inline fun ExamsList(
