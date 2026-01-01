@@ -4,16 +4,12 @@ package com.maximshuhman.bsuirschedule.presentation.views.schedule
 
 import android.annotation.SuppressLint
 import android.content.res.Configuration
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -22,12 +18,14 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -49,7 +47,6 @@ import com.maximshuhman.bsuirschedule.NavRoutes
 import com.maximshuhman.bsuirschedule.R
 import com.maximshuhman.bsuirschedule.data.dto.Employee
 import com.maximshuhman.bsuirschedule.data.dto.Lesson
-import com.maximshuhman.bsuirschedule.domain.models.ScheduleDay
 import com.maximshuhman.bsuirschedule.domain.models.ScheduleDayHeader
 import com.maximshuhman.bsuirschedule.presentation.viewModels.GroupScheduleUiState
 import com.maximshuhman.bsuirschedule.presentation.viewModels.GroupScheduleViewModel
@@ -58,7 +55,6 @@ import com.maximshuhman.bsuirschedule.presentation.views.EmployeeDetailsDialog
 import com.maximshuhman.bsuirschedule.presentation.views.ExamsList
 import com.maximshuhman.bsuirschedule.presentation.views.ExamsView
 import com.maximshuhman.bsuirschedule.presentation.views.FavoritesBottomSheet
-import com.maximshuhman.bsuirschedule.presentation.views.LessonCard
 import com.maximshuhman.bsuirschedule.presentation.views.NoConnectionView
 import com.maximshuhman.bsuirschedule.presentation.views.ViewError
 import com.maximshuhman.bsuirschedule.ui.theme.BSUIRScheduleTheme
@@ -77,7 +73,6 @@ fun GroupScheduleView(
 
     var bottomSheetVisible by remember { mutableStateOf(false) }
     var examsDialogVisible by remember { mutableStateOf(false) }
-
 
     var detailsVisible by remember { mutableStateOf(false) }
     var lessonDetails by remember { mutableStateOf<Lesson?>(null) }
@@ -179,182 +174,96 @@ fun GroupScheduleView(
         containerColor = Transparent
     ) { innerPadding ->
 
-        if (bottomSheetVisible)
-            FavoritesBottomSheet(navController, favorites) {
-                bottomSheetVisible = false
-            }
+        CompositionLocalProvider(
+            LocalContentColor provides MaterialTheme.colorScheme.onBackground
+        ) {
 
-        when (uiState) {
-            is GroupScheduleUiState.Error -> {
-                ViewError(innerPadding, (uiState as GroupScheduleUiState.Error).message)
-            }
-
-            GroupScheduleUiState.Loading -> {
-                Box {
-                    LinearProgressIndicator(
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(innerPadding)
-                    )
+            if (bottomSheetVisible)
+                FavoritesBottomSheet(navController, favorites) {
+                    bottomSheetVisible = false
                 }
-            }
 
-            is GroupScheduleUiState.Success -> {
+            when (uiState) {
+                is GroupScheduleUiState.Error -> {
+                    ViewError(innerPadding, (uiState as GroupScheduleUiState.Error).message)
+                }
 
-                Box {
-
-                    if ((uiState as GroupScheduleUiState.Success).schedule.schedule.isEmpty())
-                        ExamsList(
-                            (uiState as GroupScheduleUiState.Success).schedule.exams,
-                            innerPadding
-                        ) { lesson ->
-                            lessonDetails = lesson
-                            detailsVisible = true
-                        }
-                    else
-                        ScheduleList(
-                            (uiState as GroupScheduleUiState.Success).schedule.schedule,
-                            (uiState as GroupScheduleUiState.Success).numSubgroup,
-                            innerPadding,
-                        ){ lesson ->
-                            lessonDetails = lesson
-                            detailsVisible = true
-                        }
-
-                    if (detailsVisible && lessonDetails != null) {
-                        DetailsDialogView(
-                            lesson = lessonDetails!!,
-                            onDismissRequest = { detailsVisible = false },
-                            onEmployeeClick = { emp ->
-                                selectedEmployee = emp
-                                employeeDetailsVisible = true
-                                detailsVisible = false
-                            }
+                GroupScheduleUiState.Loading -> {
+                    Box {
+                        LinearProgressIndicator(
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(innerPadding)
                         )
                     }
+                }
 
-                    if (employeeDetailsVisible && selectedEmployee != null) {
-                        EmployeeDetailsDialog(
-                            employee = selectedEmployee!!,
-                            onDismiss = { employeeDetailsVisible = false },
-                            onEnter = { employee ->
+                is GroupScheduleUiState.Success -> {
 
-                                navController.navigate("${NavRoutes.EmployeeSchedule.route}/${employee.id}&${employee.fio}") {
-                                    navOptions {
-                                        restoreState = true
-                                    }
+                    Box {
 
-                                    popUpTo(NavRoutes.EmployeeSchedule.route) {
-                                        inclusive = true
+                        if ((uiState as GroupScheduleUiState.Success).schedule.schedule.isEmpty())
+                            ExamsList(
+                                (uiState as GroupScheduleUiState.Success).schedule.exams,
+                                innerPadding
+                            ) { lesson ->
+                                lessonDetails = lesson
+                                detailsVisible = true
+                            }
+                        else
+                            ScheduleList(
+                                (uiState as GroupScheduleUiState.Success).schedule.schedule,
+                                (uiState as GroupScheduleUiState.Success).numSubgroup,
+                                innerPadding,
+                            ) { lesson ->
+                                lessonDetails = lesson
+                                detailsVisible = true
+                            }
+
+                        if (detailsVisible && lessonDetails != null) {
+                            DetailsDialogView(
+                                lesson = lessonDetails!!,
+                                onDismissRequest = { detailsVisible = false },
+                                onEmployeeClick = { emp ->
+                                    selectedEmployee = emp
+                                    employeeDetailsVisible = true
+                                    detailsVisible = false
+                                }
+                            )
+                        }
+
+                        if (employeeDetailsVisible && selectedEmployee != null) {
+                            EmployeeDetailsDialog(
+                                employee = selectedEmployee!!,
+                                onDismiss = { employeeDetailsVisible = false },
+                                onEnter = { employee ->
+
+                                    navController.navigate("${NavRoutes.EmployeeSchedule.route}/${employee.id}&${employee.fio}") {
+                                        navOptions {
+                                            restoreState = true
+                                        }
+
+                                        popUpTo(NavRoutes.EmployeeSchedule.route) {
+                                            inclusive = true
+                                        }
                                     }
                                 }
-                            }
-                        )
-                    }
-                }
-            }
-
-            is GroupScheduleUiState.NoConnection -> {
-                NoConnectionView(
-                    Modifier
-                        .padding(innerPadding)
-                        .padding(bottom = 70.dp)
-                        .fillMaxSize()
-                )
-            }
-        }
-
-    }
-}
-
-@Composable
-fun FavoriteButton(isFavorite: Boolean, onClick: () -> Unit){
-
-    IconButton(onClick) {
-        if (isFavorite)
-            Image(
-                painterResource(R.drawable.ic_baseline_favorite_24),
-                stringResource(R.string.favorite_click),
-            )
-        else
-            Image(
-                painterResource(R.drawable.ic_baseline_favorite_border_24),
-                stringResource(R.string.favorite_click)
-            )
-    }
-}
-
-@Composable
-inline fun ScheduleList(
-    scheduleList: List<ScheduleDay>,
-    numSubgroup: Int,
-    contentPaddingValues: PaddingValues,
-    crossinline onItemClick: (Lesson) -> Unit
-) {
-
-
-    Box {
-        LazyColumn(
-            Modifier
-                .fillMaxSize()
-                .padding(horizontal = 5.dp),
-            contentPadding = contentPaddingValues
-        ) {
-            items(
-                scheduleList
-                    .filter { lesson ->
-                        lesson.list.any {
-                            numSubgroup == 0 || it.numSubgroup == 0 || it.numSubgroup == numSubgroup
-                        }
-                    }
-            ) { day ->
-                ScheduleDayItem(day.header)
-
-                Card(
-                    Modifier
-                        .padding(5.dp, 3.dp)
-                        .fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.secondary
-                    )
-                ) {
-
-                    val filteredLessons = day.list.asSequence()
-                        .filter {
-                            numSubgroup == 0 || it.numSubgroup == 0 || it.numSubgroup == numSubgroup
-                        }
-                        .toList()
-
-                    filteredLessons.forEachIndexed { index, lesson ->
-
-                        LessonCard(lesson) {
-                            onItemClick(lesson)
-                        }
-                        if (index < filteredLessons.size - 1) {
-                            HorizontalDivider(
-                                modifier = Modifier.padding(horizontal = 5.dp),
-                                thickness = 1.dp,
                             )
                         }
                     }
                 }
+
+                is GroupScheduleUiState.NoConnection -> {
+                    NoConnectionView(
+                        Modifier
+                            .padding(innerPadding)
+                            .padding(bottom = 70.dp)
+                            .fillMaxSize()
+                    )
+                }
             }
         }
-
-
     }
-}
-
-@Composable
-fun ScheduleDayItem(groupDay: ScheduleDayHeader) {
-    Text(
-        groupDay.name,
-        fontSize = 20.sp,
-        modifier = Modifier
-            .padding(15.dp, 7.dp, bottom = 3.dp)
-            .fillMaxWidth(),
-        color = MaterialTheme.colorScheme.onBackground
-    )
 }
 
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
