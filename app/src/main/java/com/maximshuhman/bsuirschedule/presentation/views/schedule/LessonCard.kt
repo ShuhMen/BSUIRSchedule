@@ -1,4 +1,4 @@
-package com.maximshuhman.bsuirschedule.presentation.views
+package com.maximshuhman.bsuirschedule.presentation.views.schedule
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -92,7 +92,7 @@ fun AnnouncementPart(lesson: Lesson) {
             .padding(horizontal = 10.dp)
     ) {
         Text(
-            text = lesson.employees?.joinToString(", ") { it -> "${it.lastName} ${it.firstName.first()}. ${if (!it.middleName.isNullOrBlank()) it.middleName.first() + "." else ""}" } + " : ${lesson.note}",
+            text = lesson.employees?.joinToString(", ") { "${it.lastName} ${it.firstName.first()}. ${if (!it.middleName.isNullOrBlank()) it.middleName.first() + "." else ""}" } + " : ${lesson.note}",
             fontSize = 16.sp
         )
 

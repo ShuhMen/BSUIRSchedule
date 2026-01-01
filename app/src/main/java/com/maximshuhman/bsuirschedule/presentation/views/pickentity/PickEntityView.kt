@@ -1,15 +1,18 @@
-package com.maximshuhman.bsuirschedule.presentation.views
+package com.maximshuhman.bsuirschedule.presentation.views.pickentity
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -58,7 +61,7 @@ fun PickEntityView(parentNavController: NavController) {
                                 contentDescription = destination.contentDescription
                             )
                         },
-                        label = { androidx.compose.material3.Text(destination.label) },
+                        label = { Text(destination.label) },
                         colors = NavigationBarItemDefaults.colors(
                             selectedTextColor = MaterialTheme.colorScheme.onSecondary,
                             unselectedTextColor = MaterialTheme.colorScheme.onSecondary,
@@ -72,16 +75,21 @@ fun PickEntityView(parentNavController: NavController) {
         },
         containerColor = Transparent
     ) { innerPadding ->
-        NavHost(
-            navController = navController,
-            startDestination = startDestination.route,
-            modifier = Modifier.padding(innerPadding)
+
+        CompositionLocalProvider(
+            LocalContentColor provides MaterialTheme.colorScheme.onBackground
         ) {
-            composable(PickEntityRoutes.GROUPS.route) {
-                GroupsScreen(parentNavController)
-            }
-            composable(PickEntityRoutes.EMPLOYEES.route) {
-                EmployeeScreen(parentNavController)
+            NavHost(
+                navController = navController,
+                startDestination = startDestination.route,
+                modifier = Modifier.padding(innerPadding)
+            ) {
+                composable(PickEntityRoutes.GROUPS.route) {
+                    GroupsScreen(parentNavController)
+                }
+                composable(PickEntityRoutes.EMPLOYEES.route) {
+                    EmployeeScreen(parentNavController)
+                }
             }
         }
     }

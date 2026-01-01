@@ -1,4 +1,4 @@
-package com.maximshuhman.bsuirschedule.presentation.views
+package com.maximshuhman.bsuirschedule.presentation.views.pickentity
 
 import android.app.Activity
 import androidx.compose.foundation.layout.Box
@@ -34,6 +34,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowInsetsControllerCompat
 import com.maximshuhman.bsuirschedule.R
+import com.maximshuhman.bsuirschedule.presentation.views.NoConnectionView
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
 
-package com.maximshuhman.bsuirschedule.presentation.views
+package com.maximshuhman.bsuirschedule.presentation.views.pickentity
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,6 +21,7 @@ import androidx.navigation.navOptions
 import com.maximshuhman.bsuirschedule.NavRoutes
 import com.maximshuhman.bsuirschedule.presentation.viewModels.EmployeeListUiState
 import com.maximshuhman.bsuirschedule.presentation.viewModels.EmployeeListViewModel
+import com.maximshuhman.bsuirschedule.presentation.views.EmployeeCard
 
 @Composable
 fun EmployeeScreen(
@@ -59,7 +60,7 @@ fun EmployeeScreen(
         if(uiState is EmployeeListUiState.Success)
             itemsIndexed((uiState as EmployeeListUiState.Success).groupList) { _, employee ->
                 EmployeeCard(employee) {
-                    navController.navigate("${NavRoutes.EmployeeSchedule.route}/${employee.id}&${employee.fio}"){
+                    navController.navigate("${NavRoutes.EmployeeSchedule.route}/${employee.id}&${employee.fio}") {
                         navOptions {
                             restoreState = true
                         }
@@ -85,7 +86,7 @@ fun EmployeeList(
     ) {
         itemsIndexed(state.groupList) { _, employee ->
             EmployeeCard(employee) {
-                navController.navigate("${NavRoutes.EmployeeSchedule.route}/${employee.id}&${employee.fio}"){
+                navController.navigate("${NavRoutes.EmployeeSchedule.route}/${employee.id}&${employee.fio}") {
                     navOptions {
                         restoreState = true
                     }

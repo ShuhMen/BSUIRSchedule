@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
 
-package com.maximshuhman.bsuirschedule.presentation.views
+package com.maximshuhman.bsuirschedule.presentation.views.pickentity
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.items
@@ -16,6 +16,7 @@ import androidx.navigation.NavController
 import com.maximshuhman.bsuirschedule.NavRoutes
 import com.maximshuhman.bsuirschedule.presentation.viewModels.GroupListViewModel
 import com.maximshuhman.bsuirschedule.presentation.viewModels.GroupsListUiState
+import com.maximshuhman.bsuirschedule.presentation.views.GroupCard
 
 @Composable
 fun GroupsScreen(

@@ -22,11 +22,11 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.maximshuhman.bsuirschedule.presentation.viewModels.MainActivityUiState
 import com.maximshuhman.bsuirschedule.presentation.viewModels.MainViewModel
-import com.maximshuhman.bsuirschedule.presentation.views.PickEntityView
-import com.maximshuhman.bsuirschedule.presentation.views.SettingsView
 import com.maximshuhman.bsuirschedule.presentation.views.StartScreen
+import com.maximshuhman.bsuirschedule.presentation.views.pickentity.PickEntityView
 import com.maximshuhman.bsuirschedule.presentation.views.schedule.EmployeeScheduleView
 import com.maximshuhman.bsuirschedule.presentation.views.schedule.GroupScheduleView
+import com.maximshuhman.bsuirschedule.presentation.views.settings.SettingsView
 import com.maximshuhman.bsuirschedule.ui.theme.BSUIRScheduleTheme
 import dagger.hilt.android.AndroidEntryPoint
 
