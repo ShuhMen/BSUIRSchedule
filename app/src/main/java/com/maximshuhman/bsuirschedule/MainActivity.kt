@@ -15,6 +15,8 @@ import androidx.compose.ui.draw.paint
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -43,6 +45,12 @@ class MainActivity : ComponentActivity() {
         splashscreen.setKeepOnScreenCondition { state.value is MainActivityUiState.Loading }
 
         enableEdgeToEdge()
+
+            val window = this.window
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+            val insetsController = WindowInsetsControllerCompat(window, window.decorView)
+            insetsController.isAppearanceLightStatusBars = false
+
         setContent {
             val settings by viewModel.settings.collectAsState()
 

@@ -1,5 +1,6 @@
 package com.maximshuhman.bsuirschedule.presentation.views.pickentity
 
+import android.app.Activity
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
@@ -13,15 +14,19 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color.Companion.Transparent
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -34,6 +39,20 @@ fun PickEntityView(parentNavController: NavController) {
     val navController = rememberNavController()
     val startDestination = PickEntityRoutes.GROUPS
     var selectedDestination by rememberSaveable { mutableIntStateOf(startDestination.ordinal) }
+
+    val view = LocalView.current
+    val isLightBackground = MaterialTheme.colorScheme.background.luminance() > 0.5f
+
+    DisposableEffect(isLightBackground) {
+        val window = (view.context as Activity).window
+        val controller = WindowInsetsControllerCompat(window, view)
+
+        controller.isAppearanceLightStatusBars = isLightBackground
+
+        onDispose {
+            controller.isAppearanceLightStatusBars = false
+        }
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
