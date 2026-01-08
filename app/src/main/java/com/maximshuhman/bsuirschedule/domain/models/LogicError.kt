@@ -12,6 +12,17 @@ sealed class LogicError {
     data class FetchDataError(val message: String): LogicError()
 }
 
+/*
+sealed class ScheduleError: LogicError() {
+    object LessonsEnded : ScheduleError()
+}
+
+sealed class ListError: LogicError() {
+    object LessonsEnded : ScheduleError()
+}
+*/
+
+
 fun SourceError.toLogicError(): LogicError {
 
     return when(this){
@@ -27,7 +38,7 @@ fun SourceError.toLogicError(): LogicError {
         is DBError -> {
             when (this) {
                 DBError.NoData -> {
-                    LogicError.NoCriticalError
+                    LogicError.Empty
                 }
             }
         }

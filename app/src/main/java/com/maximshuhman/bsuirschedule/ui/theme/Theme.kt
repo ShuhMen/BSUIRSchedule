@@ -129,7 +129,9 @@ private val DarkColorScheme = darkColorScheme(
     surface = DarkColors.Gray,
     onTertiary = White,
     onSurface = DarkColors.DarkGray,
-)
+    surfaceContainer = Blue,
+
+    )
 
 private val LightColorScheme = lightColorScheme(
     primary = Blue,
@@ -143,7 +145,9 @@ private val LightColorScheme = lightColorScheme(
     surface = Blue,
     onTertiary = White,
     onSurface = LightColors.DarkGray,
-)
+    surfaceContainer = Blue,
+    onSurfaceVariant = LightColors.DarkGray
+    )
 
 
 private val PancakeColorScheme = lightColorScheme(
@@ -156,6 +160,7 @@ private val PancakeColorScheme = lightColorScheme(
     onPrimary = White,
     outlineVariant = PancakesColors.dividerColor,
     surface = Pancake,
+    surfaceContainer = Pancake,
     onTertiary = White,
     onSurface = PancakesColors.DarkGray,
 )

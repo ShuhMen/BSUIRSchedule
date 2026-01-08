@@ -3,13 +3,15 @@ package com.maximshuhman.bsuirschedule.presentation.viewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.maximshuhman.bsuirschedule.AppResult
+import com.maximshuhman.bsuirschedule.data.dto.Employee
 import com.maximshuhman.bsuirschedule.data.entities.FavoriteEntity
 import com.maximshuhman.bsuirschedule.data.repositories.SettingsRepository
 import com.maximshuhman.bsuirschedule.domain.NetworkStatus
 import com.maximshuhman.bsuirschedule.domain.collect
-import com.maximshuhman.bsuirschedule.domain.models.EmployeeReadySchedule
 import com.maximshuhman.bsuirschedule.domain.models.Favorites
 import com.maximshuhman.bsuirschedule.domain.models.LogicError
+import com.maximshuhman.bsuirschedule.domain.models.ReadySchedule
+import com.maximshuhman.bsuirschedule.domain.models.ScheduleDay
 import com.maximshuhman.bsuirschedule.domain.useCases.GetEmployeeScheduleUseCase
 import com.maximshuhman.bsuirschedule.domain.useCases.GetFavoritesUseCase
 import com.maximshuhman.bsuirschedule.domain.useCases.SetFavoriteEntity
@@ -64,19 +66,37 @@ class EmployeeScheduleViewModel @Inject constructor(
 
             getEmployeeSchedule(employeeID).collect { result ->
                 when (result) {
-                    is AppResult.Success<EmployeeReadySchedule> -> {
+                    is AppResult.Success<ReadySchedule<Employee>> -> {
 
-                        if (result.data.schedule.isEmpty() && result.data.exams.isEmpty()) {
-                            _uiState.value =
-                                EmployeeScheduleUiState.Error("Занятия закончились!")
-                            return@collect
+                        when(result.data){
+                            is ReadySchedule.ExamsOnly -> {
+                                _uiState.value = EmployeeScheduleUiState.Success(
+                                    result.data.entity,
+                                    listOf(),
+                                    result.data.exams,
+                                    result.data.entity.isFavorite
+                                )
+                            }
+                            is ReadySchedule.FullSchedule-> {
+                                _uiState.value = EmployeeScheduleUiState.Success(
+                                    result.data.entity,
+                                    result.data.schedule,
+                                    result.data.exams,
+                                    result.data.entity.isFavorite
+                                )
+                            }
+                            is ReadySchedule.ScheduleOnly -> {
+                                _uiState.value = EmployeeScheduleUiState.Success(
+                                    result.data.entity,
+                                    result.data.schedule,
+                                    listOf(),
+                                    result.data.entity.isFavorite
+                                )
+                            }
                         }
-                        _uiState.value = EmployeeScheduleUiState.Success(
-                            result.data,
-                            result.data.employee.isFavorite
-                        )
 
-                        if(result.data.employee.isFavorite)
+
+                        if(result.data.entity.isFavorite)
                             settingsRepository.setLastOpenedId(employeeID, 1)
                     }
 
@@ -118,7 +138,7 @@ class EmployeeScheduleViewModel @Inject constructor(
                     isFavorite = !state.isFavorite
                 )
 
-                setFavoriteEntity(FavoriteEntity(state.schedule.employee.id, 1), !state.isFavorite)
+                setFavoriteEntity(FavoriteEntity(state.employee.id, 1), !state.isFavorite)
 
                 if(!state.isFavorite)
                     settingsRepository.setLastOpenedId(lastLoadedId, 1)
@@ -147,7 +167,12 @@ class EmployeeScheduleViewModel @Inject constructor(
 
 sealed class EmployeeScheduleUiState {
     object Loading : EmployeeScheduleUiState()
-    data class Success(val schedule: EmployeeReadySchedule, val isFavorite: Boolean) : EmployeeScheduleUiState()
+    data class Success(
+        val employee: Employee,
+        val lessons: List<ScheduleDay>,
+        val exams: List<ScheduleDay>,
+        val isFavorite: Boolean
+    ) : EmployeeScheduleUiState()
     data class Error(val message: String) : EmployeeScheduleUiState()
     object NoConnection : EmployeeScheduleUiState()
 }

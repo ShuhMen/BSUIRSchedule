@@ -24,6 +24,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -80,13 +81,15 @@ fun GroupScheduleView(
     var employeeDetailsVisible by remember { mutableStateOf(false) }
     var selectedEmployee by remember { mutableStateOf<Employee?>(null) }
 
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+
     LaunchedEffect(groupId) {
         viewModel.loadSchedule(groupId)
         viewModel.getFavorites()
     }
 
     if (examsDialogVisible) {
-        ExamsView((uiState as GroupScheduleUiState.Success).schedule.exams, { lesson ->
+        ExamsView((uiState as GroupScheduleUiState.Success).exams, { lesson ->
             lessonDetails = lesson
             detailsVisible = true
         }) {
@@ -118,7 +121,7 @@ fun GroupScheduleView(
                 title = {
                     Text(
                         when (uiState) {
-                            is GroupScheduleUiState.Success -> (uiState as GroupScheduleUiState.Success).schedule.group.name
+                            is GroupScheduleUiState.Success -> (uiState as GroupScheduleUiState.Success).group.name
                             else -> groupName
                         },
                         maxLines = 1
@@ -126,7 +129,7 @@ fun GroupScheduleView(
                 },
                 actions = {
                     if (uiState is GroupScheduleUiState.Success) {
-                        if ((uiState as GroupScheduleUiState.Success).schedule.exams.isNotEmpty() && (uiState as GroupScheduleUiState.Success).schedule.schedule.isNotEmpty())
+                        if ((uiState as GroupScheduleUiState.Success).exams.isNotEmpty() && (uiState as GroupScheduleUiState.Success).lessons.isNotEmpty())
                             Surface(
                                 onClick = {
                                     examsDialogVisible = true
@@ -167,7 +170,8 @@ fun GroupScheduleView(
                             viewModel.clickFavorite()
                         }
                     }
-                }
+                },
+                scrollBehavior = scrollBehavior
             )
         },
         modifier = Modifier.fillMaxSize(),
@@ -202,9 +206,9 @@ fun GroupScheduleView(
 
                     Box {
 
-                        if ((uiState as GroupScheduleUiState.Success).schedule.schedule.isEmpty())
+                        if ((uiState as GroupScheduleUiState.Success).lessons.isEmpty())
                             ExamsList(
-                                (uiState as GroupScheduleUiState.Success).schedule.exams,
+                                (uiState as GroupScheduleUiState.Success).exams,
                                 innerPadding
                             ) { lesson ->
                                 lessonDetails = lesson
@@ -212,7 +216,7 @@ fun GroupScheduleView(
                             }
                         else
                             ScheduleList(
-                                (uiState as GroupScheduleUiState.Success).schedule.schedule,
+                                (uiState as GroupScheduleUiState.Success).lessons,
                                 (uiState as GroupScheduleUiState.Success).numSubgroup,
                                 innerPadding,
                             ) { lesson ->

@@ -1,5 +1,6 @@
 package com.maximshuhman.bsuirschedule.data
 
+import android.content.Context
 import androidx.room.Room
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.maximshuhman.bsuirschedule.DataBase.MigrationCallback
@@ -11,12 +12,12 @@ import com.maximshuhman.bsuirschedule.data.sources.SettingsDAO
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import jakarta.inject.Singleton
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
-import okhttp3.internal.platform.PlatformRegistry.applicationContext
 import retrofit2.Retrofit
 import java.util.concurrent.TimeUnit
 
@@ -54,29 +55,37 @@ object DataModule {
     fun provideUserRepository(apiService: IISService): ScheduleSource =
         ScheduleNetworkSourceImpl(apiService)
 
+    @Volatile
+    private var INSTANCE: AppDatabase? = null
+
     @Provides
     @Singleton
-    fun provideDatabase(): AppDatabase = Room.databaseBuilder(
-        applicationContext!!,
-        AppDatabase::class.java, "RoomSchedule"
-    )
-        .addCallback(MigrationCallback(applicationContext!!))
-        .build()
+    fun provideDatabase(@ApplicationContext appContext: Context): AppDatabase {
+        return INSTANCE ?: synchronized(this) {
+            INSTANCE ?: Room.databaseBuilder(
+                appContext,
+                AppDatabase::class.java,
+                "RoomSchedule"
+            )
+                .addCallback(MigrationCallback(appContext))
+                .build().also { INSTANCE = it }
+        }
+    }
 
     @Provides
-    fun provideGroupsDao() = provideDatabase().groupsDAO()
+    fun provideGroupsDao(database: AppDatabase) = database.groupsDAO()
 
     @Provides
-    fun provideSubgroupDao() = provideDatabase().subgroupDAO()
+    fun provideSubgroupDao(database: AppDatabase) = database.subgroupDAO()
 
     @Provides
-    fun provideEmployeeDao() = provideDatabase().employeeDAO()
+    fun provideEmployeeDao(database: AppDatabase) = database.employeeDAO()
 
     @Provides
-    fun provideScheduleDao() = provideDatabase().scheduleDAO()
+    fun provideScheduleDao(database: AppDatabase) = database.scheduleDAO()
 
     @Provides
-    fun provideSettingsDao() = provideDatabase().settingsDAO()
+    fun provideSettingsDao(database: AppDatabase) = database.settingsDAO()
 
     @Provides
     @Singleton

@@ -44,9 +44,12 @@ class MainActivity : ComponentActivity() {
         val state = viewModel.uiState
         splashscreen.setKeepOnScreenCondition { state.value is MainActivityUiState.Loading }
 
+/*        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+        }*/
+
         enableEdgeToEdge()
 
-            val window = this.window
+        val window = this.window
             WindowCompat.setDecorFitsSystemWindows(window, false)
             val insetsController = WindowInsetsControllerCompat(window, window.decorView)
             insetsController.isAppearanceLightStatusBars = false

@@ -76,7 +76,7 @@ fun EmployeeScheduleView(
     }
 
     if (examsDialogVisible) {
-        ExamsView((uiState as EmployeeScheduleUiState.Success).schedule.exams, { lesson ->
+        ExamsView((uiState as EmployeeScheduleUiState.Success).exams, { lesson ->
             lessonDetails = lesson
             detailsVisible = true
         }) {
@@ -107,7 +107,7 @@ fun EmployeeScheduleView(
                 title = {
                     Text(
                         when (uiState) {
-                            is EmployeeScheduleUiState.Success -> (uiState as EmployeeScheduleUiState.Success).schedule.employee.fio
+                            is EmployeeScheduleUiState.Success -> (uiState as EmployeeScheduleUiState.Success).employee.fio
                             else -> employeeFIO
                         },
                         maxLines = 1
@@ -115,7 +115,7 @@ fun EmployeeScheduleView(
                 },
                 actions = {
                     if (uiState is EmployeeScheduleUiState.Success) {
-                        if ((uiState as EmployeeScheduleUiState.Success).schedule.exams.isNotEmpty() && (uiState as EmployeeScheduleUiState.Success).schedule.schedule.isNotEmpty())
+                        if ((uiState as EmployeeScheduleUiState.Success).exams.isNotEmpty() && (uiState as EmployeeScheduleUiState.Success).lessons.isNotEmpty())
                             Surface(
                                 onClick = {
                                     examsDialogVisible = true
@@ -161,11 +161,10 @@ fun EmployeeScheduleView(
 
             is EmployeeScheduleUiState.Success -> {
 
-
                 Box {
-                    if ((uiState as EmployeeScheduleUiState.Success).schedule.schedule.isEmpty())
+                    if ((uiState as EmployeeScheduleUiState.Success).lessons.isEmpty())
                         ExamsList(
-                            (uiState as EmployeeScheduleUiState.Success).schedule.exams,
+                            (uiState as EmployeeScheduleUiState.Success).exams,
                             innerPadding
                         ) { lesson ->
                             lessonDetails = lesson
@@ -173,7 +172,7 @@ fun EmployeeScheduleView(
                         }
                     else
                         ScheduleList(
-                            (uiState as EmployeeScheduleUiState.Success).schedule.schedule,
+                            (uiState as EmployeeScheduleUiState.Success).lessons,
                             0,
                             innerPadding,
                         ) { lesson ->
