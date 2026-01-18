@@ -64,20 +64,38 @@ class EmployeeScheduleViewModel @Inject constructor(
 
             getEmployeeSchedule(employeeID).collect { result ->
                 when (result) {
-                    is AppResult.Success<EmployeeReadySchedule> -> {
+                    is AppResult.Success<ReadySchedule<Employee>> -> {
 
-                        if (result.data.schedule.isEmpty() && result.data.exams.isEmpty()) {
-                            _uiState.value =
-                                EmployeeScheduleUiState.Error("Занятия закончились!")
-                            return@collect
+                        when(result.data){
+                            is ReadySchedule.ExamsOnly -> {
+                                _uiState.value = EmployeeScheduleUiState.Success(
+                                    result.data.entity,
+                                    listOf(),
+                                    result.data.exams,
+                                    result.data.entity.isFavorite
+                                )
+                            }
+                            is ReadySchedule.FullSchedule-> {
+                                _uiState.value = EmployeeScheduleUiState.Success(
+                                    result.data.entity,
+                                    result.data.schedule,
+                                    result.data.exams,
+                                    result.data.entity.isFavorite
+                                )
+                            }
+                            is ReadySchedule.ScheduleOnly -> {
+                                _uiState.value = EmployeeScheduleUiState.Success(
+                                    result.data.entity,
+                                    result.data.schedule,
+                                    listOf(),
+                                    result.data.entity.isFavorite
+                                )
+                            }
                         }
-                        _uiState.value = EmployeeScheduleUiState.Success(
-                            result.data,
-                            result.data.employee.isFavorite
-                        )
 
-                        if(result.data.employee.isFavorite)
-                            settingsDAO.setLastOpenedId(employeeID, 1)
+
+                        if(result.data.entity.isFavorite)
+                            settingsRepository.setLastOpenedId(employeeID, 1)
                     }
 
                     is AppResult.ApiError<LogicError> -> {

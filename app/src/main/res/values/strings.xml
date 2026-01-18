@@ -7,7 +7,7 @@
     <string name="developer">Разработчик</string>
     <string name="vesion">Версия</string>
     <string name="item_about_app">О приложении</string>
-    <string name="creator_inf">ФИТиУ АСОИ, 220604, 1 курс</string>
+    <string name="creator_inf">ФИТиУ АСОИ, 220601</string>
     <string name="endOfSchedule">Занятия закончились!</string>
     <string name="update">Обновление</string>
     <string name="update_schedule">Доступно обновление расписания. Обновить?</string>
@@ -30,4 +30,11 @@
     <string name="favorite_groups">Группы</string>
     <string name="favorite_employees">Преподаватели</string>
     <string name="edit_favorites">Изменить избранное</string>
+    <string name="settings">Настройки</string>
+    <string name="default_logo">Стандартная</string>
+    <string name="christmas_logo">Новогодняя</string>
+    <string name="system_theme">Системная</string>
+    <string name="dark_theme">Темная</string>
+    <string name="light_theme">Светлая</string>
+    <string name="panckakes_theme">Блины</string>
 </resources>

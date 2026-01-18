@@ -6,13 +6,13 @@ import com.maximshuhman.bsuirschedule.data.SourceError
 import com.maximshuhman.bsuirschedule.data.dto.CommonSchedule
 import com.maximshuhman.bsuirschedule.data.dto.Group
 import com.maximshuhman.bsuirschedule.data.repositories.ScheduleDataBaseSourceImpl
+import com.maximshuhman.bsuirschedule.data.repositories.SettingsRepository
 import com.maximshuhman.bsuirschedule.data.sources.GroupsDAO
-import com.maximshuhman.bsuirschedule.data.sources.SettingsDAO
 import com.maximshuhman.bsuirschedule.domain.GetScheduleUseCase
 import com.maximshuhman.bsuirschedule.domain.NetworkStatus
 import com.maximshuhman.bsuirschedule.domain.NetworkStatusTracker
-import com.maximshuhman.bsuirschedule.domain.models.GroupReadySchedule
 import com.maximshuhman.bsuirschedule.domain.models.LogicError
+import com.maximshuhman.bsuirschedule.domain.models.ReadySchedule
 import com.maximshuhman.bsuirschedule.domain.models.toLogicError
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -23,10 +23,10 @@ class GetGroupScheduleUseCase @Inject constructor(
     private val groupsSource: GroupsDAO,
     private val databaseRepository: ScheduleDataBaseSourceImpl,
     private val networkStatusTracker: NetworkStatusTracker,
-    private val settingsDAO: SettingsDAO
-): GetScheduleUseCase(repository, networkStatusTracker, settingsDAO) {
+    private val settingsRepository: SettingsRepository
+): GetScheduleUseCase(repository, networkStatusTracker, settingsRepository) {
 
-    operator fun invoke(groupId: Int): Flow<AppResult<GroupReadySchedule, LogicError>> = flow {
+    operator fun invoke(groupId: Int): Flow<AppResult<ReadySchedule<Group>, LogicError>> = flow {
 
         val group = groupsSource.getById(groupId)
 
@@ -39,42 +39,8 @@ class GetGroupScheduleUseCase @Inject constructor(
 
         var dbSchedule = databaseRepository.getGroupSchedule(group.name)
 
-        if(dbSchedule is AppResult.ApiError){
-            emit(AppResult.ApiError(dbSchedule.body.toLogicError()))
-        }else {
-
-            val configureResult = configureSchedule((dbSchedule as AppResult.Success).data)
-            val configureExams = configureExams(dbSchedule.data)
-
-            when{
-                configureResult is AppResult.ApiError && configureExams is AppResult.ApiError -> {
-                    emit(configureResult)
-                    return@flow
-                }
-                configureResult is AppResult.Success && configureExams is AppResult.ApiError ->{
-                    emit(AppResult.Success(GroupReadySchedule(group, configureResult.data, listOf())))
-                    return@flow
-                }
-                configureResult is AppResult.ApiError && configureExams is AppResult.Success ->{
-                    emit(AppResult.Success(GroupReadySchedule(group, listOf(), configureExams.data)))
-                    return@flow
-                }
-                else -> {
-                    emit(AppResult.Success(GroupReadySchedule(group, (configureResult as AppResult.Success).data, (configureExams as AppResult.Success).data)))
-                }
-
-            }
-
-
-
-
-/*
-            if(configureResult is AppResult.ApiError && configureExams is AppResult.ApiError){
-                emit(configureExams)
-                return@flow
-            }
-*/
-
+        if(dbSchedule is AppResult.Success){
+            emit(checkSchedule(group, dbSchedule.data))
         }
 
         if(networkStatusTracker.getCurrentNetworkStatus() is NetworkStatus.Unavailable){
@@ -98,49 +64,9 @@ class GetGroupScheduleUseCase @Inject constructor(
         if(dbSchedule is AppResult.ApiError){
             emit(AppResult.ApiError(dbSchedule.body.toLogicError()))
             return@flow
-        }
-
-        val configureResult = configureSchedule((dbSchedule as AppResult.Success).data)
-        val configureExams = configureExams(dbSchedule.data)
-
-        when{
-            configureResult is AppResult.ApiError && configureExams is AppResult.ApiError -> {
-                emit(configureResult)
-                return@flow
-            }
-            configureResult is AppResult.Success && configureExams is AppResult.ApiError ->{
-                emit(AppResult.Success(GroupReadySchedule(group, configureResult.data, listOf())))
-                return@flow
-            }
-            configureResult is AppResult.ApiError && configureExams is AppResult.Success ->{
-                emit(AppResult.Success(GroupReadySchedule(group, listOf(), configureExams.data)))
-                return@flow
-            }
-            else -> {
-                emit(AppResult.Success(GroupReadySchedule(group, (configureResult as AppResult.Success).data, (configureExams as AppResult.Success).data)))
-            }
-
+        }else{
+            emit(checkSchedule(group, (dbSchedule as AppResult.Success).data))
         }
     }
 
-    suspend inline fun analyseSchedule(group: Group, schedule: AppResult<CommonSchedule, SourceError>): AppResult<GroupReadySchedule, LogicError>  {
-
-        if(schedule is AppResult.ApiError){
-            return (AppResult.ApiError(schedule.body.toLogicError()))
-        }else {
-
-            val configureResult = configureSchedule((schedule as AppResult.Success).data)
-            val configureExams = configureExams(schedule.data)
-
-            if(configureResult is AppResult.ApiError){
-                return (configureResult)
-            }
-
-            if(configureExams is AppResult.ApiError){
-                return(configureExams)
-            }
-
-            return (AppResult.Success(GroupReadySchedule(group, (configureResult as AppResult.Success).data, (configureExams as AppResult.Success).data)))
-        }
-    }
 }
