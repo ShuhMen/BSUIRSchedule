@@ -4,15 +4,14 @@ import com.maximshuhman.bsuirschedule.AppResult
 import com.maximshuhman.bsuirschedule.data.ScheduleSource
 import com.maximshuhman.bsuirschedule.data.SourceError
 import com.maximshuhman.bsuirschedule.data.dto.CommonSchedule
-import com.maximshuhman.bsuirschedule.data.dto.Employee
 import com.maximshuhman.bsuirschedule.data.repositories.ScheduleDataBaseSourceImpl
-import com.maximshuhman.bsuirschedule.data.repositories.SettingsRepository
 import com.maximshuhman.bsuirschedule.data.sources.EmployeeDAO
+import com.maximshuhman.bsuirschedule.data.sources.SettingsDAO
 import com.maximshuhman.bsuirschedule.domain.GetScheduleUseCase
 import com.maximshuhman.bsuirschedule.domain.NetworkStatus
 import com.maximshuhman.bsuirschedule.domain.NetworkStatusTracker
+import com.maximshuhman.bsuirschedule.domain.models.EmployeeReadySchedule
 import com.maximshuhman.bsuirschedule.domain.models.LogicError
-import com.maximshuhman.bsuirschedule.domain.models.ReadySchedule
 import com.maximshuhman.bsuirschedule.domain.models.toLogicError
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -23,10 +22,10 @@ class GetEmployeeScheduleUseCase @Inject constructor(
     private val employeeDAO: EmployeeDAO,
     private val databaseRepository: ScheduleDataBaseSourceImpl,
     private val networkStatusTracker: NetworkStatusTracker,
-    private val settingsRepository: SettingsRepository
-): GetScheduleUseCase(repository, networkStatusTracker, settingsRepository) {
+    private val settingsDAO: SettingsDAO
+): GetScheduleUseCase(repository, networkStatusTracker, settingsDAO) {
 
-    operator fun invoke(groupId: Int): Flow<AppResult<ReadySchedule<Employee>, LogicError>> = flow {
+    operator fun invoke(groupId: Int): Flow<AppResult<EmployeeReadySchedule, LogicError>> = flow {
 
         val employee = employeeDAO.getById(groupId)
 
@@ -42,7 +41,28 @@ class GetEmployeeScheduleUseCase @Inject constructor(
         if(dbSchedule is AppResult.ApiError){
             emit(AppResult.ApiError(dbSchedule.body.toLogicError()))
         }else {
-            emit(checkSchedule(employee, (dbSchedule as AppResult.Success).data))
+
+            val configureResult = configureSchedule((dbSchedule as AppResult.Success).data)
+            val configureExams = configureExams(dbSchedule.data)
+
+            when{
+                configureResult is AppResult.ApiError && configureExams is AppResult.ApiError -> {
+                    emit(configureResult)
+                    return@flow
+                }
+                configureResult is AppResult.Success && configureExams is AppResult.ApiError ->{
+                    emit(AppResult.Success(EmployeeReadySchedule(employee, configureResult.data, listOf())))
+                    return@flow
+                }
+                configureResult is AppResult.ApiError && configureExams is AppResult.Success ->{
+                    emit(AppResult.Success(EmployeeReadySchedule(employee, listOf(), configureExams.data)))
+                    return@flow
+                }
+                else -> {
+                    emit(AppResult.Success(EmployeeReadySchedule(employee, (configureResult as AppResult.Success).data, (configureExams as AppResult.Success).data)))
+                }
+
+            }
         }
 
         if(networkStatusTracker.getCurrentNetworkStatus() is NetworkStatus.Unavailable){
@@ -66,8 +86,27 @@ class GetEmployeeScheduleUseCase @Inject constructor(
         if(dbSchedule is AppResult.ApiError){
             emit(AppResult.ApiError(dbSchedule.body.toLogicError()))
             return@flow
-        }else {
-            emit(checkSchedule(employee, (dbSchedule as AppResult.Success).data))
+        }
+
+        val configureResult = configureSchedule((dbSchedule as AppResult.Success).data)
+        val configureExams = configureExams(dbSchedule.data)
+
+        when{
+            configureResult is AppResult.ApiError && configureExams is AppResult.ApiError -> {
+                emit(configureResult)
+                return@flow
+            }
+            configureResult is AppResult.Success && configureExams is AppResult.ApiError ->{
+                emit(AppResult.Success(EmployeeReadySchedule(employee, configureResult.data, listOf())))
+                return@flow
+            }
+            configureResult is AppResult.ApiError && configureExams is AppResult.Success ->{
+                emit(AppResult.Success(EmployeeReadySchedule(employee, listOf(), configureExams.data)))
+                return@flow
+            }
+            else -> {
+                emit(AppResult.Success(EmployeeReadySchedule(employee, (configureResult as AppResult.Success).data, (configureExams as AppResult.Success).data)))
+            }
 
         }
     }

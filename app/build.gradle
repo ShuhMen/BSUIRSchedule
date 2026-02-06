@@ -13,19 +13,12 @@ android {
     namespace 'com.maximshuhman.bsuirschedule'
     compileSdk 36
 
-    packaging {
-        resources {
-            pickFirst("META-INF/LICENSE.md")
-            pickFirst("META-INF/LICENSE-notice.md")
-        }
-    }
-
     defaultConfig {
         applicationId "com.maximshuhman.bsuirschedule"
         minSdk 28
         targetSdk 36
-        versionCode 62
-        versionName "2.0.0.4"
+        versionCode 60
+        versionName "2.0.0.2"
 
         testInstrumentationRunner "dagger.hilt.android.testing.HiltTestRunner"
     }
@@ -52,7 +45,7 @@ android {
     }
 
     buildFeatures {
-        compose true
+        compose true // ← обязательно для Jetpack Compose!
         viewBinding true
     }
 
@@ -76,6 +69,7 @@ dependencies {
     implementation("androidx.room:room-runtime:2.8.4")
     implementation 'androidx.compose.foundation:foundation-layout:1.8.2'
     kapt("androidx.room:room-compiler:2.8.4")
+    annotationProcessor("androidx.room:room-compiler:2.8.4")
     implementation("androidx.room:room-ktx:2.8.4")
     testImplementation("androidx.room:room-testing:2.8.4")
 
@@ -92,7 +86,6 @@ dependencies {
 
     debugImplementation 'androidx.compose.ui:ui-tooling'
     debugImplementation 'androidx.compose.ui:ui-test-manifest'
-    debugImplementation 'io.mockk:mockk-android:1.14.7'
 
     implementation 'androidx.activity:activity-compose'
     implementation 'androidx.lifecycle:lifecycle-runtime-compose'
@@ -126,4 +119,5 @@ dependencies {
     androidTestImplementation platform('androidx.compose:compose-bom:2025.10.00')
     androidTestImplementation 'androidx.compose.ui:ui-test-junit4'
     androidTestImplementation("com.google.dagger:hilt-android-testing:2.57.2")
+
 }

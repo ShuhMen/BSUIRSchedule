@@ -1,19 +1,15 @@
 package com.maximshuhman.bsuirschedule.domain
 
-import com.google.firebase.Firebase
-import com.google.firebase.crashlytics.crashlytics
 import com.maximshuhman.bsuirschedule.AppResult
 import com.maximshuhman.bsuirschedule.data.ScheduleSource
 import com.maximshuhman.bsuirschedule.data.dto.CommonSchedule
 import com.maximshuhman.bsuirschedule.data.dto.Lesson
 import com.maximshuhman.bsuirschedule.data.repositories.NetError
-import com.maximshuhman.bsuirschedule.data.repositories.SettingsRepository
+import com.maximshuhman.bsuirschedule.data.sources.SettingsDAO
 import com.maximshuhman.bsuirschedule.domain.models.LogicError
-import com.maximshuhman.bsuirschedule.domain.models.ReadySchedule
 import com.maximshuhman.bsuirschedule.domain.models.ScheduleDay
 import com.maximshuhman.bsuirschedule.domain.models.ScheduleDayHeader
 import com.maximshuhman.bsuirschedule.domain.models.toLogicError
-import kotlinx.coroutines.flow.first
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -23,13 +19,13 @@ import java.util.Locale
 abstract class GetScheduleUseCase(
     private val repository: ScheduleSource,
     private val networkStatusTracker: NetworkStatusTracker,
-    private val settingsRepository: SettingsRepository
+    private val settingsDAO: SettingsDAO
 ) {
 
     fun configureExams(schedule: CommonSchedule): AppResult<List<ScheduleDay>, LogicError> {
 
         if(schedule.exams == null)
-            return AppResult.ApiError(LogicError.Empty)
+            return AppResult.Success(listOf())
 
         val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
         val prettyFormatter = DateTimeFormatter.ofPattern("EEEE, dd MMMM", Locale.getDefault())
@@ -37,6 +33,7 @@ abstract class GetScheduleUseCase(
         val listDays = mutableListOf<ScheduleDay>()
 
         val exams = schedule.exams
+            .asSequence()
             .groupBy { LocalDate.parse(it.dateLesson, formatter) }
             .toSortedMap { o1, o2 ->
                  if (o1.isAfter(o2))
@@ -83,9 +80,9 @@ abstract class GetScheduleUseCase(
 
         if (networkStatusTracker.getCurrentNetworkStatus() is NetworkStatus.Unavailable) {
 
-            val settings = settingsRepository.settings.first()
+            val settings = settingsDAO.getSettings()
 
-            if(settings.week == null){
+            if(settings == null || settings.week == null){
                 return AppResult.ApiError(LogicError.NoInternetConnection)
             }
 
@@ -102,16 +99,14 @@ abstract class GetScheduleUseCase(
                 week = week % 4 + 1
 
         } else {
-            when (val weekResponse = repository.getCurrent()) {
-                is AppResult.ApiError<NetError> -> {
-                    Firebase.crashlytics.log(weekResponse.body::class.java.toString())
+            val weekResponse = repository.getCurrent()
 
-                    return AppResult.ApiError(weekResponse.body.toLogicError())
-                }
+            when (weekResponse) {
+                is AppResult.ApiError<NetError> -> return AppResult.ApiError(weekResponse.body.toLogicError())
                 is AppResult.Success<Int> -> week = weekResponse.data
             }
 
-            settingsRepository.setCurrentWeek(formatter.format(LocalDate.now()) ,week)
+            settingsDAO.setCurrentWeek(formatter.format(LocalDate.now()) ,week)
         }
 
         val listDays = mutableListOf<ScheduleDay>()
@@ -125,7 +120,7 @@ abstract class GetScheduleUseCase(
         }
 
         if(currentDate.isAfter(endDate))
-            return AppResult.ApiError(LogicError.ConfigureError("Занятия закончились"))
+            return AppResult.Success(listDays)
 
 
         while (!endDate.isBefore(currentDate)) {
@@ -197,57 +192,5 @@ abstract class GetScheduleUseCase(
         return AppResult.Success(listDays)
     }
 
-    suspend fun <Entity: Any> checkSchedule(entity: Entity, schedule: CommonSchedule ): AppResult<ReadySchedule<Entity>, LogicError>{
-
-        if(schedule.schedules == null && schedule.exams == null)
-            return AppResult.ApiError(LogicError.Empty)
-
-        if(schedule.schedules == null){
-            return when(val configureExams = configureExams(schedule)){
-                is AppResult.ApiError -> {
-                    configureExams
-                }
-                is AppResult.Success -> {
-                    AppResult.Success(ReadySchedule.ExamsOnly(entity, configureExams.data))
-                }
-            }
-
-        }
-
-        if(schedule.exams == null){
-            return when(val configureResult = configureSchedule(schedule)){
-                is AppResult.ApiError -> {
-                    configureResult
-                }
-                is AppResult.Success -> {
-                    AppResult.Success(ReadySchedule.ScheduleOnly(entity, configureResult.data))
-                }
-            }
-        }
-
-        val configureResult = configureSchedule(schedule)
-        val configureExams = configureExams(schedule)
-
-        when (configureResult) {
-            is AppResult.ApiError if configureExams is AppResult.ApiError -> {
-                return configureResult
-            }
-
-            is AppResult.ApiError if configureExams is AppResult.Success -> {
-                return AppResult.Success(ReadySchedule.ExamsOnly(entity, configureExams.data, configureResult.body))
-            }
-
-            is AppResult.Success if configureExams is AppResult.ApiError -> {
-                return AppResult.Success(ReadySchedule.ScheduleOnly(entity, configureResult.data, configureExams.body))
-            }
-
-            else -> {
-                return AppResult.Success(ReadySchedule.FullSchedule(entity, (configureResult as AppResult.Success).data, (configureExams as AppResult.Success).data))
-            }
-        }
-
-
-
-    }
 
 }

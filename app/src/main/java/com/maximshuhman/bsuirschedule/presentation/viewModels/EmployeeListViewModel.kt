@@ -50,7 +50,7 @@ class EmployeeListViewModel @Inject constructor(
                 when(result)
                 {
                     is AppResult.Success<List<Employee>> -> {
-                        employeeList = result.data.sortedWith(compareByDescending<Employee> { it.isFavorite }.thenBy{ it.fio } )
+                        employeeList = result.data.sortedByDescending { it.isFavorite }
 
                         _uiState.value = EmployeeListUiState.Success(employeeList)
 

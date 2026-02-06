@@ -4,10 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.maximshuhman.bsuirschedule.data.dto.Employee
 import com.maximshuhman.bsuirschedule.data.dto.Group
-import com.maximshuhman.bsuirschedule.data.entities.Settings
-import com.maximshuhman.bsuirschedule.data.repositories.SettingsRepository
 import com.maximshuhman.bsuirschedule.data.sources.EmployeeDAO
 import com.maximshuhman.bsuirschedule.data.sources.GroupsDAO
+import com.maximshuhman.bsuirschedule.data.sources.SettingsDAO
+import com.maximshuhman.bsuirschedule.domain.useCases.GetFavoritesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.Dispatchers
@@ -16,49 +16,59 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
+
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val settingsRepository: SettingsRepository,
     private val groupsDAO: GroupsDAO,
+    private val getFavoritesUseCase: GetFavoritesUseCase,
+    private val settingsDAO: SettingsDAO,
     private val employeeDAO: EmployeeDAO
 ) : ViewModel() {
 
-    private val _uiState =
-        MutableStateFlow<MainActivityUiState>(MainActivityUiState.Loading)
-    val uiState = _uiState.asStateFlow()
-
-    val settings: StateFlow<Settings> = settingsRepository.settings
+    private val _uiState = MutableStateFlow<MainActivityUiState>(MainActivityUiState.Loading)
+    val uiState : StateFlow<MainActivityUiState> = _uiState.asStateFlow()
 
     init {
-        viewModelScope.launch(Dispatchers.IO) {
-            getLastScreen(settingsRepository.getSettings())
-        }
+        getLastScreen()
     }
 
-    private fun getLastScreen(settings: Settings) {
+    fun getLastScreen(){
+
         viewModelScope.launch(Dispatchers.IO) {
-            if (settings.lastOpenedID == null || settings.openedType == null) {
+
+            val settings = settingsDAO.getSettings()
+
+            if(settings?.lastOpenedID == null || settings.openedType == null){
                 _uiState.emit(MainActivityUiState.Empty)
                 return@launch
             }
 
-            if (settings.openedType == 0) {
+            if(settings.openedType == 0) {
                 val group = groupsDAO.getById(settings.lastOpenedID)
-                _uiState.emit(
-                    group?.let { MainActivityUiState.GroupSuccess(it) }
-                        ?: MainActivityUiState.Empty
-                )
-            } else {
-                val employee = employeeDAO.getById(settings.lastOpenedID)
-                _uiState.emit(
-                    employee?.let { MainActivityUiState.EmployeeSuccess(it) }
-                        ?: MainActivityUiState.Empty
-                )
-            }
-        }
-    }
-}
 
+                if (group == null) {
+                    _uiState.emit(MainActivityUiState.Empty)
+                    return@launch
+
+                }
+
+                _uiState.emit(MainActivityUiState.GroupSuccess(group))
+            }else{
+                val employee = employeeDAO.getById(settings.lastOpenedID)
+
+                if (employee == null) {
+                    _uiState.emit(MainActivityUiState.Empty)
+                    return@launch
+                }
+
+                _uiState.emit(MainActivityUiState.EmployeeSuccess(employee))
+            }
+
+        }
+
+    }
+
+}
 
 sealed class ViewState {
     object NoConnection : ViewState()

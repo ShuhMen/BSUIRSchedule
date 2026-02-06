@@ -3,18 +3,15 @@ package com.maximshuhman.bsuirschedule.presentation.viewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.maximshuhman.bsuirschedule.AppResult
-import com.maximshuhman.bsuirschedule.data.dto.Group
 import com.maximshuhman.bsuirschedule.data.entities.FavoriteEntity
-import com.maximshuhman.bsuirschedule.data.entities.Settings
 import com.maximshuhman.bsuirschedule.data.entities.SubgroupEntity
-import com.maximshuhman.bsuirschedule.data.repositories.SettingsRepository
+import com.maximshuhman.bsuirschedule.data.sources.SettingsDAO
 import com.maximshuhman.bsuirschedule.data.sources.SubgroupDAO
 import com.maximshuhman.bsuirschedule.domain.NetworkStatus
 import com.maximshuhman.bsuirschedule.domain.collect
 import com.maximshuhman.bsuirschedule.domain.models.Favorites
+import com.maximshuhman.bsuirschedule.domain.models.GroupReadySchedule
 import com.maximshuhman.bsuirschedule.domain.models.LogicError
-import com.maximshuhman.bsuirschedule.domain.models.ReadySchedule
-import com.maximshuhman.bsuirschedule.domain.models.ScheduleDay
 import com.maximshuhman.bsuirschedule.domain.useCases.GetFavoritesUseCase
 import com.maximshuhman.bsuirschedule.domain.useCases.GetGroupScheduleUseCase
 import com.maximshuhman.bsuirschedule.domain.useCases.SetFavoriteEntity
@@ -35,16 +32,17 @@ class GroupScheduleViewModel @Inject constructor(
     private val getFavoritesUseCase: GetFavoritesUseCase,
     private val setFavoriteEntity: SetFavoriteEntity,
     private val networkFlow: @JvmSuppressWildcards Flow<NetworkStatus>,
-    private val settingsRepository: SettingsRepository,
+    private val settingsDAO: SettingsDAO,
     private val subgroupDAO: SubgroupDAO,
     ): ViewModel() {
 
     private var lastLoadedId: Int = -1
 
+    private val _connectionLabel = MutableStateFlow(false)
+    val connectionLabel: StateFlow<Boolean> = _connectionLabel
+
     private val _uiState = MutableStateFlow<GroupScheduleUiState>(GroupScheduleUiState.Loading)
     val uiState: StateFlow<GroupScheduleUiState> = _uiState
-
-    val settings: StateFlow<Settings> = settingsRepository.settings
 
     init{
         viewModelScope.launch {
@@ -73,42 +71,22 @@ class GroupScheduleViewModel @Inject constructor(
 
             getGroupSchedule(groupID).collect { result ->
                 when (result) {
-                    is AppResult.Success<ReadySchedule<Group>> -> {
-
-                        val subgroup = subgroupDAO.getSubgroup(result.data.entity.id)?.subgroup ?: 0
-
-                        when(result.data){
-                            is ReadySchedule.ExamsOnly -> {
-                                _uiState.value = GroupScheduleUiState.Success(
-                                    result.data.entity,
-                                    listOf(),
-                                    result.data.exams,
-                                    subgroup,
-                                    result.data.entity.isFavorite
-                                )
-                            }
-                            is ReadySchedule.FullSchedule-> {
-                                _uiState.value = GroupScheduleUiState.Success(
-                                    result.data.entity,
-                                    result.data.schedule,
-                                    result.data.exams,
-                                    subgroup,
-                                    result.data.entity.isFavorite
-                                )
-                            }
-                            is ReadySchedule.ScheduleOnly -> {
-                                _uiState.value = GroupScheduleUiState.Success(
-                                    result.data.entity,
-                                    result.data.schedule,
-                                    listOf(),
-                                    subgroup,
-                                    result.data.entity.isFavorite
-                                )
-                            }
+                    is AppResult.Success<GroupReadySchedule> -> {
+                        if (result.data.schedule.isEmpty() && result.data.exams.isEmpty()) {
+                            _uiState.value =
+                                Error("Занятия закончились!")
+                            return@collect
                         }
+                        val subgroup = subgroupDAO.getSubgroup(result.data.group.id)?.subgroup ?: 0
 
-                        if(result.data.entity.isFavorite)
-                            settingsRepository.setLastOpenedId(lastLoadedId, 0)
+                        _uiState.value = GroupScheduleUiState.Success(
+                            result.data,
+                            subgroup,
+                            result.data.group.isFavorite
+                        )
+
+                        if(result.data.group.isFavorite)
+                            settingsDAO.setLastOpenedId(lastLoadedId, 0)
                     }
 
                     is AppResult.ApiError<LogicError> -> {
@@ -131,7 +109,6 @@ class GroupScheduleViewModel @Inject constructor(
                                 if(_uiState.value !is GroupScheduleUiState.Success)
                                 _uiState.value = GroupScheduleUiState.NoConnection
                             }
-
                         }
 
                     }
@@ -151,7 +128,7 @@ class GroupScheduleViewModel @Inject constructor(
                 )
 
                 subgroupDAO.insert(SubgroupEntity(
-                    (uiState.value as GroupScheduleUiState.Success).group.id,
+                    (uiState.value as GroupScheduleUiState.Success).schedule.group.id,
                     subgroup
                 ))
             }
@@ -168,10 +145,10 @@ class GroupScheduleViewModel @Inject constructor(
                     isFavorite = !state.isFavorite
                 )
 
-                setFavoriteEntity(FavoriteEntity(state.group.id, 0), !state.isFavorite)
+                setFavoriteEntity(FavoriteEntity(state.schedule.group.id, 0), !state.isFavorite)
 
                 if(!state.isFavorite)
-                    settingsRepository.setLastOpenedId(lastLoadedId, 0)
+                    settingsDAO.setLastOpenedId(lastLoadedId, 0)
 
                 getFavorites()
             }
@@ -197,13 +174,7 @@ class GroupScheduleViewModel @Inject constructor(
 
 sealed class GroupScheduleUiState {
     object Loading : GroupScheduleUiState()
-    data class Success(
-        val group: Group,
-        val lessons: List<ScheduleDay>,
-        val exams: List<ScheduleDay>,
-        val numSubgroup: Int,
-        val isFavorite: Boolean
-    ) : GroupScheduleUiState()
+    data class Success(val schedule: GroupReadySchedule, val numSubgroup: Int, val isFavorite: Boolean) : GroupScheduleUiState()
     data class Error(val message: String) : GroupScheduleUiState()
     object NoConnection : GroupScheduleUiState()
 }
