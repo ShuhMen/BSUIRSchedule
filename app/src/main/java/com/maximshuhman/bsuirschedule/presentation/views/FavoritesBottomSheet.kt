@@ -19,6 +19,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -29,7 +30,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
 import com.maximshuhman.bsuirschedule.NavRoutes
 import com.maximshuhman.bsuirschedule.R
@@ -39,6 +39,7 @@ import com.maximshuhman.bsuirschedule.ui.theme.BSUIRScheduleTheme
 @Composable
 fun FavoritesBottomSheet(navController: NavController, favorites: Favorites, dismiss: () -> Unit){
 
+//    val expanded = rememberBottomSheetState(BottomSheetValue.Expanded)
 
     ModalBottomSheet(
         dismiss,
@@ -59,36 +60,18 @@ fun FavoritesBottomSheet(navController: NavController, favorites: Favorites, dis
                 fontSize = 24.sp
             )
 
-            Row {
-                IconButton(
-                    {
-                        dismiss()
-                        navController.navigate(NavRoutes.PickEntity.route)
-                    },
-                    modifier = Modifier
-                ) {
-                    Icon(
-                        painterResource(R.drawable.edit_favorites),
-                        stringResource(R.string.edit_favorites),
-                        modifier = Modifier
-                            .size(22.dp)
-                    )
-                }
-
-                IconButton(
-                    {
-                        dismiss()
-                        navController.navigate(NavRoutes.Settings.route)
-                    },
-                    modifier = Modifier
-                ) {
-                    Icon(
-                        painterResource(R.drawable.settings_outlined),
-                        stringResource(R.string.settings),
-                        modifier = Modifier
-                            .size(22.dp)
-                    )
-                }
+            IconButton(
+                {
+                    dismiss()
+                    navController.navigate(NavRoutes.PickEntity.route)
+                },
+                modifier = Modifier
+                    .size(20.dp)
+            ) {
+                Icon(
+                    painterResource(R.drawable.edit_favorites),
+                    stringResource(R.string.edit_favorites)
+                )
             }
         }
 
@@ -180,9 +163,32 @@ fun FavoritesBottomSheet(navController: NavController, favorites: Favorites, dis
 @Composable
 fun bottomPreview() {
     BSUIRScheduleTheme {
-        val navController = rememberNavController()
+        Surface(Modifier) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 15.dp, end = 15.dp, bottom = 10.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    stringResource(R.string.favorite_screen),
+                    modifier = Modifier.align(Alignment.CenterVertically),
+                    fontSize = 24.sp
+                )
 
-
-        FavoritesBottomSheet(navController, Favorites()) { }
+                IconButton(
+                    {
+                    },
+                    modifier = Modifier
+                        .size(20.dp)
+                ) {
+                    Icon(
+                        painterResource(R.drawable.edit_favorites),
+                        stringResource(R.string.edit_favorites)
+                    )
+                }
+            }
+        }
     }
 }
