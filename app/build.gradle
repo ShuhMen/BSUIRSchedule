@@ -24,8 +24,8 @@ android {
         applicationId "com.maximshuhman.bsuirschedule"
         minSdk 28
         targetSdk 36
-        versionCode 62
-        versionName "2.0.0.4"
+        versionCode 63
+        versionName "2.0.0.5"
 
         testInstrumentationRunner "dagger.hilt.android.testing.HiltTestRunner"
     }

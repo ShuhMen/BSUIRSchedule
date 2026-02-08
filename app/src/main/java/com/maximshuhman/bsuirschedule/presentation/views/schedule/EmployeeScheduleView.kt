@@ -13,12 +13,15 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -69,6 +72,8 @@ fun EmployeeScheduleView(
 
     var employeeDetailsVisible by remember { mutableStateOf(false) }
     var selectedEmployee by remember { mutableStateOf<Employee?>(null) }
+
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
 
     LaunchedEffect(employeeId) {
         viewModel.loadSchedule(employeeId)
@@ -131,99 +136,102 @@ fun EmployeeScheduleView(
                             viewModel.clickFavorite()
                         }
                     }
-                }
+                },
+                scrollBehavior = scrollBehavior
             )
         },
         modifier = Modifier.fillMaxSize(),
         containerColor = Transparent
-
     ) { innerPadding ->
 
-        if (bottomSheetVisible)
-            FavoritesBottomSheet(navController, favorites) {
-                bottomSheetVisible = false
-            }
+        CompositionLocalProvider(
+            LocalContentColor provides MaterialTheme.colorScheme.onBackground
+        ) {
 
-        when (uiState) {
-            is EmployeeScheduleUiState.Error -> {
-                ViewError(innerPadding, (uiState as EmployeeScheduleUiState.Error).message)
-            }
+            if (bottomSheetVisible)
+                FavoritesBottomSheet(navController, favorites) {
+                    bottomSheetVisible = false
+                }
 
-            EmployeeScheduleUiState.Loading -> {
-                Box {
-                    LinearProgressIndicator(
+            when (uiState) {
+                is EmployeeScheduleUiState.Error -> {
+                    ViewError(innerPadding, (uiState as EmployeeScheduleUiState.Error).message)
+                }
+
+                EmployeeScheduleUiState.Loading -> {
+                    Box {
+                        LinearProgressIndicator(
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(innerPadding)
+                        )
+                    }
+                }
+
+                is EmployeeScheduleUiState.Success -> {
+
+                    Box {
+                        if ((uiState as EmployeeScheduleUiState.Success).lessons.isEmpty())
+                            ExamsList(
+                                (uiState as EmployeeScheduleUiState.Success).exams,
+                                innerPadding
+                            ) { lesson ->
+                                lessonDetails = lesson
+                                detailsVisible = true
+                            }
+                        else
+                            ScheduleList(
+                                (uiState as EmployeeScheduleUiState.Success).lessons,
+                                0,
+                                innerPadding,
+                            ) { lesson ->
+                                lessonDetails = lesson
+                                detailsVisible = true
+                            }
+
+                        if (detailsVisible && lessonDetails != null) {
+                            DetailsDialogView(
+                                lesson = lessonDetails!!,
+                                onDismissRequest = { detailsVisible = false },
+                                onEmployeeClick = { emp ->
+                                    selectedEmployee = emp
+                                    employeeDetailsVisible = true
+                                    detailsVisible = false
+                                }
+                            )
+                        }
+
+                        if (employeeDetailsVisible && selectedEmployee != null) {
+                            EmployeeDetailsDialog(
+                                employee = selectedEmployee!!,
+                                onDismiss = { employeeDetailsVisible = false },
+                                onEnter = { employee ->
+
+                                    navController.navigate("${NavRoutes.EmployeeSchedule.route}/${employee.id}&${employee.fio}") {
+                                        navOptions {
+                                            restoreState = true
+                                        }
+
+                                        popUpTo(NavRoutes.EmployeeSchedule.route) {
+                                            inclusive = true
+                                        }
+                                    }
+                                }
+                            )
+                        }
+                    }
+                }
+
+                is EmployeeScheduleUiState.NoConnection -> {
+                    NoConnectionView(
                         Modifier
-                            .fillMaxWidth()
                             .padding(innerPadding)
+                            .padding(bottom = 70.dp)
+                            .fillMaxSize()
                     )
                 }
             }
-
-            is EmployeeScheduleUiState.Success -> {
-
-                Box {
-                    if ((uiState as EmployeeScheduleUiState.Success).lessons.isEmpty())
-                        ExamsList(
-                            (uiState as EmployeeScheduleUiState.Success).exams,
-                            innerPadding
-                        ) { lesson ->
-                            lessonDetails = lesson
-                            detailsVisible = true
-                        }
-                    else
-                        ScheduleList(
-                            (uiState as EmployeeScheduleUiState.Success).lessons,
-                            0,
-                            innerPadding,
-                        ) { lesson ->
-                            lessonDetails = lesson
-                            detailsVisible = true
-                        }
-
-                    if (detailsVisible && lessonDetails != null) {
-                        DetailsDialogView(
-                            lesson = lessonDetails!!,
-                            onDismissRequest = { detailsVisible = false },
-                            onEmployeeClick = { emp ->
-                                selectedEmployee = emp
-                                employeeDetailsVisible = true
-                                detailsVisible = false
-                            }
-                        )
-                    }
-
-                    if (employeeDetailsVisible && selectedEmployee != null) {
-                        EmployeeDetailsDialog(
-                            employee = selectedEmployee!!,
-                            onDismiss = { employeeDetailsVisible = false },
-                            onEnter = { employee ->
-
-                                navController.navigate("${NavRoutes.EmployeeSchedule.route}/${employee.id}&${employee.fio}") {
-                                    navOptions {
-                                        restoreState = true
-                                    }
-
-                                    popUpTo(NavRoutes.EmployeeSchedule.route) {
-                                        inclusive = true
-                                    }
-                                }
-                            }
-                        )
-                    }
-
-                }
-            }
-
-            is EmployeeScheduleUiState.NoConnection -> {
-                NoConnectionView(
-                    Modifier
-                        .padding(innerPadding)
-                        .padding(bottom = 70.dp)
-                        .fillMaxSize()
-                )
-            }
         }
-
     }
 }
 

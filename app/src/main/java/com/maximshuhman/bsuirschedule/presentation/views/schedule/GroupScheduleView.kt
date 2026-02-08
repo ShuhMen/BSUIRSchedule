@@ -105,7 +105,6 @@ fun GroupScheduleView(
                     titleContentColor = MaterialTheme.colorScheme.onPrimary,
                     actionIconContentColor = MaterialTheme.colorScheme.onPrimary,
                     navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
-
                 ),
                 navigationIcon = {
                     IconButton({
